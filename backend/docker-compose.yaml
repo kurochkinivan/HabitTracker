@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: ht-backend
+    image: ht-backend:local
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresql
+    networks:
+      - ht-network
+
+  postgresql:
+    container_name: nt-db
+    image: postgres:16.2-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=habit_tracker
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - ht-network
+
+networks:
+  ht-network:

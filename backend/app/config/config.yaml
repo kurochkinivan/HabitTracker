@@ -10,6 +10,6 @@ http:
 postgresql:
   username: 'root'
   password: '12345'
-  host: 'localhost' # localhost/postgresql
+  host: 'postgresql' # localhost/postgresql
   port: '5432'
   database: 'habit_tracker'
