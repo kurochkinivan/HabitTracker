@@ -1,0 +1,15 @@
+environment: 'local' # local/prod
+
+http:
+  host: '0.0.0.0'
+  port: '8080'
+  read_timeout: 5s
+  write_timeout: 5s
+  idle_timeout: 60s
+
+postgresql:
+  username: 'root'
+  password: '12345'
+  host: 'localhost' # localhost/postgresql
+  port: '5432'
+  database: 'habit_tracker'
