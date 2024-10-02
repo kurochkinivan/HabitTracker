@@ -22,7 +22,7 @@ services:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=habit_tracker
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
       - ./migrations/init_tables.sql:/docker-entrypoint-initdb.d/001.sql
       - ./migrations/init_data.sql:/docker-entrypoint-initdb.d/002.sql
     networks:
