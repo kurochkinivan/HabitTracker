@@ -16,7 +16,6 @@ func Run(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-
 	fmt.Println(client)
 
 	return nil

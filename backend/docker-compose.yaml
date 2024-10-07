@@ -8,15 +8,13 @@ services:
       - 8080:8080
     depends_on:
       - postgresql
-    networks:
-      - ht-network
 
   postgresql:
     container_name: nt-db
     image: postgres:16.2-alpine
     restart: always
     ports:
-      - "5432:5432"
+      - 30000:5432
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=12345
@@ -25,8 +23,3 @@ services:
       - ./pgdata:/var/lib/postgresql/data
       - ./migrations/init_tables.sql:/docker-entrypoint-initdb.d/001.sql
       - ./migrations/init_data.sql:/docker-entrypoint-initdb.d/002.sql
-    networks:
-      - ht-network
-
-networks:
-  ht-network:

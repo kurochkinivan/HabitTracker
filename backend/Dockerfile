@@ -4,10 +4,10 @@ WORKDIR /usr/local/src
 
 RUN apk --no-cache add bash git make gcc gettext musl-dev
 
-COPY ["go.mod", "go.sum", "./"]
+COPY go.mod, go.sum ./
 RUN go mod download
 
-COPY ./ ./
+COPY . .
 RUN go build -o ./bin/app cmd/app/main.go
 
 FROM alpine AS runner
