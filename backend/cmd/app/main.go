@@ -7,8 +7,8 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/kurochkinivan/HabitTracker/config"
 	"github.com/kurochkinivan/HabitTracker/internal/app"
+	"github.com/kurochkinivan/HabitTracker/internal/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,10 +34,10 @@ func main() {
 func setupLogger(env string) {
 	callerPrettifer := func(f *runtime.Frame) (string, string) {
 		filename := path.Base(f.File)
-		funcName := path.Base(f.Function)
-		return fmt.Sprintf("%s()", funcName), fmt.Sprintf("%s:%d", filename, f.Line)
+		return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
 	}
 
+	logrus.SetLevel(logrus.TraceLevel)
 	logrus.SetReportCaller(true)
 	logrus.SetOutput(os.Stdout)
 
@@ -49,13 +49,11 @@ func setupLogger(env string) {
 			FullTimestamp:    true,
 			CallerPrettyfier: callerPrettifer,
 		})
-		logrus.SetLevel(logrus.TraceLevel)
 	case envProd:
 		logrus.SetFormatter(&logrus.JSONFormatter{
 			TimestampFormat:  "2006-01-02 15:04:05",
 			CallerPrettyfier: callerPrettifer,
 		})
-		logrus.SetLevel(logrus.InfoLevel)
 	default:
 		logrus.Fatal("unknown environment")
 	}
