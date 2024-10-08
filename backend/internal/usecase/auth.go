@@ -30,17 +30,48 @@ func NewAuthUseCase(r UserRepository, signingKey, salt string, tokenTTL time.Dur
 func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password string) error {
 	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Trace("registering new user")
 
-	user := &entity.User{
+	user := entity.User{
 		Name:     name,
 		Email:    email,
 		Password: a.hashPassword(password),
 	}
-	err := a.repo.CreateUser(ctx, user)
+
+	exists, err := a.repo.IsUserExists(ctx, user)
+	if err != nil {
+		return fmt.Errorf("failed to check if user exists: %w", err)
+	}
+	if exists {
+		return fmt.Errorf("user already exists")
+	}
+
+	err = a.repo.CreateUser(ctx, user)
 	if err != nil {
 		return fmt.Errorf("failed to register user: %w", err)
 	}
 
 	return nil
+}
+
+func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (string, error) {
+	logrus.WithField("email", email).Trace("logging user")
+
+	user := entity.User{
+		Email: email,
+		Password: a.hashPassword(password),
+	}
+	user, err := a.repo.AuthenticateUser(ctx, user)
+	if err != nil {
+		logrus.WithError(err).Error("failed to authenticate user")
+		return "", fmt.Errorf("failed to authenticate user: %w", err)
+	}
+
+	token, err := a.GenerateToken(user.ID, a.tokenTTL)
+	if err != nil {
+		logrus.WithError(err).Error("failed to generate token")
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	return token, nil
 }
 
 func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, error) {

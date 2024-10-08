@@ -21,12 +21,25 @@ func Run(cfg *config.Config) error {
 	}
 
 	authRepo := postgresql.NewUserRepository(client)
-	useCase := usecase.NewAuthUseCase(authRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL)
+	authUseCase := usecase.NewAuthUseCase(authRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL)
 
-	err = useCase.RegisterUser(context.TODO(), "ivan", "ivan@mail.ru", "12345")
+	err = authUseCase.RegisterUser(context.TODO(), "anatoly", "vanya.kurochkin@mail.ru", "12345")
+	if err != nil {
+		logrus.WithError(err).Error("failed to register user")
+	}
+
+	token, err := authUseCase.LoginUser(context.TODO(), "vanya.kurochkin@mail.ru", "12345")
+	if err != nil {
+		logrus.WithError(err).Error("failed to login user")
+	}
+
+	logrus.Info(token)
+
+	payload, err := authUseCase.ParseToken(token)
 	if err != nil {
 		logrus.Fatal(err)
 	}
+	fmt.Println(payload)
 
 	return nil
 }
