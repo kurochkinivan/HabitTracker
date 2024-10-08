@@ -1,5 +1,12 @@
 environment: 'local' # local/prod
 
+jwt:
+  token_ttl: 120h
+  jwt_sign_key: 'fce9ee13dd03f63e21f86158e7b9cc79079886059d445ce7b0eca9ceceb88c76'
+
+hasher:
+  hasher_salt: '363b420c9bd2a049219476f26ff9c031'
+
 http:
   host: '0.0.0.0'
   port: '8080'
@@ -10,6 +17,7 @@ http:
 postgresql:
   username: 'root'
   password: '12345'
-  host: 'postgresql' # localhost/postgresql
-  port: '5432'
+  host: 'localhost' # localhost/postgresql
+  port: '30000'     # 30000/5432
   database: 'habit_tracker'
+
