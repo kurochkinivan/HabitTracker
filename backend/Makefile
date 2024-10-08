@@ -2,7 +2,7 @@ rm:
 	docker-compose stop \
 	&& docker-compose rm \
 	&& docker image rm ht-backend:local \
-	&& sudo rm -rf data/ 
+	&& sudo rm -rf pgdata/ 
 
 up: 
 	docker build -t ht-backend:local . \
@@ -14,4 +14,4 @@ up-db:
 rm-db:
 	docker-compose stop \
 	&& docker-compose rm \
-	&& sudo rm -rf data/ 
+	&& sudo rm -rf pgdata/ 
