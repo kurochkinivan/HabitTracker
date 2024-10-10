@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +37,7 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Trace("registering new user")
 
 	if name == "" || email == "" || password == "" {
-		return fmt.Errorf("not all fields provided")
+		return apperr.ErrNotAllFieldsProvided
 	}
 
 	user := entity.User{
@@ -45,17 +46,17 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		Password: a.hashPassword(password),
 	}
 
-	exists, err := a.repo.IsUserExists(ctx, user)
+	exists, err := a.repo.IsUserExists(ctx, user.Email)
 	if err != nil {
-		return fmt.Errorf("failed to check if user exists: %w", err)
+		return apperr.SystemError(err, "", "usecase.RegisterUser: failed to check if user exists")
 	}
 	if exists {
-		return fmt.Errorf("user already exists")
+		return apperr.ErrUserExists
 	}
 
 	err = a.repo.CreateUser(ctx, user)
 	if err != nil {
-		return fmt.Errorf("failed to register user: %w", err)
+		return apperr.SystemError(err, "", "usecase.RegisterUser: failed to create user")
 	}
 
 	return nil
@@ -70,24 +71,19 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("logging user")
 
+	logrus.Debug(email, "  ", password)
 	if email == "" || password == "" {
-		return "", fmt.Errorf("not all fields provided")
+		return "", apperr.ErrNotAllFieldsProvided
 	}
 
-	user := entity.User{
-		Email:    email,
-		Password: a.hashPassword(password),
-	}
-	user, err := a.repo.AuthenticateUser(ctx, user)
+	user, err := a.repo.AuthenticateUser(ctx, email, a.hashPassword(password))
 	if err != nil {
-		logrus.WithError(err).Error("failed to authenticate user")
-		return "", fmt.Errorf("failed to authenticate user: %w", err)
+		return "", apperr.ErrAuthorizing.WithErr(err)
 	}
 
-	token, err := a.GenerateToken(user.ID, a.tokenTTL)
+	token, err := a.generateToken(user.ID, a.tokenTTL)
 	if err != nil {
-		logrus.WithError(err).Error("failed to generate token")
-		return "", fmt.Errorf("failed to generate token: %w", err)
+		return "",  err
 	}
 
 	return token, nil
@@ -98,7 +94,7 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (st
 // It creates a JWT token with user ID and current time as payload.
 // If the token signing is failed, it returns the error.
 // If the token is successfully signed, it returns the signed token.
-func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, error) {
+func (a *AuthUseCase) generateToken(id string, tokenTTL time.Duration) (string, error) {
 	logrus.WithField("id", id).Trace("generating jwt-token")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -110,7 +106,7 @@ func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, 
 	signedToken, err := token.SignedString([]byte(a.signingKey))
 	if err != nil {
 		logrus.WithError(err).Error("failed to sign token")
-		return "", fmt.Errorf("failed to sign token: %w", err)
+		return "", apperr.SystemError(err, "", "usecase.GenerateToken: failed to sign token")
 	}
 
 	return signedToken, nil
@@ -126,19 +122,20 @@ func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 
 	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			logrus.Error(fmt.Sprintf("unexpected signing method: %v", t.Header["alg"]))
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+			logrus.WithField("alg", t.Header["alg"]).Error("unexpected signing method")
+			return nil, apperr.SystemError(nil, "", "usecase.ParseToken: unexpected signing method")
 		}
 		return []byte(a.signingKey), nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, apperr.ErrInvalidAuthHeader.WithErr(err)
 	}
 
 	payload, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, fmt.Errorf("failed to assert token to jwt.MapClaims: %w", err)
+		logrus.Error("usecase.ParseToken: token claims are not of type jwt.MapClaims")
+		return nil, apperr.SystemError(err, "", "usecase.ParseToken: token claims are not of type jwt.MapClaims")
 	}
 
 	return payload, nil
