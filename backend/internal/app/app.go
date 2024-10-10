@@ -24,7 +24,7 @@ func Run(cfg *config.Config) error {
 
 	authRepo := postgresql.NewUserRepository(client)
 	authUseCase := usecase.NewAuthUseCase(authRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL)
-	authHandler := v1.NewAuthHandler(authUseCase)
+	authHandler := v1.NewAuthHandler(authUseCase, cfg.HTTP.BytesLimit)
 	authHandler.Register(mux)
 
 

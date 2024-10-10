@@ -29,10 +29,6 @@ func NewUserRepository(client *pgxpool.Pool) *userRepository {
 	}
 }
 
-// CreateUser creates a new user in the database.
-//
-// If the query is failed, it returns the error.
-// If no row is affected, it returns psql.NoRowsAffected.
 func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error {
 	logrus.WithFields(logrus.Fields{"name": user.Name, "email": user.Email}).Trace("creating user")
 
@@ -65,10 +61,6 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	return nil
 }
 
-// GetUserByID gets a user from the database by given id.
-//
-// If the query is failed, it returns the error.
-// If no row is found, it returns entity.User{}.
 func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.User, error) {
 	logrus.WithField("id", id).Trace("getting user")
 
@@ -102,21 +94,15 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.Use
 	return user, nil
 }
 
-// IsUserExists checks if a user exists in the database by given email and name.
-//
-// Returns true if user exists, false if not.
-// Returns error if something went wrong with the query.
-func (r *userRepository) IsUserExists(ctx context.Context, user entity.User) (bool, error) {
-	logrus.WithFields(logrus.Fields{"email": user.Email, "name": user.Name}).Trace("checking if user exists")
+func (r *userRepository) IsUserExists(ctx context.Context, email string) (bool, error) {
+	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
 		From(usersTable).
-		Where(sq.Or{
-			sq.Eq{"name": user.Name},
-			sq.Eq{"email": user.Email},
-		}).Suffix(")").
+		Where(sq.Eq{"email": email}).
+		Suffix(")").
 		ToSql()
 	if err != nil {
 		return false, psql.ErrCreateQuery(err)
@@ -134,8 +120,8 @@ func (r *userRepository) IsUserExists(ctx context.Context, user entity.User) (bo
 	return exists, nil
 }
 
-func (r *userRepository) AuthenticateUser(ctx context.Context, user entity.User) (entity.User, error) {
-	logrus.WithField("email", user.Email).Trace("authenticating user")
+func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (entity.User, error) {
+	logrus.WithField("email", email).Trace("authenticating user")
 
 	sql, args, err := r.qb.
 		Select(
@@ -146,14 +132,15 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, user entity.User)
 		).
 		From(usersTable).
 		Where(sq.Eq{
-			"email":    user.Email,
-			"password": user.Password,
+			"email":    email,
+			"password": password,
 		}).
 		ToSql()
 	if err != nil {
 		return entity.User{}, psql.ErrCreateQuery(err)
 	}
 
+	var user entity.User
 	err = r.client.QueryRow(ctx, sql, args...).Scan(
 		&user.ID,
 		&user.Name,
