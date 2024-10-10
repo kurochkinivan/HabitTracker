@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path"
 	"runtime"
@@ -27,8 +26,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("app.Run failed")
 	}
-
-	logrus.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port), nil))
 }
 
 func setupLogger(env string) {

@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -122,7 +121,6 @@ func (r *userRepository) IsUserExists(ctx context.Context, user entity.User) (bo
 	if err != nil {
 		return false, psql.ErrCreateQuery(err)
 	}
-	fmt.Println(sql)
 
 	var exists bool
 	err = r.client.QueryRow(ctx, sql, args...).Scan(&exists)
