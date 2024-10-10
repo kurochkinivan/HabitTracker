@@ -27,8 +27,17 @@ func NewAuthUseCase(r UserRepository, signingKey, salt string, tokenTTL time.Dur
 	}
 }
 
+// RegisterUser registers a new user in the database.
+//
+// It checks if the user with given email and name already exists.
+// If the user exists, it returns an error.
+// If the query to the database is failed, it returns the error.
 func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password string) error {
 	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Trace("registering new user")
+
+	if name == "" || email == "" || password == "" {
+		return fmt.Errorf("not all fields provided")
+	}
 
 	user := entity.User{
 		Name:     name,
@@ -52,11 +61,21 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 	return nil
 }
 
+// LoginUser logs a user in.
+//
+// It checks the user's credentials against the data in the database.
+// If the credentials are invalid, it returns an error.
+// If the query to the database is failed, it returns the error.
+// If the user is successfully logged in, it returns a JWT token.
 func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("logging user")
 
+	if email == "" || password == "" {
+		return "", fmt.Errorf("not all fields provided")
+	}
+
 	user := entity.User{
-		Email: email,
+		Email:    email,
 		Password: a.hashPassword(password),
 	}
 	user, err := a.repo.AuthenticateUser(ctx, user)
@@ -74,6 +93,11 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (st
 	return token, nil
 }
 
+// GenerateToken generates a JWT token for given user ID and token TTL.
+//
+// It creates a JWT token with user ID and current time as payload.
+// If the token signing is failed, it returns the error.
+// If the token is successfully signed, it returns the signed token.
 func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, error) {
 	logrus.WithField("id", id).Trace("generating jwt-token")
 
@@ -92,6 +116,11 @@ func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, 
 	return signedToken, nil
 }
 
+// ParseToken parses the given JWT token and returns its payload.
+//
+// It checks the token's signing method and signature.
+// If the token is invalid, it returns an error.
+// If the token is successfully parsed, it returns its payload.
 func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 	logrus.WithField("token", accessToken).Trace("parsing jwt-token")
 
@@ -115,6 +144,11 @@ func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 	return payload, nil
 }
 
+// hashPassword hashes a given password with the stored salt.
+//
+// It uses the SHA-256 hashing algorithm.
+// The salt is used to prevent attacks using precomputed tables (rainbow tables).
+// The resulting hash is a hex string.
 func (a *AuthUseCase) hashPassword(password string) string {
 	hash := sha256.New()
 	hash.Write([]byte(password))
