@@ -32,6 +32,14 @@ type registerRequest struct {
 	Password string `json:"password"`
 }
 
+//	@Summary		Register user
+//	@Description	register new user
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		201
+//	@Failure		400	
+//	@Router			/auth/register [post]
 func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 

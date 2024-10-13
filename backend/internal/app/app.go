@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/kurochkinivan/HabitTracker/config"
 	v1 "github.com/kurochkinivan/HabitTracker/internal/controller/http/v1"
@@ -20,13 +19,9 @@ func Run(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	mux := http.NewServeMux()
 
 	authRepo := postgresql.NewUserRepository(client)
 	authUseCase := usecase.NewAuthUseCase(authRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL)
-	authHandler := v1.NewAuthHandler(authUseCase, cfg.HTTP.BytesLimit)
-	authHandler.Register(mux)
 
-
-	return http.ListenAndServe(fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port), mux)
+	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, authUseCase)
 }
