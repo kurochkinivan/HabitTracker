@@ -1,0 +1,24 @@
+basePath: /v1
+host: localhost:8080
+info:
+  contact: {}
+  description: habit tracker API for mobile app
+  title: Habit Tracker API
+  version: 1.0.0
+paths:
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: register new user
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      summary: Register user
+      tags:
+      - auth
+swagger: "2.0"

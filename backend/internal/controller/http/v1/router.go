@@ -1,6 +1,12 @@
 package v1
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/kurochkinivan/HabitTracker/internal/usecase"
+	httpSwagger "github.com/swaggo/http-swagger"
+)
 
 type Handler interface {
 	Register(mux *http.ServeMux)
@@ -16,8 +22,19 @@ func NewHandlers(auth authHandler) *Handlers {
 	}
 }
 
-func NewRouter(handlers Handlers) *http.ServeMux {
+// @title			Habit Tracker API
+// @description		habit tracker API for mobile app
+// @version			1.0.0
+// @host			localhost:8080
+// @BasePath		/v1
+func NewRouter(host, port string, bytesLimit int64, a usecase.Auth) error {
 	mux := http.NewServeMux()
-	handlers.Auth.Register(mux)
-	return mux
+
+	authHandler := NewAuthHandler(a, bytesLimit)
+	authHandler.Register(mux)
+
+	httpSwagger.Handler()
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
+
+	return http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), mux)
 }
