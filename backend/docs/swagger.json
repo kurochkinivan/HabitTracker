@@ -4,11 +4,63 @@
         "description": "habit tracker API for mobile app",
         "title": "Habit Tracker API",
         "contact": {},
-        "version": "1.0.0"
+        "version": "1.0"
     },
     "host": "localhost:8080",
     "basePath": "/v1",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "log user in",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log user in",
+                "parameters": [
+                    {
+                        "description": "login request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.loginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. User was logged in",
+                        "schema": {
+                            "$ref": "#/definitions/v1.loginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Email or password is incorrect",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "register new user",
@@ -22,13 +74,89 @@
                     "auth"
                 ],
                 "summary": "Register user",
+                "parameters": [
+                    {
+                        "description": "register request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.registerRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created. New user was created"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict. User with this email already exists. ATTENTION: this will be removed soon.",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "apperr.AppError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "dev_err": {},
+                "dev_message": {
+                    "type": "string"
+                },
+                "user_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.loginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.loginResponse": {
+            "type": "object",
+            "properties": {
+                "jwt": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.registerRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         }

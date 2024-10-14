@@ -46,6 +46,9 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		Password: a.hashPassword(password),
 	}
 
+	// TODO: Remove status code, continue registration and send email to the user with this email.
+	// smth like: "someone is trying to sign up using your email. If it was you, we remind you that you already have an account.
+	// if it was not you, ignore this email"
 	exists, err := a.repo.IsUserExists(ctx, user.Email)
 	if err != nil {
 		return apperr.SystemError(err, "", "usecase.RegisterUser: failed to check if user exists")
@@ -71,7 +74,6 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("logging user")
 
-	logrus.Debug(email, "  ", password)
 	if email == "" || password == "" {
 		return "", apperr.ErrNotAllFieldsProvided
 	}

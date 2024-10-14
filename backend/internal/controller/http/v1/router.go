@@ -24,7 +24,7 @@ func NewHandlers(auth authHandler) *Handlers {
 
 // @title			Habit Tracker API
 // @description		habit tracker API for mobile app
-// @version			1.0.0
+// @version			1.0
 // @host			localhost:8080
 // @BasePath		/v1
 func NewRouter(host, port string, bytesLimit int64, a usecase.Auth) error {

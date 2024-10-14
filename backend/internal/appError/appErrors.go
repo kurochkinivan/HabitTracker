@@ -17,11 +17,9 @@ var (
 
 // AS - auth server. This is AS error.
 var (
-	
-	ErrInvalidCredentials = NewAppErr(nil, "invalid credentials", "user provided invalid credentials", "AS-002", http.StatusUnauthorized)
-	ErrUserExists = NewAppErr(nil, "user with provided email already exists", "user with provided email already exists", "AS-003", http.StatusUnauthorized)
-	ErrEmptyAuthHeader = NewAppErr(nil, "empty auth header", "empty auth header", "AS-005", http.StatusBadRequest)
-	ErrInvalidAuthHeader = NewAppErr(nil, "invalid auth header", "invalid auth header", "AS-006", http.StatusBadRequest)
-	ErrTokenExired = NewAppErr(nil, "access token is expired", "access token is expired", "AS-007", http.StatusUnauthorized)
-	ErrAuthorizing = NewAppErr(nil, "invalid password or email", "user provided wrong email or password", "AS-008", http.StatusUnauthorized)
+	ErrUserExists = NewAppErr(nil, "user with provided email already exists", "user with provided email already exists", "AS-001", http.StatusConflict)
+	ErrEmptyAuthHeader = NewAppErr(nil, "empty auth header", "empty auth header", "AS-002", http.StatusBadRequest)
+	ErrInvalidAuthHeader = NewAppErr(nil, "invalid auth header", "invalid auth header", "AS-003", http.StatusBadRequest)
+	ErrTokenExired = NewAppErr(nil, "access token is expired", "access token is expired", "AS-004", http.StatusUnauthorized)
+	ErrAuthorizing = NewAppErr(nil, "invalid password or email", "user provided wrong email or password", "AS-005", http.StatusUnauthorized)
 )

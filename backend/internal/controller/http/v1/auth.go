@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -21,9 +22,11 @@ func NewAuthHandler(a usecase.Auth, bytesLimit int64) Handler {
 	}
 }
 
+const baseAuthPath = "/v1/auth"
+
 func (a *authHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc(http.MethodPost+" /auth/register", errMdw(logMdw(a.registerUser)))
-	mux.HandleFunc(http.MethodPost+" /auth/login", errMdw(logMdw(a.loginUser)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(a.registerUser)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(a.loginUser)))
 }
 
 type registerRequest struct {
@@ -32,14 +35,17 @@ type registerRequest struct {
 	Password string `json:"password"`
 }
 
-//	@Summary		Register user
-//	@Description	register new user
-//	@Tags			auth
-//	@Accept			json
-//	@Produce		json
-//	@Success		201
-//	@Failure		400	
-//	@Router			/auth/register [post]
+// @Summary		Register user
+// @Description	register new user
+// @Tags		auth
+// @Accept		json
+// @Param 		request body v1.registerRequest true "register request parameters"
+// @Produce		json
+// @Success		201 	"Created. New user was created"
+// @Failure		400 	{object}	apperr.AppError		"Bad Request"
+// @Failure		409 	{object}	apperr.AppError		"Conflict. User with this email already exists. ATTENTION: this will be removed soon."
+// @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
+// @Router		/auth/register [post]
 func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -73,6 +79,17 @@ type loginResponse struct {
 	JWT string `json:"jwt"`
 }
 
+// @Summary		Log user in
+// @Description	log user in
+// @Tags		auth
+// @Accept		json
+// @Param 		request body v1.loginRequest true "login request parameters"
+// @Produce		json
+// @Success		200 {object}	v1.loginResponse	"OK. User was logged in"
+// @Failure		400 {object}	apperr.AppError		"Bad Request"
+// @Failure		401 {object}	apperr.AppError		"Unauthorized. Email or password is incorrect"
+// @Failure		500 {object}	apperr.AppError		"Internal Server Error"
+// @Router		/auth/login [post]
 func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
