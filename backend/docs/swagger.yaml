@@ -1,23 +1,107 @@
 basePath: /v1
+definitions:
+  apperr.AppError:
+    properties:
+      code:
+        type: string
+      dev_err: {}
+      dev_message:
+        type: string
+      user_message:
+        type: string
+    type: object
+  v1.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  v1.loginResponse:
+    properties:
+      jwt:
+        type: string
+    type: object
+  v1.registerRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: habit tracker API for mobile app
   title: Habit Tracker API
-  version: 1.0.0
+  version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: log user in
+      parameters:
+      - description: login request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK. User was logged in
+          schema:
+            $ref: '#/definitions/v1.loginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "401":
+          description: Unauthorized. Email or password is incorrect
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+      summary: Log user in
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
       - application/json
       description: register new user
+      parameters:
+      - description: register request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.registerRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Created. New user was created
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "409":
+          description: 'Conflict. User with this email already exists. ATTENTION:
+            this will be removed soon.'
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
       summary: Register user
       tags:
       - auth
