@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:habit_tracker/app_colors.dart';
 import '../router/app_router.dart';
 import '../ui_scaling.dart';
 import '../widgets/custom_text_form_field.dart';
@@ -39,7 +40,6 @@ class SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     final scaling = Scaling.of(context);
     return Scaffold(
-      backgroundColor: Color(0xFFFCFCFF),
       body: SingleChildScrollView(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -51,7 +51,7 @@ class SignInPageState extends State<SignInPage> {
               height: scaling.scaleWidth(32),
               width: scaling.scaleWidth(32),
               fit: BoxFit.contain,
-              color: Color(0xff9EA0B8),
+              color: AppColors.grey01,
             ),
             onPressed: () {
               context.router.navigate(StartRoute());
@@ -64,11 +64,15 @@ class SignInPageState extends State<SignInPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: scaling.scaleHeight(16)),
-              Text("Вход", style: Theme.of(context).textTheme.displayLarge),
+              Text("Вход",
+                  style: Theme.of(context)
+                      .textTheme
+                      .displayLarge
+                      ?.copyWith(fontSize: scaling.scaleWidth(26))),
               SizedBox(height: scaling.scaleHeight(8)),
               Text(
                   "С возвращением! Продолжай улучшать свои "
-                      "привычки — каждый шаг важен на пути к успеху.",
+                  "привычки — каждый шаг важен на пути к успеху.",
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge
@@ -107,22 +111,20 @@ class SignInPageState extends State<SignInPage> {
                             if (!emailError)
                               Text(
                                 "Некорректный формат почты",
-                                style: TextStyle(
-                                  color: Color(0xFFEA4335),
-                                  fontSize: scaling.scaleWidth(12),
-                                  fontFamily: 'Gilroy',
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                        fontSize: scaling.scaleWidth(12)),
                               ),
                             if (!passError)
                               Text(
                                 "Слишком короткий пароль",
-                                style: TextStyle(
-                                  color: Color(0xFFEA4335),
-                                  fontSize: scaling.scaleWidth(12),
-                                  fontFamily: 'Gilroy',
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                        fontSize: scaling.scaleWidth(12)),
                               ),
                           ],
                         ),
@@ -132,12 +134,12 @@ class SignInPageState extends State<SignInPage> {
                   InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () {
-                        // Здесь осуществляется переход на страницу восстановления пароля
+                        context.router.navigate(PasswordRecoveryRoute());
                       },
                       child: Text(
                         "Восстановить пароль",
                         style: TextStyle(
-                          color: Color(0XFF3C3C41),
+                          color: AppColors.black02,
                           fontSize: scaling.scaleWidth(12),
                           fontFamily: 'Gilroy',
                           fontWeight: FontWeight.w600,
@@ -165,9 +167,7 @@ class SignInPageState extends State<SignInPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ElevatedButton(
-            onPressed: () {
-              context.router.navigate(VerifyRoute());
-            },
+            onPressed: () {},
             child: Center(
               child: Text(
                 'Войти',
@@ -185,7 +185,7 @@ class SignInPageState extends State<SignInPage> {
               child: Text(
                 'Войти с помощью Google',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: scaling.scaleWidth(14), color: Color(0xFF28282B)),
+                    fontSize: scaling.scaleWidth(14), color: AppColors.black01),
               ),
             ),
           ),

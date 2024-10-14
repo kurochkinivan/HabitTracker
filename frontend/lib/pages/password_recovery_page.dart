@@ -7,36 +7,24 @@ import '../ui_scaling.dart';
 import '../widgets/custom_text_form_field.dart';
 
 @RoutePage()
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class PasswordRecoveryPage extends StatefulWidget {
+  const PasswordRecoveryPage({super.key});
 
   @override
-  SignUpPageState createState() => SignUpPageState();
+  PasswordRecoveryPageState createState() => PasswordRecoveryPageState();
 }
 
-class SignUpPageState extends State<SignUpPage> {
+class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
+
   static RegExp emailRegex =
       RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
   bool nameError = true;
   bool emailError = true;
   bool passError = true;
 
-
-  void validateName(String text) {
-    setState(() {
-      nameError = text.length > 1;
-    });
-  }
-
   void validateEmail(String text) {
     setState(() {
       emailError = emailRegex.hasMatch(text);
-    });
-  }
-
-  void validatePassword(String text) {
-    setState(() {
-      passError = text.length >= 6;
     });
   }
 
@@ -58,7 +46,7 @@ class SignUpPageState extends State<SignUpPage> {
               color: AppColors.grey01,
             ),
             onPressed: () {
-              context.router.navigate(StartRoute());
+              context.router.navigate(SignInRoute());
             },
           ),
         ),
@@ -68,37 +56,20 @@ class SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: scaling.scaleHeight(16)),
-              Text("Регистрация",
+              Text("Восстановление пароля",
                   style: Theme.of(context)
                       .textTheme
                       .displayLarge
                       ?.copyWith(fontSize: scaling.scaleWidth(26))),
               SizedBox(height: scaling.scaleHeight(8)),
               Text(
-                  "Присоединяйся к сообществу, где каждый шаг "
-                  "приближает тебя к лучшей цели!",
+                  "Введите свой email, и мы отправим "
+                  "вам код для восстановления пароля.",
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge
                       ?.copyWith(fontSize: scaling.scaleWidth(14))),
               SizedBox(height: scaling.scaleHeight(30)),
-              CustomTextFormField(
-                hintText: 'Имя',
-                obscureText: false,
-                validate: (text) {
-                  validateName(text);
-                  return nameError;
-                },
-              ),
-              if (!nameError)
-                Text(
-                  "Слишком короткое имя",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-              SizedBox(height: scaling.scaleHeight(10)),
               CustomTextFormField(
                 hintText: 'E-mail',
                 obscureText: false,
@@ -107,26 +78,10 @@ class SignUpPageState extends State<SignUpPage> {
                   return emailError;
                 },
               ),
+              SizedBox(height: scaling.scaleHeight(18)),
               if (!emailError)
                 Text(
                   "Некорректный формат почты",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-              SizedBox(height: scaling.scaleHeight(10)),
-              CustomTextFormField(
-                hintText: 'Пароль',
-                obscureText: true,
-                validate: (text) {
-                  validatePassword(text);
-                  return passError;
-                },
-              ),
-              if (!passError)
-                Text(
-                  "Слишком короткий пароль",
                   style: Theme.of(context)
                       .textTheme
                       .labelSmall
@@ -150,11 +105,11 @@ class SignUpPageState extends State<SignUpPage> {
         children: [
           ElevatedButton(
             onPressed: () {
-              context.router.navigate(VerifyEmailRoute());
+              context.router.navigate(VerifyPasswordRecoveryRoute());
             },
             child: Center(
               child: Text(
-                'Зарегистрироваться',
+                'Отправить код',
                 style: Theme.of(context)
                     .textTheme
                     .labelLarge
@@ -162,31 +117,8 @@ class SignUpPageState extends State<SignUpPage> {
               ),
             ),
           ),
-          SizedBox(height: scaling.scaleHeight(12)),
-          OutlinedButton(
-            onPressed: () {},
-            child: Center(
-              child: Text(
-                'Зарегистрироваться с помощью Google',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: scaling.scaleWidth(14), color: AppColors.black01),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              context.router.navigate(SignInRoute());
-            },
-            child: Text(
-              'У меня уже есть аккаунт',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(fontSize: scaling.scaleWidth(14)),
-            ),
-          ),
           SizedBox(
-            height: scaling.scaleHeight(16),
+            height: scaling.scaleHeight(32),
           ),
         ],
       ),

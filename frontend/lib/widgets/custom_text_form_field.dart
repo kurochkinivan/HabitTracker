@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-
+import '../app_colors.dart';
 import '../ui_scaling.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -102,29 +102,29 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
 
   Color _getFillColor() {
     if (_hasError) {
-      return Color(0xFFFFE5E3);
+      return AppColors.red02;
     } else if (_isActive) {
-      return Color(0xFFEAE8F3);
+      return AppColors.grey03;
     } else {
-      return Color(0xFFFCFCFF);
+      return AppColors.white;
     }
   }
 
   Color _getBorderColor() {
     if (_hasError) {
-      return Color(0xFFEA4335);
+      return AppColors.redError;
     } else if (_isActive) {
-      return Color(0xFF9EA0B8);
+      return AppColors.grey01;
     } else {
-      return Color(0xFFC6C8DA);
+      return AppColors.grey02;
     }
   }
 
   TextStyle _getTextStyle() {
     return TextStyle(
       color: _hasError
-          ? Color(0xFFEA4335)
-          : (_isActive ? Color(0xFF3C3D42) : Color(0xFFC6C8DA)),
+          ? AppColors.redError
+          : (_isActive ? AppColors.black02 : AppColors.grey02),
       fontSize: scaling.scaleWidth(12),
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,

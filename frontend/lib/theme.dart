@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/app_colors.dart';
 
 ThemeData habitTrackerTheme() {
   return ThemeData(
-    scaffoldBackgroundColor: const Color(0xFFFCFCFF),
-    primaryColor: const Color(0xFF28282B),
+    scaffoldBackgroundColor: AppColors.white,
+    primaryColor:  AppColors.black01,
     textTheme: const TextTheme(
       displayLarge: TextStyle(
         fontFamily: 'Gilroy',
@@ -11,7 +12,7 @@ ThemeData habitTrackerTheme() {
         fontSize: 32,
         letterSpacing: 1.1,
         height: 1.3,
-        color: Color(0xFF28282B),
+        color: AppColors.black01,
       ),
       displayMedium: TextStyle(
         fontFamily: 'Gilroy',
@@ -19,7 +20,7 @@ ThemeData habitTrackerTheme() {
         fontSize: 32,
         letterSpacing: 1.1,
         height: 1.3,
-        color: Color(0xFF734CC6),
+        color: AppColors.purple,
       ),
       bodyLarge: TextStyle(
         fontFamily: 'Gilroy',
@@ -27,7 +28,7 @@ ThemeData habitTrackerTheme() {
         fontSize: 14,
         letterSpacing: -0.4,
         height: 1.3,
-        color: Color(0xFFA9ACC8),
+        color: AppColors.grey01,
       ),
       labelLarge: TextStyle(
         fontFamily: 'Gilroy',
@@ -35,13 +36,22 @@ ThemeData habitTrackerTheme() {
         fontSize: 14,
         letterSpacing: 0.2,
         height: 1.3,
-        color: Color(0xFFFCFCFF),
+        color: AppColors.white,
       ),
+      labelSmall: TextStyle(
+        fontFamily: 'Gilroy',
+        fontWeight: FontWeight.w500,
+        fontSize: 12,
+        letterSpacing: -0.4,
+        height: 1.3,
+        color: AppColors.redError,
+      ),
+
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: const Color(0xFF28282B),
+        backgroundColor: AppColors.black01,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -51,7 +61,7 @@ ThemeData habitTrackerTheme() {
           fontSize: 14,
           letterSpacing: -0.4,
           height: 1.3,
-          color: Color(0xFF28282B),
+          color: AppColors.black01,
         ),
       ),
     ),
@@ -59,7 +69,7 @@ ThemeData habitTrackerTheme() {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         side: const BorderSide(
-          color: Color(0xFF28282B),
+          color: AppColors.black01,
           width: 1,
         ),
         shape: RoundedRectangleBorder(
@@ -71,7 +81,7 @@ ThemeData habitTrackerTheme() {
           fontSize: 14,
           letterSpacing: -0.4,
           height: 1.3,
-          color: Color(0xFF28282B),
+          color: AppColors.black01,
         ),
       ),
     ),

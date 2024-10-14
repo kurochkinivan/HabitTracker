@@ -10,6 +10,44 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [NewPasswordPage]
+class NewPasswordRoute extends PageRouteInfo<void> {
+  const NewPasswordRoute({List<PageRouteInfo>? children})
+      : super(
+          NewPasswordRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'NewPasswordRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const NewPasswordPage();
+    },
+  );
+}
+
+/// generated route for
+/// [PasswordRecoveryPage]
+class PasswordRecoveryRoute extends PageRouteInfo<void> {
+  const PasswordRecoveryRoute({List<PageRouteInfo>? children})
+      : super(
+          PasswordRecoveryRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'PasswordRecoveryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PasswordRecoveryPage();
+    },
+  );
+}
+
+/// generated route for
 /// [SignInPage]
 class SignInRoute extends PageRouteInfo<void> {
   const SignInRoute({List<PageRouteInfo>? children})
@@ -42,7 +80,7 @@ class SignUpRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return SignUpPage();
+      return const SignUpPage();
     },
   );
 }
@@ -67,20 +105,39 @@ class StartRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [VerifyPage]
-class VerifyRoute extends PageRouteInfo<void> {
-  const VerifyRoute({List<PageRouteInfo>? children})
+/// [VerifyEmailPage]
+class VerifyEmailRoute extends PageRouteInfo<void> {
+  const VerifyEmailRoute({List<PageRouteInfo>? children})
       : super(
-          VerifyRoute.name,
+          VerifyEmailRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'VerifyRoute';
+  static const String name = 'VerifyEmailRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const VerifyPage();
+      return const VerifyEmailPage();
+    },
+  );
+}
+
+/// generated route for
+/// [VerifyPasswordRecoveryPage]
+class VerifyPasswordRecoveryRoute extends PageRouteInfo<void> {
+  const VerifyPasswordRecoveryRoute({List<PageRouteInfo>? children})
+      : super(
+          VerifyPasswordRecoveryRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'VerifyPasswordRecoveryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const VerifyPasswordRecoveryPage();
     },
   );
 }
