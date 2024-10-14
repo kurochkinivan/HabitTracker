@@ -4,7 +4,8 @@ WORKDIR /usr/local/src
 
 RUN apk --no-cache add bash git make gcc gettext musl-dev
 
-COPY ["go.mod", "go.sum"] ./
+COPY go.mod ./
+COPY go.sum ./
 RUN go mod download
 
 COPY . .
