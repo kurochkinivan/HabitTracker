@@ -21,7 +21,8 @@ func Run(cfg *config.Config) error {
 	}
 
 	authRepo := postgresql.NewUserRepository(client)
-	authUseCase := usecase.NewAuthUseCase(authRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL)
+	verifRepo := postgresql.NewVerificationData(client)
+	authUseCase := usecase.NewAuthUseCase(authRepo, verifRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL, cfg.Email.EmailFrom, cfg.Email.EmailPassword)
 
 	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, authUseCase)
 }

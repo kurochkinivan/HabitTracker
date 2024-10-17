@@ -5,20 +5,14 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	psql "github.com/kurochkinivan/HabitTracker/pkg/postgresql"
 	"github.com/sirupsen/logrus"
 )
 
-type PosgreSQLClient interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-}
-
 type userRepository struct {
-	client PosgreSQLClient
+	client psql.PosgreSQLClient
 	qb     sq.StatementBuilderType
 }
 
@@ -152,4 +146,8 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) VerifyUser(ctx context.Context, ) {
+	
 }

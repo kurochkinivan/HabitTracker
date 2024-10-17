@@ -7,6 +7,10 @@ jwt:
 hasher:
   hasher_salt: '363b420c9bd2a049219476f26ff9c031'
 
+email:
+  email_from: 'ivan.kurochkin.084@gmail.com'
+  email_password: 'hiqecckzffwewzqc'
+
 http:
   host: '0.0.0.0'
   port: '8080'
