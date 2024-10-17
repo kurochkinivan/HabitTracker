@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -81,20 +82,21 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 			"created_at",
 			"expires_at",
 		).Values(
-			email,
-			code,
-			time.Now(),
-			time.Now().Add(codeTTL),
-		).ToSql()
+		email,
+		code,
+		time.Now(),
+		time.Now().Add(codeTTL),
+	).ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(err)
 	}
+	fmt.Println(sql)
 
 	commtag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
 		return psql.ErrExec(err)
 	}
-	
+
 	if commtag.RowsAffected() == 0 {
 		return psql.NoRowsAffected
 	}

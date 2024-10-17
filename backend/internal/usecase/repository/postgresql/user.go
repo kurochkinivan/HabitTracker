@@ -88,14 +88,16 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.Use
 	return user, nil
 }
 
-func (r *userRepository) IsUserExists(ctx context.Context, email string) (bool, error) {
+func (r *userRepository) IsUserExistsAndVerified(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
 		From(usersTable).
-		Where(sq.Eq{"email": email}).
+		Where(sq.And{
+			sq.Eq{"email": email},
+			sq.Eq{"is_verified": true}}).
 		Suffix(")").
 		ToSql()
 	if err != nil {
@@ -148,6 +150,19 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 	return user, nil
 }
 
-func (r *userRepository) VerifyUser(ctx context.Context, ) {
-	
-}
+// func (r *userRepository) VerifyUser(ctx context.Context, email string) error {
+// 	logrus.WithField("email", email).Trace("verifying user")
+
+// 	sql, args, err := r.qb.
+// 		Update(usersTable).
+// 		Set("is_verified", true).
+// 		Where(sq.Eq{"email": email}).
+// 		ToSql()
+// 	if err != nil {
+// 		return psql.ErrCreateQuery(err)
+// 	}
+
+
+
+// 	return nil 
+// }

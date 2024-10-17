@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	tmpl = template.Must(template.ParseFiles("../../static/html/confirmation_email_ru.html"))
-	dialer      = gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
+	tmpl   = template.Must(template.ParseFiles("../../static/html/confirmation_email_ru.html"))
+	dialer = gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
 )
 
 type AuthUseCase struct {
@@ -74,7 +74,7 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 	// if it was not you, ignore this email"
 
 	// TODO: add is user exists and verified
-	exists, err := a.userRepo.IsUserExists(ctx, user.Email)
+	exists, err := a.userRepo.IsUserExistsAndVerified(ctx, user.Email)
 	if err != nil {
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user exists", op))
 	}
@@ -87,16 +87,20 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create user", op))
 	}
 
-	code := a.generateCode()
-	err = a.sendEmail(user.Email, code)
-	if err != nil {
-		return err
-	}
+	go func() error {
+		code := a.generateCode()
+		err = a.SendEmail(user.Email, code)
+		if err != nil {
+			return err
+		}
 
-	err = a.verifRepo.CreateVerificationData(ctx, user.Email, code)
-	if err != nil {
-		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create verification data", op))
-	}
+		err = a.verifRepo.CreateVerificationData(ctx, user.Email, code)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create verification data", op))
+		}
+
+		return nil
+	}()
 
 	return nil
 }
@@ -119,7 +123,7 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (st
 		return "", apperr.ErrAuthorizing.WithErr(err)
 	}
 
-	token, err := a.generateToken(user.ID, a.tokenTTL)
+	token, err := a.GenerateToken(user.ID, a.tokenTTL)
 	if err != nil {
 		return "", err
 	}
@@ -161,7 +165,7 @@ func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 // It creates a JWT token with user ID and current time as payload.
 // If the token signing is failed, it returns the error.
 // If the token is successfully signed, it returns the signed token.
-func (a *AuthUseCase) generateToken(id string, tokenTTL time.Duration) (string, error) {
+func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, error) {
 	logrus.WithField("id", id).Trace("generating jwt-token")
 	const op string = "usecase.GenerateToken"
 
@@ -180,7 +184,9 @@ func (a *AuthUseCase) generateToken(id string, tokenTTL time.Duration) (string, 
 	return signedToken, nil
 }
 
-func (a *AuthUseCase) sendEmail(email, code string) error {
+func (a *AuthUseCase) SendEmail(email, code string) error {
+	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("sending email")
+
 	m := gomail.NewMessage()
 	m.SetHeaders(map[string][]string{
 		"From":    {a.email.from},
