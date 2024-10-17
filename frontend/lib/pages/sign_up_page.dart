@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../ui_scaling.dart';
-import '../widgets/custom_text_form_field.dart';
+import '../widgets/custom_elevated_button.dart';
+import '../widgets/custom_text_form_field_widget.dart';
+import '../widgets/password_error_message_widget.dart';
 
 @RoutePage()
 class SignUpPage extends StatefulWidget {
@@ -15,152 +17,153 @@ class SignUpPage extends StatefulWidget {
 }
 
 class SignUpPageState extends State<SignUpPage> {
-  static RegExp emailRegex =
+  static final RegExp emailRegex =
       RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
-  bool nameError = true;
-  bool emailError = true;
-  bool passError = true;
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  void validateName(String text) {
-    setState(() {
-      nameError = text.length > 1;
-    });
+  final ValueNotifier<bool> _isNameValid = ValueNotifier(true);
+  final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
+  final ValueNotifier<bool> _isPasswordValid = ValueNotifier(true);
+
+  void _validateInputs() {
+    final bool isNameValid =
+        _nameController.text.length > 1 || _nameController.text.isEmpty;
+    final bool isEmailValid = emailRegex.hasMatch(_emailController.text) ||
+        _emailController.text.isEmpty;
+    final bool isPasswordValid = _passwordController.text.length >= 6 ||
+        _passwordController.text.isEmpty;
+
+    _isNameValid.value = isNameValid;
+    _isEmailValid.value = isEmailValid;
+    _isPasswordValid.value = isPasswordValid;
   }
 
-  void validateEmail(String text) {
-    setState(() {
-      emailError = emailRegex.hasMatch(text);
-    });
-  }
-
-  void validatePassword(String text) {
-    setState(() {
-      passError = text.length >= 6;
-    });
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _isNameValid.dispose();
+    _isEmailValid.dispose();
+    _isPasswordValid.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final scaling = Scaling.of(context);
+
     return Scaffold(
       body: SingleChildScrollView(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: EdgeInsets.only(top: 64, left: 20),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              "assets/images/Arrow_left.svg",
-              height: scaling.scaleWidth(32),
-              width: scaling.scaleWidth(32),
-              fit: BoxFit.contain,
-              color: AppColors.grey01,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 64, left: 20),
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  "assets/images/Arrow_left.svg",
+                  height: scaling.scaleWidth(32),
+                  width: scaling.scaleWidth(32),
+                  fit: BoxFit.contain,
+                  color: AppColors.grey01,
+                ),
+                onPressed: () {
+                  context.router.navigate(StartRoute());
+                },
+              ),
             ),
-            onPressed: () {
-              context.router.navigate(StartRoute());
-            },
-          ),
+            Padding(
+              padding: EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: scaling.scaleHeight(16)),
+                  Text(
+                    "Регистрация",
+                    style: Theme.of(context)
+                        .textTheme
+                        .displayLarge
+                        ?.copyWith(fontSize: scaling.scaleWidth(26)),
+                  ),
+                  SizedBox(height: scaling.scaleHeight(8)),
+                  Text(
+                    "Присоединяйся к сообществу, где каждый шаг "
+                    "приближает тебя к лучшей цели!",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontSize: scaling.scaleWidth(14)),
+                  ),
+                  SizedBox(height: scaling.scaleHeight(24)),
+                  CustomTextFormField(
+                    controller: _nameController,
+                    hintText: 'Имя',
+                    obscureText: false,
+                    validateController: _isNameValid,
+                    onChanged: _validateInputs,
+                  ),
+                  PasswordErrorMessage(
+                    validator: _isNameValid,
+                    message: "Слишком короткое имя",
+                  ),
+                  SizedBox(height: scaling.scaleHeight(10)),
+                  CustomTextFormField(
+                    controller: _emailController,
+                    hintText: 'E-mail',
+                    obscureText: false,
+                    validateController: _isEmailValid,
+                    onChanged: _validateInputs,
+                  ),
+                  PasswordErrorMessage(
+                    validator: _isEmailValid,
+                    message: "Некорректный формат почты",
+                  ),
+                  SizedBox(height: scaling.scaleHeight(10)),
+                  CustomTextFormField(
+                    controller: _passwordController,
+                    hintText: 'Пароль',
+                    obscureText: true,
+                    validateController: _isPasswordValid,
+                    onChanged: _validateInputs,
+                  ),
+                  PasswordErrorMessage(
+                    validator: _isPasswordValid,
+                    message: "Слишком короткий пароль",
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: scaling.scaleHeight(16)),
-              Text("Регистрация",
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(26))),
-              SizedBox(height: scaling.scaleHeight(8)),
-              Text(
-                  "Присоединяйся к сообществу, где каждый шаг "
-                  "приближает тебя к лучшей цели!",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(14))),
-              SizedBox(height: scaling.scaleHeight(30)),
-              CustomTextFormField(
-                hintText: 'Имя',
-                obscureText: false,
-                validate: (text) {
-                  validateName(text);
-                  return nameError;
-                },
-              ),
-              if (!nameError)
-                Text(
-                  "Слишком короткое имя",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-              SizedBox(height: scaling.scaleHeight(10)),
-              CustomTextFormField(
-                hintText: 'E-mail',
-                obscureText: false,
-                validate: (text) {
-                  validateEmail(text);
-                  return emailError;
-                },
-              ),
-              if (!emailError)
-                Text(
-                  "Некорректный формат почты",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-              SizedBox(height: scaling.scaleHeight(10)),
-              CustomTextFormField(
-                hintText: 'Пароль',
-                obscureText: true,
-                validate: (text) {
-                  validatePassword(text);
-                  return passError;
-                },
-              ),
-              if (!passError)
-                Text(
-                  "Слишком короткий пароль",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-            ],
-          ),
-        ),
-      ])),
+      ),
       bottomNavigationBar: _buildActionButtons(context),
     );
   }
 
   Widget _buildActionButtons(BuildContext context) {
     final scaling = Scaling.of(context);
+
     return Container(
       width: double.maxFinite,
       padding: EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
+          CustomElevatedButton(
+            text: 'Зарегистрироваться',
+            isEnabled: _isNameValid.value &&
+                _isEmailValid.value &&
+                _isPasswordValid.value &&
+                _nameController.text.isNotEmpty &&
+                _emailController.text.isNotEmpty &&
+                _passwordController.text.isNotEmpty,
             onPressed: () {
               context.router.navigate(VerifyEmailRoute());
             },
-            child: Center(
-              child: Text(
-                'Зарегистрироваться',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(fontSize: scaling.scaleWidth(14)),
-              ),
-            ),
           ),
           SizedBox(height: scaling.scaleHeight(12)),
           OutlinedButton(
@@ -193,3 +196,4 @@ class SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+

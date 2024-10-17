@@ -48,23 +48,6 @@ ThemeData habitTrackerTheme() {
       ),
 
     ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: AppColors.black01,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        textStyle: const TextStyle(
-          fontFamily: 'Gilroy',
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-          letterSpacing: -0.4,
-          height: 1.3,
-          color: AppColors.black01,
-        ),
-      ),
-    ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -84,6 +67,16 @@ ThemeData habitTrackerTheme() {
           color: AppColors.black01,
         ),
       ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+      foregroundColor: AppColors.white,
+    ),
+    ),
+
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: AppColors.purple,
+      selectionHandleColor: AppColors.purple,
     ),
   );
 }

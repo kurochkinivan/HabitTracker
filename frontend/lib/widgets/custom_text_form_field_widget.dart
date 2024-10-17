@@ -6,13 +6,17 @@ import '../ui_scaling.dart';
 class CustomTextFormField extends StatefulWidget {
   final String hintText;
   final bool obscureText;
-  final bool Function(String)? validate;
+  final TextEditingController controller;
+  final ValueNotifier<bool> validateController;
+  final VoidCallback onChanged;
 
   const CustomTextFormField({
     super.key,
     required this.hintText,
+    required this.controller,
+    required this.validateController,
+    required this.onChanged,
     this.obscureText = false,
-    this.validate,
   });
 
   @override
@@ -21,23 +25,32 @@ class CustomTextFormField extends StatefulWidget {
 
 class CustomTextFormFieldState extends State<CustomTextFormField> {
   bool _isActive = false;
-  bool _hasError = false;
-  bool _isObscured = true;
-  late Scaling scaling;
-  final TextEditingController _controller = TextEditingController();
+  late bool _isObscured;
 
   @override
   void initState() {
     super.initState();
     _isObscured = widget.obscureText;
+
+    widget.validateController.addListener(_updateState);
+  }
+
+  void _updateState() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.validateController.removeListener(_updateState);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    scaling = Scaling.of(context);
+    final scaling = Scaling.of(context);
 
     return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: _getFillColor(),
@@ -48,50 +61,34 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
         ),
       ),
       child: TextFormField(
-        controller: _controller,
+        controller: widget.controller,
         obscureText: _isObscured,
         obscuringCharacter: '●',
         onChanged: (value) {
           setState(() {
             _isActive = value.isNotEmpty;
-            if (widget.validate != null) {
-              _hasError = !(widget.validate!(value));
-            }
           });
+          widget.onChanged();
         },
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: _getTextStyle(),
-          contentPadding: EdgeInsets.symmetric(
-            vertical: 14,
-            horizontal: 16,
-          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
           errorBorder: InputBorder.none,
           focusedErrorBorder: InputBorder.none,
           suffixIcon: widget.obscureText
-              ? AnimatedSwitcher(
-                  duration: Duration(milliseconds: 300),
-                  child: GestureDetector(
-                    key: ValueKey(_isObscured),
-                    onTap: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
-                    child: SvgPicture.asset(
-                      _isObscured
-                          ? "assets/images/View_hide.svg"
-                          : "assets/images/View.svg",
-                      height: scaling.scaleWidth(20),
-                      width: scaling.scaleWidth(20),
-                      color: _getBorderColor(),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                )
+              ? IconButton(
+            icon: SvgPicture.asset(
+              _isObscured ? "assets/images/View_hide.svg" : "assets/images/View.svg",
+              height: scaling.scaleWidth(20),
+              width: scaling.scaleWidth(20),
+              color: _getBorderColor(),
+            ),
+            onPressed: () => setState(() => _isObscured = !_isObscured),
+          )
               : null,
         ),
         style: _getTextStyle(),
@@ -101,31 +98,29 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   Color _getFillColor() {
-    if (_hasError) {
+    if (!widget.validateController.value) {
       return AppColors.red02;
     } else if (_isActive) {
       return AppColors.grey03;
-    } else {
-      return AppColors.white;
     }
+    return AppColors.white;
   }
 
   Color _getBorderColor() {
-    if (_hasError) {
+    if (!widget.validateController.value) {
       return AppColors.redError;
     } else if (_isActive) {
       return AppColors.grey01;
-    } else {
-      return AppColors.grey02;
     }
+    return AppColors.grey02;
   }
 
   TextStyle _getTextStyle() {
     return TextStyle(
-      color: _hasError
+      color: !widget.validateController.value
           ? AppColors.redError
           : (_isActive ? AppColors.black02 : AppColors.grey02),
-      fontSize: scaling.scaleWidth(12),
+      fontSize: Scaling.of(context).scaleWidth(12),
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,
       letterSpacing: -0.4,

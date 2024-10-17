@@ -8,7 +8,8 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../ui_scaling.dart';
-import '../widgets/resend_code_button.dart';
+import '../widgets/custom_elevated_button.dart';
+import '../widgets/resend_code_button_widget.dart';
 
 @RoutePage()
 class VerifyPasswordRecoveryPage extends StatefulWidget {
@@ -143,7 +144,9 @@ class VerifyPasswordRecoveryPageState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
+          CustomElevatedButton(
+            text: 'Продолжить',
+            isEnabled: textEditingController.text.isNotEmpty,
             onPressed: () {
               if (textEditingController.text != "1111") {
                 errorController?.add(ErrorAnimationType.shake);
@@ -158,15 +161,6 @@ class VerifyPasswordRecoveryPageState
                 // Логика успешной проверки кода
               }
             },
-            child: Center(
-              child: Text(
-                'Продолжить',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(fontSize: scaling.scaleWidth(14)),
-              ),
-            ),
           ),
           ResendCodeButton(textEditingController: textEditingController),
           SizedBox(

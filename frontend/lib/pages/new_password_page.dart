@@ -2,9 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
-import '../router/app_router.dart';
+
 import '../ui_scaling.dart';
-import '../widgets/custom_text_form_field.dart';
+import '../widgets/custom_elevated_button.dart';
+import '../widgets/custom_text_form_field_widget.dart';
+import '../widgets/password_error_message_widget.dart';
 
 @RoutePage()
 class NewPasswordPage extends StatefulWidget {
@@ -15,101 +17,105 @@ class NewPasswordPage extends StatefulWidget {
 }
 
 class NewPasswordPageState extends State<NewPasswordPage> {
-  bool passError1 = true;
-  bool passError2 = true;
-  bool isPasswordsMatch = true;
+  final TextEditingController _passwordController1 = TextEditingController();
+  final TextEditingController _passwordController2 = TextEditingController();
 
-  void validatePassword1(String text) {
-    setState(() {
-      passError1 = text.length >= 6;
-    });
+  final ValueNotifier<bool> _isPassword1Valid = ValueNotifier(true);
+  final ValueNotifier<bool> _isPassword2Valid = ValueNotifier(true);
+
+  void _validatePasswords() {
+    final password1 = _passwordController1.text;
+    final password2 = _passwordController2.text;
+
+    final bool isPassword1Valid = password1.length >= 6 || password1.isEmpty;
+    final bool isPassword2Valid = password2.length >= 6 || password2.isEmpty;
+    final bool isPasswordsMatch = password1 == password2 || password2.isEmpty;
+
+    _isPassword1Valid.value = isPassword1Valid;
+    _isPassword2Valid.value = isPassword2Valid && isPasswordsMatch;
   }
 
-  void validatePassword2(String text) {
-    setState(() {
-      passError2 = text.length >= 6;
-    });
+  @override
+  void dispose() {
+    _passwordController1.dispose();
+    _passwordController2.dispose();
+    _isPassword1Valid.dispose();
+    _isPassword2Valid.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final scaling = Scaling.of(context);
+
     return Scaffold(
       body: SingleChildScrollView(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: EdgeInsets.only(top: 64, left: 20),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              "assets/images/Arrow_left.svg",
-              height: scaling.scaleWidth(32),
-              width: scaling.scaleWidth(32),
-              fit: BoxFit.contain,
-              color: AppColors.grey01,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 64, left: 20),
+              child: IconButton(
+                icon: SvgPicture.asset(
+                  "assets/images/Arrow_left.svg",
+                  height: scaling.scaleWidth(32),
+                  width: scaling.scaleWidth(32),
+                  fit: BoxFit.contain,
+                  color: AppColors.grey01,
+                ),
+                onPressed: () {},
+              ),
             ),
-            onPressed: () {
-              context.router.navigate(PasswordRecoveryRoute());
-            },
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: scaling.scaleHeight(16)),
-              Text("Введите новый пароль",
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(26))),
-              SizedBox(height: scaling.scaleHeight(8)),
-              Text(
-                  "Введите свой email, и мы отправим вам код для восстановления пароля.",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(14))),
-              SizedBox(height: scaling.scaleHeight(30)),
-              CustomTextFormField(
-                hintText: 'Новый пароль',
-                obscureText: true,
-                validate: (text) {
-                  validatePassword1(text);
-                  return passError1;
-                },
+            Padding(
+              padding: EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: scaling.scaleHeight(16)),
+                  Text(
+                    "Введите новый пароль",
+                    style: Theme.of(context)
+                        .textTheme
+                        .displayLarge
+                        ?.copyWith(fontSize: scaling.scaleWidth(26)),
+                  ),
+                  SizedBox(height: scaling.scaleHeight(8)),
+                  Text(
+                    "Введите свой email, и мы отправим вам код для восстановления пароля.",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontSize: scaling.scaleWidth(14)),
+                  ),
+                  SizedBox(height: scaling.scaleHeight(24)),
+                  CustomTextFormField(
+                    controller: _passwordController1,
+                    hintText: 'Новый пароль',
+                    obscureText: true,
+                    validateController: _isPassword1Valid,
+                    onChanged: _validatePasswords,
+                  ),
+                  PasswordErrorMessage(
+                      validator: _isPassword1Valid,
+                      message: "Слишком короткий пароль"),
+                  SizedBox(height: scaling.scaleHeight(10)),
+                  CustomTextFormField(
+                    controller: _passwordController2,
+                    hintText: 'Повторите пароль',
+                    obscureText: true,
+                    validateController: _isPassword2Valid,
+                    onChanged: _validatePasswords,
+                  ),
+                  PasswordErrorMessage(
+                      validator: _isPassword2Valid,
+                      message:
+                          "Слишком короткий пароль или пароли не совпадают"),
+                ],
               ),
-              SizedBox(height: scaling.scaleHeight(10)),
-              CustomTextFormField(
-                hintText: 'Повторите пароль',
-                obscureText: true,
-                validate: (text) {
-                  validatePassword2(text);
-                  return passError2;
-                },
-              ),
-              SizedBox(height: scaling.scaleHeight(18)),
-              if (!passError1 | !passError2)
-                Text(
-                  "Слишком короткий пароль",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-              if (!isPasswordsMatch)
-                Text(
-                  "Пароли не совпадают",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: scaling.scaleWidth(12)),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ])),
+      ),
       bottomNavigationBar: _buildActionButtons(context),
     );
   }
@@ -122,21 +128,16 @@ class NewPasswordPageState extends State<NewPasswordPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: Center(
-              child: Text(
-                'Отправить код',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(fontSize: scaling.scaleWidth(14)),
-              ),
-            ),
+          CustomElevatedButton(
+            text: 'Продолжить',
+            isEnabled: _isPassword2Valid.value &&
+                _passwordController1.text.isNotEmpty &&
+                _passwordController2.text.isNotEmpty,
+            onPressed: () {
+
+            },
           ),
-          SizedBox(
-            height: scaling.scaleHeight(32),
-          ),
+          SizedBox(height: scaling.scaleHeight(32)),
         ],
       ),
     );

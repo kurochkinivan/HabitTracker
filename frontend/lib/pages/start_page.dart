@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/router/app_router.dart';
 import '../ui_scaling.dart';
+import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
 class StartPage extends StatelessWidget {
@@ -81,20 +82,13 @@ class StartPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
+          CustomElevatedButton(
+            text: 'Начать',
+            isEnabled: true,
             onPressed: () {
               print(scaling.scaleWidth(1));
               context.router.navigate(SignUpRoute());
             },
-            child: Center(
-              child: Text(
-                'Начать',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.copyWith(fontSize: scaling.scaleWidth(14)),
-              ),
-            ),
           ),
           TextButton(
             onPressed: () {
