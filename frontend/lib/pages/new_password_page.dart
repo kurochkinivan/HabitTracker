@@ -31,7 +31,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
     final bool isPassword2Valid = password2.length >= 6 || password2.isEmpty;
     final bool isPasswordsMatch = password1 == password2 || password2.isEmpty;
 
-    _isPassword1Valid.value = isPassword1Valid;
+    _isPassword1Valid.value = isPassword1Valid && isPasswordsMatch;
     _isPassword2Valid.value = isPassword2Valid && isPasswordsMatch;
   }
 
