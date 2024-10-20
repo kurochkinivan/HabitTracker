@@ -71,14 +71,13 @@ class SignInPageState extends State<SignInPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 64, left: 20),
+              padding: EdgeInsets.only(top: 64.h, left: 20),
               child: IconButton(
                 icon: SvgPicture.asset(
                   "assets/images/Arrow_left.svg",
                   height: 32.w,
                   width: 32.w,
                   fit: BoxFit.contain,
-                  color: AppColors.grey01,
                 ),
                 onPressed: () {
                   context.router.navigate(StartRoute());
