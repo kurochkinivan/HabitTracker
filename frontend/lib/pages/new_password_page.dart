@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
+import '../router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field_widget.dart';
 import '../widgets/password_error_message_widget.dart';
@@ -61,7 +62,9 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                   fit: BoxFit.contain,
                   color: AppColors.grey01,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.router.navigate(PasswordRecoveryRoute());
+                },
               ),
             ),
             Padding(
