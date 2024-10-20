@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:habit_tracker/router/app_router.dart';
-import '../ui_scaling.dart';
 import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
@@ -10,12 +10,10 @@ class StartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scaling = Scaling.of(context);
-
     return Scaffold(
       bottomNavigationBar: _buildActionButtons(context),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32),
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Column(
           children: [
             Expanded(
@@ -23,45 +21,33 @@ class StartPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: scaling.scaleHeight(120)),
+                    SizedBox(height: 120.h),
                     Image.asset("assets/images/Start_v1.png"),
-                    SizedBox(height: scaling.scaleHeight(40)),
+                    SizedBox(height: 40.h),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
                             text: 'В путь за ',
-                            style: Theme.of(context)
-                                .textTheme
-                                .displayLarge
-                                ?.copyWith(fontSize: scaling.scaleWidth(32)),
+                            style: Theme.of(context).textTheme.displayLarge,
                           ),
                           TextSpan(
                             text: 'лучшей',
-                            style: Theme.of(context)
-                                .textTheme
-                                .displayMedium
-                                ?.copyWith(fontSize: scaling.scaleWidth(32)),
+                            style: Theme.of(context).textTheme.displayMedium,
                           ),
                         ],
                       ),
                     ),
                     Text(
                       'версией себя',
-                      style: Theme.of(context)
-                          .textTheme
-                          .displayLarge
-                          ?.copyWith(fontSize: scaling.scaleWidth(32)),
+                      style: Theme.of(context).textTheme.displayLarge,
                     ),
-                    SizedBox(height: scaling.scaleHeight(16)),
+                    SizedBox(height: 16.h),
                     Text(
                       'Устанавливай цели и достигай их. Наше приложение '
-                          'поможет тебе строить полезные привычки, напоминать '
-                          'о них и анализировать твой прогресс.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontSize: scaling.scaleWidth(14)),
+                      'поможет тебе строить полезные привычки, напоминать '
+                      'о них и анализировать твой прогресс.',
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
                 ),
@@ -75,10 +61,9 @@ class StartPage extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final scaling = Scaling.of(context);
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -86,26 +71,19 @@ class StartPage extends StatelessWidget {
             text: 'Начать',
             isEnabled: true,
             onPressed: () {
-              print(scaling.scaleWidth(1));
               context.router.navigate(SignUpRoute());
             },
           ),
           TextButton(
             onPressed: () {
-              print(scaling.scaleHeight(1));
               context.router.navigate(SignInRoute());
             },
             child: Text(
               'У меня уже есть аккаунт',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(fontSize: scaling.scaleWidth(14)),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          SizedBox(
-            height: scaling.scaleHeight(16),
-          ),
+          SizedBox(height: 16.h),
         ],
       ),
     );

@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
 import '../router/app_router.dart';
-import '../ui_scaling.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field_widget.dart';
 import '../widgets/password_error_message_widget.dart';
@@ -24,9 +24,10 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
 
   void _validateEmail() {
-    final isValid = emailRegex.hasMatch(_emailController.text) ||
-        _emailController.text.isEmpty;
+      final bool isValid = emailRegex.hasMatch(_emailController.text) ||
+          _emailController.text.isEmpty;
     _isEmailValid.value = isValid;
+    setState(() {});
   }
 
   @override
@@ -38,20 +39,18 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final scaling = Scaling.of(context);
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 64, left: 20),
+              padding: EdgeInsets.only(top: 64.h, left: 20.w),
               child: IconButton(
                 icon: SvgPicture.asset(
                   "assets/images/Arrow_left.svg",
-                  height: scaling.scaleWidth(32),
-                  width: scaling.scaleWidth(32),
+                  height: 32.w,
+                  width: 32.w,
                   fit: BoxFit.contain,
                   color: AppColors.grey01,
                 ),
@@ -61,28 +60,25 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(32),
+              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: scaling.scaleHeight(16)),
+                  SizedBox(height: 16.h),
                   Text(
                     "Восстановление пароля",
                     style: Theme.of(context)
                         .textTheme
                         .displayLarge
-                        ?.copyWith(fontSize: scaling.scaleWidth(26)),
+                        ?.copyWith(fontSize: 26.sp),
                   ),
-                  SizedBox(height: scaling.scaleHeight(8)),
+                  SizedBox(height: 8.h),
                   Text(
                     "Введите свой email, и мы отправим "
                     "вам код для восстановления пароля.",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontSize: scaling.scaleWidth(14)),
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  SizedBox(height: scaling.scaleHeight(24)),
+                  SizedBox(height: 24.h),
                   CustomTextFormField(
                     controller: _emailController,
                     hintText: 'E-mail',
@@ -105,11 +101,9 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final scaling = Scaling.of(context);
-
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -121,7 +115,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
             },
           ),
           SizedBox(
-            height: scaling.scaleHeight(32),
+            height: 32.h,
           ),
         ],
       ),

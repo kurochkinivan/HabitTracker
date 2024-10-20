@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import '../app_colors.dart';
-import '../ui_scaling.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final String hintText;
@@ -47,17 +47,15 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final scaling = Scaling.of(context);
-
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: _getFillColor(),
-        borderRadius: BorderRadius.circular(scaling.scaleWidth(8)),
+        borderRadius: BorderRadius.circular(8.w),
         border: Border.all(
           color: _getBorderColor(),
-          width: scaling.scaleWidth(1),
+          width: 1.w,
         ),
       ),
       child: TextFormField(
@@ -73,7 +71,8 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: _getTextStyle(),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          contentPadding:
+              EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -81,14 +80,16 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           focusedErrorBorder: InputBorder.none,
           suffixIcon: widget.obscureText
               ? IconButton(
-            icon: SvgPicture.asset(
-              _isObscured ? "assets/images/View_hide.svg" : "assets/images/View.svg",
-              height: scaling.scaleWidth(20),
-              width: scaling.scaleWidth(20),
-              color: _getBorderColor(),
-            ),
-            onPressed: () => setState(() => _isObscured = !_isObscured),
-          )
+                  icon: SvgPicture.asset(
+                    _isObscured
+                        ? "assets/images/View_hide.svg"
+                        : "assets/images/View.svg",
+                    height: 20.w,
+                    width: 20.w,
+                    color: _getBorderColor(),
+                  ),
+                  onPressed: () => setState(() => _isObscured = !_isObscured),
+                )
               : null,
         ),
         style: _getTextStyle(),
@@ -110,7 +111,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
     if (!widget.validateController.value) {
       return AppColors.redError;
     } else if (_isActive) {
-      return AppColors.grey01;
+      return AppColors.black02;
     }
     return AppColors.grey02;
   }
@@ -120,7 +121,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
       color: !widget.validateController.value
           ? AppColors.redError
           : (_isActive ? AppColors.black02 : AppColors.grey02),
-      fontSize: Scaling.of(context).scaleWidth(12),
+      fontSize: 12.sp,
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,
       letterSpacing: -0.4,

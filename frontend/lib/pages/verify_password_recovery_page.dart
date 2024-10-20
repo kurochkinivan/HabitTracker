@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
 import '../router/app_router.dart';
-import '../ui_scaling.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button_widget.dart';
 
@@ -41,7 +40,6 @@ class VerifyPasswordRecoveryPageState
 
   @override
   Widget build(BuildContext context) {
-    final scaling = Scaling.of(context);
     return Scaffold(
       body: SingleChildScrollView(
           child:
@@ -51,8 +49,8 @@ class VerifyPasswordRecoveryPageState
           child: IconButton(
             icon: SvgPicture.asset(
               "assets/images/Arrow_left.svg",
-              height: scaling.scaleWidth(32),
-              width: scaling.scaleWidth(32),
+              height: 32.w,
+              width: 32.w,
               fit: BoxFit.contain,
               color: AppColors.grey01,
             ),
@@ -62,25 +60,22 @@ class VerifyPasswordRecoveryPageState
           ),
         ),
         Padding(
-          padding: EdgeInsets.all(32),
+          padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: scaling.scaleHeight(16)),
+              SizedBox(height: 16.h),
               Text("Код отправлен на почту",
                   style: Theme.of(context)
                       .textTheme
                       .displayLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(26))),
-              SizedBox(height: scaling.scaleHeight(8)),
+                      ?.copyWith(fontSize: 26.sp)),
+              SizedBox(height: 8.h),
               Text(
                   "Если код не пришел, проверьте папку “Спам” "
                   "или нажмите “Отправить код повторно”.",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(fontSize: scaling.scaleWidth(14))),
-              SizedBox(height: scaling.scaleWidth(80)),
+                  style: Theme.of(context).textTheme.bodyLarge),
+              SizedBox(height: 80.h),
               PinCodeTextField(
                 appContext: context,
                 length: 4,
@@ -118,13 +113,10 @@ class VerifyPasswordRecoveryPageState
               if (hasError)
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 18),
+                    padding: EdgeInsets.only(top: 18.h),
                     child: Text(
                       "Код введен неправильно",
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(fontSize: scaling.scaleWidth(12)),
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),
                 ),
@@ -137,10 +129,9 @@ class VerifyPasswordRecoveryPageState
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final scaling = Scaling.of(context);
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -163,9 +154,7 @@ class VerifyPasswordRecoveryPageState
             },
           ),
           ResendCodeButton(textEditingController: textEditingController),
-          SizedBox(
-            height: scaling.scaleHeight(16),
-          ),
+          SizedBox(height: 16.h),
         ],
       ),
     );

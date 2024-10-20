@@ -1,9 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
-
-import '../ui_scaling.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field_widget.dart';
 import '../widgets/password_error_message_widget.dart';
@@ -33,6 +32,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
 
     _isPassword1Valid.value = isPassword1Valid && isPasswordsMatch;
     _isPassword2Valid.value = isPassword2Valid && isPasswordsMatch;
+    setState(() {});
   }
 
   @override
@@ -46,20 +46,18 @@ class NewPasswordPageState extends State<NewPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final scaling = Scaling.of(context);
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 64, left: 20),
+              padding: EdgeInsets.only(top: 64.h, left: 20.w),
               child: IconButton(
                 icon: SvgPicture.asset(
                   "assets/images/Arrow_left.svg",
-                  height: scaling.scaleWidth(32),
-                  width: scaling.scaleWidth(32),
+                  height: 32.w,
+                  width: 32.w,
                   fit: BoxFit.contain,
                   color: AppColors.grey01,
                 ),
@@ -67,27 +65,23 @@ class NewPasswordPageState extends State<NewPasswordPage> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(32),
+              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: scaling.scaleHeight(16)),
+                  SizedBox(height: 16.h),
                   Text(
                     "Введите новый пароль",
                     style: Theme.of(context)
                         .textTheme
                         .displayLarge
-                        ?.copyWith(fontSize: scaling.scaleWidth(26)),
+                        ?.copyWith(fontSize: 26.sp),
                   ),
-                  SizedBox(height: scaling.scaleHeight(8)),
+                  SizedBox(height: 8.h),
                   Text(
-                    "Введите свой email, и мы отправим вам код для восстановления пароля.",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontSize: scaling.scaleWidth(14)),
-                  ),
-                  SizedBox(height: scaling.scaleHeight(24)),
+                      "Введите свой email, и мы отправим вам код для восстановления пароля.",
+                      style: Theme.of(context).textTheme.bodyLarge),
+                  SizedBox(height: 24.h),
                   CustomTextFormField(
                     controller: _passwordController1,
                     hintText: 'Новый пароль',
@@ -98,7 +92,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                   PasswordErrorMessage(
                       validator: _isPassword1Valid,
                       message: "Слишком короткий пароль"),
-                  SizedBox(height: scaling.scaleHeight(10)),
+                  SizedBox(height: 10.h),
                   CustomTextFormField(
                     controller: _passwordController2,
                     hintText: 'Повторите пароль',
@@ -121,10 +115,9 @@ class NewPasswordPageState extends State<NewPasswordPage> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    final scaling = Scaling.of(context);
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -133,11 +126,9 @@ class NewPasswordPageState extends State<NewPasswordPage> {
             isEnabled: _isPassword2Valid.value &&
                 _passwordController1.text.isNotEmpty &&
                 _passwordController2.text.isNotEmpty,
-            onPressed: () {
-
-            },
+            onPressed: () {},
           ),
-          SizedBox(height: scaling.scaleHeight(32)),
+          SizedBox(height: 32.h),
         ],
       ),
     );

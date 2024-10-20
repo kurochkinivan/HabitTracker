@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../ui_scaling.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PasswordErrorMessage extends StatelessWidget {
   final ValueNotifier<bool> validator;
@@ -18,12 +18,10 @@ class PasswordErrorMessage extends StatelessWidget {
       builder: (context, isValid, child) {
         if (!isValid) {
           return Column(children: [
-            SizedBox(height: Scaling.of(context).scaleHeight(4)),
+            SizedBox(height: 4.h),
             Text(
               message,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontSize: Scaling.of(context).scaleWidth(12),
-                  ),
+              style: Theme.of(context).textTheme.labelSmall,
             ),
           ]);
         }

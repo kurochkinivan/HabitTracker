@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'app_colors.dart';
 
 ThemeData habitTrackerTheme() {
   return ThemeData(
     scaffoldBackgroundColor: AppColors.white,
-    primaryColor:  AppColors.black01,
-    textTheme: const TextTheme(
+    primaryColor: AppColors.black01,
+    textTheme: TextTheme(
       displayLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w600,
-        fontSize: 32,
+        fontSize: 32.sp,
         letterSpacing: 1.1,
         height: 1.3,
         color: AppColors.black01,
@@ -17,7 +18,7 @@ ThemeData habitTrackerTheme() {
       displayMedium: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w600,
-        fontSize: 32,
+        fontSize: 32.sp,
         letterSpacing: 1.1,
         height: 1.3,
         color: AppColors.purple,
@@ -25,7 +26,7 @@ ThemeData habitTrackerTheme() {
       bodyLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w500,
-        fontSize: 14,
+        fontSize: 14.sp,
         letterSpacing: -0.4,
         height: 1.3,
         color: AppColors.grey01,
@@ -33,7 +34,7 @@ ThemeData habitTrackerTheme() {
       labelLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w600,
-        fontSize: 14,
+        fontSize: 14.sp,
         letterSpacing: 0.2,
         height: 1.3,
         color: AppColors.white,
@@ -41,27 +42,26 @@ ThemeData habitTrackerTheme() {
       labelSmall: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w500,
-        fontSize: 12,
+        fontSize: 12.sp,
         letterSpacing: -0.4,
         height: 1.3,
         color: AppColors.redError,
       ),
-
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        side: const BorderSide(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        side: BorderSide(
           color: AppColors.black01,
-          width: 1,
+          width: 1.w,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
           fontFamily: 'Gilroy',
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: 14.sp,
           letterSpacing: -0.4,
           height: 1.3,
           color: AppColors.black01,
@@ -70,10 +70,9 @@ ThemeData habitTrackerTheme() {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-      foregroundColor: AppColors.white,
+        foregroundColor: AppColors.white,
+      ),
     ),
-    ),
-
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: AppColors.purple,
       selectionHandleColor: AppColors.purple,
