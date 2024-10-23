@@ -1,10 +1,9 @@
 package postgresql
 
 // The database schema to be used.
-const scheme = "public."
+const sceme = "public."
 
-// The names of tables in the database.
+// The names of tables in the database
 const (
-	usersTable            = scheme + "users"
-	verificationDataTable = scheme + "verification_data"
+	usersTable = sceme + "users"
 )

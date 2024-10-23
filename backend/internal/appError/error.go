@@ -6,8 +6,7 @@ import (
 )
 
 type AppError struct {
-	Err        error  `json:"-"`
-	ErrMessage string `json:"err_message,omitempty"`
+	Err        error  `json:"dev_err,omitempty"`
 	Message    string `json:"user_message,omitempty"`
 	DevMessage string `json:"dev_message,omitempty"`
 	Code       string `json:"code,omitempty"`
@@ -39,17 +38,12 @@ func SystemError(err error, msg, devMsg string) *AppError {
 	if msg == "" {
 		msg = "internal server error"
 	}
-	errMessage := ""
-	if err != nil {
-		errMessage = err.Error()
-	}
-	return NewAppErr(err, errMessage, msg, devMsg, "US-000", http.StatusInternalServerError)
+	return NewAppErr(err, msg, devMsg, "US-000", http.StatusInternalServerError)
 }
 
-func NewAppErr(err error, errMessage, msg, devMsg, code string, httpCode int) *AppError {
+func NewAppErr(err error, msg, devMsg, code string, httpCode int) *AppError {
 	return &AppError{
 		Err:        err,
-		ErrMessage: errMessage,
 		Message:    msg,
 		DevMessage: devMsg,
 		Code:       code,

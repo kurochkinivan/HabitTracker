@@ -27,7 +27,6 @@ const baseAuthPath = "/v1/auth"
 func (a *authHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(a.registerUser)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(a.loginUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/verify-code", http.MethodPost, baseAuthPath), errMdw(a.verifyCode))
 }
 
 type registerRequest struct {
@@ -42,8 +41,9 @@ type registerRequest struct {
 // @Accept		json
 // @Param 		request body v1.registerRequest true "register request parameters"
 // @Produce		json
-// @Success		200 	"OK. Message was sent to user"
+// @Success		201 	"Created. New user was created"
 // @Failure		400 	{object}	apperr.AppError		"Bad Request"
+// @Failure		409 	{object}	apperr.AppError		"Conflict. User with this email already exists. ATTENTION: this will be removed soon."
 // @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
 // @Router		/auth/register [post]
 func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
@@ -66,75 +66,18 @@ func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	return nil
-}
-
-type (
-	verifyCodeRequest struct {
-		Email string `json:"email"`
-		Code  string `json:"code"`
-	}
-
-	verifyCodeResponse struct {
-		JWT string `json:"jwt"`
-	}
-)
-
-// @Summary		Verify user's email
-// @Description	verify user's email by confirmation code
-// @Tags		auth
-// @Accept		json
-// @Param 		request body v1.verifyCodeRequest true "verify code request parameters"
-// @Produce		json
-// @Success		200 	{object}	v1.verifyCodeResponse "OK. user was verified"
-// @Failure		400 	{object}	apperr.AppError		"Bad Request"
-// @Failure		401 	{object}	apperr.AppError		"Unauthorized. user provided invalid verification code"
-// @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
-// @Router		/auth/verify-code [post]
-func (h *authHandler) verifyCode(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("Content-Type", "application/json")
-
-	reqData, err := io.ReadAll(r.Body)
-	if err != nil {
-		return apperr.ErrReadRequestBody.WithErr(err)
-	}
-	defer r.Body.Close()
-
-	var req verifyCodeRequest
-	err = json.Unmarshal(reqData, &req)
-	if err != nil {
-		return apperr.ErrSerializeData
-	}
-
-	token, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code)
-	if err != nil {
-		return err
-	}
-
-	resp := &verifyCodeResponse{
-		JWT: token,
-	}
-
-	respData, err := json.Marshal(resp)
-	if err != nil {
-		return apperr.ErrSerializeData.WithErr(err)
-	}
-
-	w.Write(respData)
+	w.WriteHeader(http.StatusCreated)
 
 	return nil
 }
 
-type (
-	loginRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	loginResponse struct {
-		JWT string `json:"jwt"`
-	}
-)
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+type loginResponse struct {
+	JWT string `json:"jwt"`
+}
 
 // @Summary		Log user in
 // @Description	log user in
