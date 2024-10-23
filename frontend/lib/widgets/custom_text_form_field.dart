@@ -111,7 +111,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
     if (!widget.validateController.value) {
       return AppColors.redError;
     } else if (_isActive) {
-      return AppColors.black02;
+      return AppColors.purple;
     }
     return AppColors.grey02;
   }
@@ -120,7 +120,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
     return TextStyle(
       color: !widget.validateController.value
           ? AppColors.redError
-          : (_isActive ? AppColors.black02 : AppColors.grey02),
+          : (_isActive ? AppColors.purple : AppColors.grey02),
       fontSize: 12.sp,
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,

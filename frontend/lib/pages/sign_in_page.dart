@@ -7,8 +7,8 @@ import '../models/auth_models.dart';
 import '../router/app_router.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_elevated_button.dart';
-import '../widgets/custom_text_form_field_widget.dart';
-import '../widgets/password_error_message_widget.dart';
+import '../widgets/custom_text_form_field.dart';
+import '../widgets/password_error_message.dart';
 
 @RoutePage()
 class SignInPage extends StatefulWidget {

@@ -8,7 +8,7 @@ import '../app_colors.dart';
 import '../router/app_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../widgets/custom_elevated_button.dart';
-import '../widgets/resend_code_button_widget.dart';
+import '../widgets/resend_code_button.dart';
 
 @RoutePage()
 class VerifyEmailPage extends StatefulWidget {
