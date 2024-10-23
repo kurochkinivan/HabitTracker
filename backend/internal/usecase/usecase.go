@@ -7,14 +7,17 @@ type UseCases struct {
 }
 
 type UseCasesDependencies struct {
-	Repo       UserRepository
-	signingKey string
-	tokenTTL   time.Duration
-	salt       string
+	UserRepo      UserRepository
+	VerifRepo     VerificationDataRepository
+	signingKey    string
+	tokenTTL      time.Duration
+	salt          string
+	emailFrom     string
+	emailPassword string
 }
 
 func NewUseCases(d UseCasesDependencies) *UseCases {
 	return &UseCases{
-		Auth: NewAuthUseCase(d.Repo, d.signingKey, d.salt, d.tokenTTL),
+		Auth: NewAuthUseCase(d.UserRepo, d.VerifRepo, d.signingKey, d.salt, d.tokenTTL, d.emailFrom, d.emailPassword),
 	}
 }
