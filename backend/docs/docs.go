@@ -92,8 +92,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created. New user was created"
+                    "200": {
+                        "description": "OK. Message was sent to user"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -101,8 +101,54 @@ const docTemplate = `{
                             "$ref": "#/definitions/apperr.AppError"
                         }
                     },
-                    "409": {
-                        "description": "Conflict. User with this email already exists. ATTENTION: this will be removed soon.",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-code": {
+            "post": {
+                "description": "verify user's email by confirmation code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Verify user's email",
+                "parameters": [
+                    {
+                        "description": "verify code request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.verifyCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. user was verified",
+                        "schema": {
+                            "$ref": "#/definitions/v1.verifyCodeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. user provided invalid verification code",
                         "schema": {
                             "$ref": "#/definitions/apperr.AppError"
                         }
@@ -124,8 +170,10 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "dev_err": {},
                 "dev_message": {
+                    "type": "string"
+                },
+                "err_message": {
                     "type": "string"
                 },
                 "user_message": {
@@ -162,6 +210,25 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.verifyCodeRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.verifyCodeResponse": {
+            "type": "object",
+            "properties": {
+                "jwt": {
                     "type": "string"
                 }
             }

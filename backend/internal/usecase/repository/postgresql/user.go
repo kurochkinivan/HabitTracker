@@ -5,20 +5,14 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	psql "github.com/kurochkinivan/HabitTracker/pkg/postgresql"
 	"github.com/sirupsen/logrus"
 )
 
-type PosgreSQLClient interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-}
-
 type userRepository struct {
-	client PosgreSQLClient
+	client psql.PosgreSQLClient
 	qb     sq.StatementBuilderType
 }
 
@@ -61,8 +55,8 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	return nil
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.User, error) {
-	logrus.WithField("id", id).Trace("getting user")
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+	logrus.WithField("email", email).Trace("getting user by email")
 
 	sql, args, err := r.qb.
 		Select(
@@ -73,7 +67,10 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.Use
 			"created_at",
 		).
 		From(usersTable).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{
+			"email":       email,
+			"is_verified": true,
+		}).
 		ToSql()
 	if err != nil {
 		return entity.User{}, psql.ErrCreateQuery(err)
@@ -94,14 +91,16 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.Use
 	return user, nil
 }
 
-func (r *userRepository) IsUserExists(ctx context.Context, email string) (bool, error) {
+func (r *userRepository) IsUserExistsAndVerified(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
 		From(usersTable).
-		Where(sq.Eq{"email": email}).
+		Where(sq.And{
+			sq.Eq{"email": email},
+			sq.Eq{"is_verified": true}}).
 		Suffix(")").
 		ToSql()
 	if err != nil {
@@ -132,8 +131,9 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 		).
 		From(usersTable).
 		Where(sq.Eq{
-			"email":    email,
-			"password": password,
+			"email":       email,
+			"password":    password,
+			"is_verified": true,
 		}).
 		ToSql()
 	if err != nil {
@@ -152,4 +152,28 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
+	logrus.WithField("email", email).Trace("verifying user")
+
+	sql, args, err := r.qb.
+		Update(usersTable).
+		Set("is_verified", true).
+		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return psql.ErrCreateQuery(err)
+	}
+
+	commTag, err := r.client.Exec(ctx, sql, args...)
+	if err != nil {
+		return psql.ErrExec(err)
+	}
+
+	if commTag.RowsAffected() == 0 {
+		return psql.NoRowsAffected
+	}
+
+	return nil
 }

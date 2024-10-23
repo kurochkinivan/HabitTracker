@@ -20,6 +20,11 @@ type Config struct {
 		HasherSalt string `yaml:"hasher_salt" env:"HASHER_SALT" env-required:"true"`
 	} `yaml:"hasher"`
 
+	Email struct {
+		EmailFrom     string `yaml:"email_from" env:"EMAIL_FROM" env-required:"true"`
+		EmailPassword string `yaml:"email_password" env:"EMAIL_PASSWORD" env-required:"true"`
+	}
+
 	HTTP struct {
 		Host         string        `yaml:"host" env:"HTTP_HOST" env-required:"true"`
 		Port         string        `yaml:"port" env:"HTTP_PORT" env-required:"true"`

@@ -15,15 +15,23 @@ type (
 	Auth interface {
 		RegisterUser(ctx context.Context, name, email, password string) error
 		LoginUser(ctx context.Context, email, password string) (string, error)
-		generateToken(id string, tokenTTL time.Duration) (string, error)
+		VerifyEmail(ctx context.Context, email, code string) (string, error)
+		GenerateToken(id string, tokenTTL time.Duration) (string, error)
 		ParseToken(accessToken string) (jwt.MapClaims, error)
-		hashPassword(password string) string
+		SendEmail(email, code string, emailType int) error
 	}
 
 	UserRepository interface {
 		CreateUser(ctx context.Context, user entity.User) error
-		GetUserByID(ctx context.Context, id string) (entity.User, error)
-		IsUserExists(ctx context.Context, email string) (bool, error)
+		GetUserByEmail(ctx context.Context, email string) (entity.User, error)
+		IsUserExistsAndVerified(ctx context.Context, email string) (bool, error)
 		AuthenticateUser(ctx context.Context, email, password string) (entity.User, error)
+		VerifyEmail(ctx context.Context, email string) error
+	}
+
+	VerificationDataRepository interface {
+		GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error)
+		CreateVerificationData(ctx context.Context, email, code string) error
+		DeleteVerificationData(ctx context.Context, email string) error
 	}
 )
