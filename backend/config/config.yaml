@@ -17,12 +17,12 @@ http:
   read_timeout: 5s
   write_timeout: 5s
   idle_timeout: 60s
-  bytes_limit: 2048
+  bytes_limit: 1024
 
 postgresql:
   username: 'root'
   password: '12345'
-  host: 'localhost' # localhost/postgresql
-  port: '30000'     # 30000/5432
+  host: 'postgresql' # localhost/postgresql
+  port: '5432'     # 30000/5432
   database: 'habit_tracker'
 

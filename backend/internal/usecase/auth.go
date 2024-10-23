@@ -17,9 +17,27 @@ import (
 )
 
 var (
-	tmpl   = template.Must(template.ParseFiles("../../static/html/confirmation_email_ru.html"))
-	dialer = gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
+	tmplConfirm, tmplEmailExists *template.Template
+	sender                       gomail.SendCloser
 )
+
+const (
+	ConfirmationMessage = iota
+	EmailExistsMessage
+)
+
+func init() {
+	// tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
+	// tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
+	tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
+	tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
+	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
+	var err error
+	sender, err = dialer.Dial()
+	if err != nil {
+		logrus.Fatal(err)
+	}
+}
 
 type AuthUseCase struct {
 	userRepo   UserRepository
@@ -69,17 +87,18 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		Password: a.hashPassword(password),
 	}
 
-	// TODO: Think: Remove status code, continue registration and send email to the user with this email.
-	// smth like: "someone is trying to sign up using your email. If it was you, we remind you that you already have an account.
-	// if it was not you, ignore this email"
-
-	// TODO: add is user exists and verified
 	exists, err := a.userRepo.IsUserExistsAndVerified(ctx, user.Email)
 	if err != nil {
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user exists", op))
 	}
 	if exists {
-		return apperr.ErrUserExists
+		go func() {
+			err = a.SendEmail(user.Email, "", EmailExistsMessage)
+			if err != nil {
+				logrus.WithError(err).Error("failed to send email")
+			}
+		}()
+		return nil
 	}
 
 	err = a.userRepo.CreateUser(ctx, user)
@@ -87,19 +106,17 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create user", op))
 	}
 
-	go func() error {
+	go func() {
 		code := a.generateCode()
-		err = a.SendEmail(user.Email, code)
+		err = a.SendEmail(user.Email, code, ConfirmationMessage)
 		if err != nil {
-			return err
+			logrus.WithError(err).Error("failed to send email")
 		}
 
-		err = a.verifRepo.CreateVerificationData(ctx, user.Email, code)
+		err = a.verifRepo.CreateVerificationData(context.TODO(), user.Email, code)
 		if err != nil {
-			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create verification data", op))
+			logrus.WithError(err).Error(fmt.Sprintf("%s: failed to create verification data", op))
 		}
-
-		return nil
 	}()
 
 	return nil
@@ -130,6 +147,47 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (st
 
 	return token, nil
 }
+
+func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code string) (string, error) {
+	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("verifying user's email")
+	const op string = "usecase.VerifyEmail"
+
+	if email == "" || code == "" {
+		return "", apperr.ErrNotAllFieldsProvided
+	}
+
+	verifData, err := a.verifRepo.GetVerificationData(ctx, email) 
+	if err != nil {
+		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to get verification data", op))
+	}
+
+	if code != verifData.Code {
+		return "", apperr.ErrInvalidVerifCode
+	}
+
+	err = a.userRepo.VerifyEmail(ctx, email)
+	if err != nil {
+		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to verify email", op))
+	}
+
+	err = a.verifRepo.DeleteVerificationData(ctx, email)
+	if err != nil {
+		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to delete verification data", op))
+	}
+
+	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to get user by email", op))
+	}
+	
+	token, err := a.GenerateToken(user.ID, a.tokenTTL)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
 
 // ParseToken parses the given JWT token and returns its payload.
 //
@@ -184,24 +242,39 @@ func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, 
 	return signedToken, nil
 }
 
-func (a *AuthUseCase) SendEmail(email, code string) error {
+// SendEmail sends a given email to the user with given code.
+//
+// It checks the type of message to be sent and renders a corresponding HTML-template.
+// If the template execution is failed, it returns an error.
+// If the template is successfully executed, it sends the message with the rendered HTML-body.
+// If the email sending is failed, it returns the error.
+// If the email is successfully sent, it returns nil.
+func (a *AuthUseCase) SendEmail(email, code string, emailType int) error {
 	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("sending email")
 
 	m := gomail.NewMessage()
 	m.SetHeaders(map[string][]string{
-		"From":    {a.email.from},
-		"To":      {email},
-		"Subject": {"Код Подтверждения"},
+		"From": {a.email.from},
+		"To":   {email},
 	})
 
 	var body bytes.Buffer
-	err := tmpl.Execute(&body, struct{ Code string }{Code: code})
+	var err error
+	switch emailType {
+	case ConfirmationMessage:
+		m.SetHeader("Subject", "Код подтверждения")
+		err = tmplConfirm.Execute(&body, struct{ Code string }{Code: code})
+	case EmailExistsMessage:
+		m.SetHeader("Subject", "Попытка регистрации с вашей почтой в Habit Tracker")
+		err = tmplEmailExists.Execute(&body, struct{ Code string }{Code: code})
+	}
 	if err != nil {
 		return apperr.SystemError(err, "", "failed to execute html-template")
 	}
+
 	m.SetBody("text/html", body.String())
 
-	err = dialer.DialAndSend(m)
+	err = sender.Send(a.email.from, []string{email}, m)
 	if err != nil {
 		return apperr.ErrSendingEmail.WithErr(err)
 	}

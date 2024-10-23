@@ -23,4 +23,5 @@ var (
 	ErrTokenExired       = NewAppErr(nil, "", "access token is expired", "access token is expired", "AS-004", http.StatusUnauthorized)
 	ErrAuthorizing       = NewAppErr(nil, "", "invalid password or email", "user provided wrong email or password", "AS-005", http.StatusUnauthorized)
 	ErrSendingEmail      = NewAppErr(nil, "", "failed to send email", "failed to send email to user", "AS-006", http.StatusInternalServerError)
+	ErrInvalidVerifCode = NewAppErr(nil, "", "invalid verification code", "user provided invalid verification code", "AS-007", http.StatusUnauthorized)
 )

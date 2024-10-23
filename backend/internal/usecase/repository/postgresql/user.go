@@ -55,8 +55,8 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	return nil
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.User, error) {
-	logrus.WithField("id", id).Trace("getting user")
+func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+	logrus.WithField("email", email).Trace("getting user by email")
 
 	sql, args, err := r.qb.
 		Select(
@@ -67,7 +67,10 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (entity.Use
 			"created_at",
 		).
 		From(usersTable).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{
+			"email":       email,
+			"is_verified": true,
+		}).
 		ToSql()
 	if err != nil {
 		return entity.User{}, psql.ErrCreateQuery(err)
@@ -128,8 +131,9 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 		).
 		From(usersTable).
 		Where(sq.Eq{
-			"email":    email,
-			"password": password,
+			"email":       email,
+			"password":    password,
+			"is_verified": true,
 		}).
 		ToSql()
 	if err != nil {
@@ -150,19 +154,26 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 	return user, nil
 }
 
-// func (r *userRepository) VerifyUser(ctx context.Context, email string) error {
-// 	logrus.WithField("email", email).Trace("verifying user")
+func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
+	logrus.WithField("email", email).Trace("verifying user")
 
-// 	sql, args, err := r.qb.
-// 		Update(usersTable).
-// 		Set("is_verified", true).
-// 		Where(sq.Eq{"email": email}).
-// 		ToSql()
-// 	if err != nil {
-// 		return psql.ErrCreateQuery(err)
-// 	}
+	sql, args, err := r.qb.
+		Update(usersTable).
+		Set("is_verified", true).
+		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return psql.ErrCreateQuery(err)
+	}
 
+	commTag, err := r.client.Exec(ctx, sql, args...)
+	if err != nil {
+		return psql.ErrExec(err)
+	}
 
+	if commTag.RowsAffected() == 0 {
+		return psql.NoRowsAffected
+	}
 
-// 	return nil 
-// }
+	return nil
+}

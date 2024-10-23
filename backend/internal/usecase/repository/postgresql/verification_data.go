@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -85,12 +84,11 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 		email,
 		code,
 		time.Now(),
-		time.Now().Add(codeTTL),
-	).ToSql()
+		time.Now().Add(codeTTL)).
+		ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(err)
 	}
-	fmt.Println(sql)
 
 	commtag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
@@ -98,6 +96,34 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 	}
 
 	if commtag.RowsAffected() == 0 {
+		return psql.NoRowsAffected
+	}
+
+	return nil
+}
+
+// DeleteVerificationData deletes verification data for the given email.
+//
+// It removes the verification data from the database for the given email.
+// If the query to remove the data fails, it returns an error.
+// If the verification data is successfully deleted, it returns no error.
+func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
+	logrus.WithField("email", email).Trace("deleting verification data")
+
+	sql, args, err := r.qb.
+		Delete(verificationDataTable).
+		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return psql.ErrCreateQuery(err)
+	}
+
+	commTag, err := r.client.Exec(ctx, sql, args...)
+	if err != nil {
+		return psql.ErrExec(err)
+	}
+
+	if commTag.RowsAffected() == 0 {
 		return psql.NoRowsAffected
 	}
 
