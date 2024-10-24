@@ -2,17 +2,13 @@ package postgresql
 
 import (
 	"context"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	psql "github.com/kurochkinivan/HabitTracker/pkg/postgresql"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	codeTTL time.Duration = 10 * time.Minute
 )
 
 type verificationDataRepository struct {
@@ -27,11 +23,6 @@ func NewVerificationData(client *pgxpool.Pool) *verificationDataRepository {
 	}
 }
 
-// GetVerificationData retrieves verification data for the given email.
-//
-// It fetches the verification data from the database based on the provided email.
-// If the query to fetch the data fails, it returns an error.
-// If the verification data is successfully retrieved, it returns the verification data along with no error.
 func (r *verificationDataRepository) GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error) {
 	logrus.WithField("email", email).Trace("getting verification data")
 
@@ -65,13 +56,8 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 	return verificationData, nil
 }
 
-// CreateVerificationData creates a new verification data for the given email.
-//
-// It inserts the verification data into the database with the given email and code.
-// If the query to insert the data fails, it returns an error.
-// If the verification data is successfully created, it returns no error.
-func (r *verificationDataRepository) CreateVerificationData(ctx context.Context, email, code string) error {
-	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("creating verification data")
+func (r *verificationDataRepository) CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error {
+	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("creating verification data")
 
 	sql, args, err := r.qb.
 		Insert(verificationDataTable).
@@ -80,11 +66,13 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 			"code",
 			"created_at",
 			"expires_at",
-		).Values(
-		email,
-		code,
-		time.Now(),
-		time.Now().Add(codeTTL)).
+		).
+		Values(
+			verifData.Email,
+			verifData.Code,
+			verifData.CreatedAt,
+			verifData.ExpiresAt,
+		).
 		ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(err)
@@ -102,17 +90,66 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 	return nil
 }
 
-// DeleteVerificationData deletes verification data for the given email.
-//
-// It removes the verification data from the database for the given email.
-// If the query to remove the data fails, it returns an error.
-// If the verification data is successfully deleted, it returns no error.
+func (r *verificationDataRepository) VerificationDataExists(ctx context.Context, email string) (bool, error) {
+	logrus.WithField("email", email).Trace("checking if verification data exists")
+
+	sql, args, err := r.qb.
+		Select("1").
+		Prefix("SELECT EXISTS (").
+		From(verificationDataTable).
+		Where(sq.Eq{"email": email}).
+		Suffix(")").
+		ToSql()
+	if err != nil {
+		return false, psql.ErrCreateQuery(err)
+	}
+
+	var exists bool
+	err = r.client.QueryRow(ctx, sql, args...).Scan(&exists)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil
+		}
+		return false, psql.ErrDoQuery(err)
+	}
+
+	return exists, nil
+}
+
 func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting verification data")
 
 	sql, args, err := r.qb.
 		Delete(verificationDataTable).
 		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return psql.ErrCreateQuery(err)
+	}
+
+	commTag, err := r.client.Exec(ctx, sql, args...)
+	if err != nil {
+		return psql.ErrExec(err)
+	}
+
+	if commTag.RowsAffected() == 0 {
+		return psql.NoRowsAffected
+	}
+
+	return nil
+}
+
+func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error {
+	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("updating verification data code")
+
+	sql, args, err := r.qb.
+		Update(verificationDataTable).
+		SetMap(map[string]interface{}{
+			"code":       verifData.Code,
+			"created_at": verifData.CreatedAt,
+			"expires_at": verifData.ExpiresAt,
+		}).
+		Where(sq.Eq{"email": verifData.Email}).
 		ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(err)

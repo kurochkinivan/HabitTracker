@@ -27,14 +27,17 @@ const baseAuthPath = "/v1/auth"
 func (a *authHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(a.registerUser)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(a.loginUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/verify-code", http.MethodPost, baseAuthPath), errMdw(a.verifyCode))
+	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(a.verifyEmail)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(a.getVerificationCode)))
 }
 
-type registerRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
+type (
+	registerRequest struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+)
 
 // @Summary		Register user
 // @Description	register new user
@@ -59,6 +62,10 @@ func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error
 	err = json.Unmarshal(data, &req)
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(err)
+	}
+
+	if req.Name == "" || req.Email == "" || req.Password == "" {
+		return apperr.ErrNotAllFieldsProvided
 	}
 
 	err = h.auth.RegisterUser(r.Context(), req.Name, req.Email, req.Password)
@@ -86,12 +93,12 @@ type (
 // @Accept		json
 // @Param 		request body v1.verifyCodeRequest true "verify code request parameters"
 // @Produce		json
-// @Success		200 	{object}	v1.verifyCodeResponse "OK. user was verified"
+// @Success		200 	{object}	v1.verifyCodeResponse "OK. User was verified"
 // @Failure		400 	{object}	apperr.AppError		"Bad Request"
-// @Failure		401 	{object}	apperr.AppError		"Unauthorized. user provided invalid verification code"
+// @Failure		401 	{object}	apperr.AppError		"Unauthorized. User provided invalid verification code"
 // @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
 // @Router		/auth/verify-code [post]
-func (h *authHandler) verifyCode(w http.ResponseWriter, r *http.Request) error {
+func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
 	reqData, err := io.ReadAll(r.Body)
@@ -104,6 +111,10 @@ func (h *authHandler) verifyCode(w http.ResponseWriter, r *http.Request) error {
 	err = json.Unmarshal(reqData, &req)
 	if err != nil {
 		return apperr.ErrSerializeData
+	}
+
+	if req.Email == "" || req.Code == "" {
+		return apperr.ErrNotAllFieldsProvided
 	}
 
 	token, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code)
@@ -161,6 +172,10 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 		return apperr.ErrSerializeData.WithErr(err)
 	}
 
+	if req.Email == "" || req.Password == "" {
+		return apperr.ErrNotAllFieldsProvided
+	}
+
 	token, err := h.auth.LoginUser(r.Context(), req.Email, req.Password)
 	if err != nil {
 		return err
@@ -176,6 +191,48 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Write(respData)
+
+	return nil
+}
+
+type (
+	getVerifCodeRequest struct {
+		Email string `json:"email"`
+	}
+)
+
+// @Summary		Get verification code
+// @Description	send verification code to user's email
+// @Tags		auth
+// @Accept		json
+// @Param 		request body v1.getVerifCodeRequest true "getVerifCode request parameters"
+// @Produce		json
+// @Success		200 "OK. Email with verification code was sent to user"
+// @Failure		400 {object}	apperr.AppError		"Bad Request"
+// @Failure		500 {object}	apperr.AppError		"Internal Server Error"
+// @Router		/auth/get-verification-code [post]
+func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
+
+	reqData, err := io.ReadAll(r.Body)
+	if err != nil {
+		return apperr.ErrReadRequestBody.WithErr(err)
+	}
+
+	var req getVerifCodeRequest 
+	err = json.Unmarshal(reqData, &req)
+	if err != nil {
+		return apperr.ErrSerializeData.WithErr(err)
+	}
+
+	if req.Email == "" {
+		return apperr.ErrNotAllFieldsProvided
+	}
+
+	err = h.auth.SendConfirmationCode(r.Context(), req.Email)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

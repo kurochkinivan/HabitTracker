@@ -18,8 +18,6 @@ type appHandler func(w http.ResponseWriter, r *http.Request) error
 
 func logMdw(next appHandler) appHandler {
 	return func(w http.ResponseWriter, r *http.Request) error {
-
-		logrus.Info("logger middleware enabled")
 		entry := logrus.WithFields(logrus.Fields{
 			"method":      r.Method,
 			"path":        r.URL.Path,
@@ -45,8 +43,6 @@ func logMdw(next appHandler) appHandler {
 
 func errMdw(h appHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logrus.Info("error middleware enabled")
-
 		var appErr *apperr.AppError
 		err := h(w, r)
 

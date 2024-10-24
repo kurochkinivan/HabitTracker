@@ -11,6 +11,11 @@ definitions:
       user_message:
         type: string
     type: object
+  v1.getVerifCodeRequest:
+    properties:
+      email:
+        type: string
+    type: object
   v1.loginRequest:
     properties:
       email:
@@ -51,6 +56,34 @@ info:
   title: Habit Tracker API
   version: "1.0"
 paths:
+  /auth/get-verification-code:
+    post:
+      consumes:
+      - application/json
+      description: send verification code to user's email
+      parameters:
+      - description: getVerifCode request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.getVerifCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK. Email with verification code was sent to user
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+      summary: Get verification code
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
