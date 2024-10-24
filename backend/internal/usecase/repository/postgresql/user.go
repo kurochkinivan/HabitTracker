@@ -91,16 +91,14 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 	return user, nil
 }
 
-func (r *userRepository) IsUserExistsAndVerified(ctx context.Context, email string) (bool, error) {
+func (r *userRepository) UserExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
 		From(usersTable).
-		Where(sq.And{
-			sq.Eq{"email": email},
-			sq.Eq{"is_verified": true}}).
+		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
 	if err != nil {
@@ -117,6 +115,53 @@ func (r *userRepository) IsUserExistsAndVerified(ctx context.Context, email stri
 	}
 
 	return exists, nil
+}
+
+func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, error) {
+	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user is verified")
+
+	sql, args, err := r.qb.
+		Select("is_verified").
+		From(usersTable).
+		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return false, psql.ErrCreateQuery(err)
+	}
+
+	var verified bool
+	err = r.client.QueryRow(ctx, sql, args...).Scan(&verified)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil
+		}
+		return false, psql.ErrDoQuery(err)
+	}
+
+	return verified, nil
+}
+
+func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
+	logrus.WithField("email", email).Trace("deleting user")
+
+	sql, args, err := r.qb.
+		Delete(usersTable).
+		Where(sq.Eq{"email": email}).
+		ToSql()
+	if err != nil {
+		return psql.ErrCreateQuery(err)
+	}
+
+	commTag, err := r.client.Exec(ctx, sql, args...)
+	if err != nil {
+		return psql.ErrExec(err)
+	}
+
+	if commTag.RowsAffected() == 0 {
+		return psql.NoRowsAffected
+	}
+
+	return nil 
 }
 
 func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (entity.User, error) {

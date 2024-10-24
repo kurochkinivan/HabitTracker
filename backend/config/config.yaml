@@ -10,6 +10,7 @@ hasher:
 email:
   email_from: 'ivan.kurochkin.084@gmail.com'
   email_password: 'hiqecckzffwewzqc'
+  verif_code_ttl: 15m
 
 http:
   host: '0.0.0.0'
@@ -22,7 +23,7 @@ http:
 postgresql:
   username: 'root'
   password: '12345'
-  host: 'postgresql' # localhost/postgresql
-  port: '5432'     # 30000/5432
+  host: 'localhost' # localhost/postgresql
+  port: '30000'     # 30000/5432
   database: 'habit_tracker'
 

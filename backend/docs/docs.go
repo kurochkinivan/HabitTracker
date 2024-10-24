@@ -15,6 +15,49 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/get-verification-code": {
+            "post": {
+                "description": "send verification code to user's email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get verification code",
+                "parameters": [
+                    {
+                        "description": "getVerifCode request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.getVerifCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. Email with verification code was sent to user"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "log user in",
@@ -177,6 +220,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.getVerifCodeRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }
