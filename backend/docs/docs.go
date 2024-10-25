@@ -49,6 +49,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/apperr.AppError"
                         }
                     },
+                    "404": {
+                        "description": "Not Found. User with provided email is not signing up",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -179,7 +185,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK. user was verified",
+                        "description": "OK. User was verified",
                         "schema": {
                             "$ref": "#/definitions/v1.verifyCodeResponse"
                         }
@@ -191,7 +197,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized. user provided invalid verification code",
+                        "description": "Unauthorized. User provided invalid verification code",
                         "schema": {
                             "$ref": "#/definitions/apperr.AppError"
                         }

@@ -161,7 +161,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 		return psql.NoRowsAffected
 	}
 
-	return nil 
+	return nil
 }
 
 func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (entity.User, error) {
