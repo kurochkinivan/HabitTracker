@@ -101,7 +101,7 @@ type (
 func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
-	reqData, err := io.ReadAll(r.Body)
+	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
 		return apperr.ErrReadRequestBody.WithErr(err)
 	}
@@ -209,17 +209,18 @@ type (
 // @Produce		json
 // @Success		200 "OK. Email with verification code was sent to user"
 // @Failure		400 {object}	apperr.AppError		"Bad Request"
+// @Failure		404 {object}	apperr.AppError		"Not Found. User with provided email is not signing up"
 // @Failure		500 {object}	apperr.AppError		"Internal Server Error"
 // @Router		/auth/get-verification-code [post]
 func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 
-	reqData, err := io.ReadAll(r.Body)
+	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
 		return apperr.ErrReadRequestBody.WithErr(err)
 	}
 
-	var req getVerifCodeRequest 
+	var req getVerifCodeRequest
 	err = json.Unmarshal(reqData, &req)
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(err)

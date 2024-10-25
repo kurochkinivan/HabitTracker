@@ -177,10 +177,28 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 	logrus.WithField("email", email).Trace("sending confirmation code")
 	const op string = "usecase.SendConfirmationCode"
 
-	code := a.generateCode()
-	err := a.sendEmail(email, code, ConfirmationMessage)
+	userExists, err := a.userRepo.UserExists(ctx, email)
 	if err != nil {
-		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to send email", op))
+		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user exists", op))
+	}
+
+	if userExists {
+		verified, err := a.userRepo.UserVerified(ctx, email)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user is verified", op))
+		}
+
+		if verified {
+			return a.sendEmail(email, "", EmailExistsMessage)
+		}
+	} else {
+		return apperr.ErrNotFound
+	}
+
+	code := a.generateCode()
+	err = a.sendEmail(email, code, ConfirmationMessage)
+	if err != nil {
+		return apperr.ErrSendingEmail.WithErr(err)
 	}
 
 	exists, err := a.verifRepo.VerificationDataExists(ctx, email)
