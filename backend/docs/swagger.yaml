@@ -150,7 +150,7 @@ paths:
       summary: Register user
       tags:
       - auth
-  /auth/verify-code:
+  /auth/verify-email:
     post:
       consumes:
       - application/json

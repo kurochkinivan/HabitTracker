@@ -97,7 +97,7 @@ type (
 // @Failure		400 	{object}	apperr.AppError		"Bad Request"
 // @Failure		401 	{object}	apperr.AppError		"Unauthorized. User provided invalid verification code"
 // @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
-// @Router		/auth/verify-code [post]
+// @Router		/auth/verify-email [post]
 func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 

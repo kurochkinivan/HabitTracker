@@ -159,7 +159,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/verify-code": {
+        "/auth/verify-email": {
             "post": {
                 "description": "verify user's email by confirmation code",
                 "consumes": [
