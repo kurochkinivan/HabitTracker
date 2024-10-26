@@ -11,6 +11,11 @@ definitions:
       user_message:
         type: string
     type: object
+  v1.getVerifCodeRequest:
+    properties:
+      email:
+        type: string
+    type: object
   v1.loginRequest:
     properties:
       email:
@@ -51,6 +56,38 @@ info:
   title: Habit Tracker API
   version: "1.0"
 paths:
+  /auth/get-verification-code:
+    post:
+      consumes:
+      - application/json
+      description: send verification code to user's email
+      parameters:
+      - description: getVerifCode request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.getVerifCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK. Email with verification code was sent to user
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "404":
+          description: Not Found. User with provided email is not signing up
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+      summary: Get verification code
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -113,7 +150,7 @@ paths:
       summary: Register user
       tags:
       - auth
-  /auth/verify-code:
+  /auth/verify-email:
     post:
       consumes:
       - application/json
@@ -129,7 +166,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK. user was verified
+          description: OK. User was verified
           schema:
             $ref: '#/definitions/v1.verifyCodeResponse'
         "400":
@@ -137,7 +174,7 @@ paths:
           schema:
             $ref: '#/definitions/apperr.AppError'
         "401":
-          description: Unauthorized. user provided invalid verification code
+          description: Unauthorized. User provided invalid verification code
           schema:
             $ref: '#/definitions/apperr.AppError'
         "500":

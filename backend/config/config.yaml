@@ -10,6 +10,7 @@ hasher:
 email:
   email_from: 'ivan.kurochkin.084@gmail.com'
   email_password: 'hiqecckzffwewzqc'
+  verif_code_ttl: 15m
 
 http:
   host: '0.0.0.0'

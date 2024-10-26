@@ -15,6 +15,55 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/get-verification-code": {
+            "post": {
+                "description": "send verification code to user's email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get verification code",
+                "parameters": [
+                    {
+                        "description": "getVerifCode request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.getVerifCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. Email with verification code was sent to user"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found. User with provided email is not signing up",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "log user in",
@@ -110,7 +159,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/verify-code": {
+        "/auth/verify-email": {
             "post": {
                 "description": "verify user's email by confirmation code",
                 "consumes": [
@@ -136,7 +185,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK. user was verified",
+                        "description": "OK. User was verified",
                         "schema": {
                             "$ref": "#/definitions/v1.verifyCodeResponse"
                         }
@@ -148,7 +197,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized. user provided invalid verification code",
+                        "description": "Unauthorized. User provided invalid verification code",
                         "schema": {
                             "$ref": "#/definitions/apperr.AppError"
                         }
@@ -177,6 +226,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.getVerifCodeRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }

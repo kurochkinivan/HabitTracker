@@ -21,8 +21,9 @@ type Config struct {
 	} `yaml:"hasher"`
 
 	Email struct {
-		EmailFrom     string `yaml:"email_from" env:"EMAIL_FROM" env-required:"true"`
-		EmailPassword string `yaml:"email_password" env:"EMAIL_PASSWORD" env-required:"true"`
+		EmailFrom     string        `yaml:"email_from" env:"EMAIL_FROM" env-required:"true"`
+		EmailPassword string        `yaml:"email_password" env:"EMAIL_PASSWORD" env-required:"true"`
+		VerifCodeTTL  time.Duration `yaml:"verif_code_ttl" env:"EMAIL_VERIF_CODE_TTL" env-required:"true"`
 	}
 
 	HTTP struct {

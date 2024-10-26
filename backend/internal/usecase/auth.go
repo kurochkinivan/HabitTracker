@@ -40,24 +40,26 @@ func init() {
 }
 
 type AuthUseCase struct {
-	userRepo   UserRepository
-	verifRepo  VerificationDataRepository
-	signingKey string
-	tokenTTL   time.Duration
-	salt       string
-	email      struct {
+	userRepo     UserRepository
+	verifRepo    VerificationDataRepository
+	signingKey   string
+	tokenTTL     time.Duration
+	verifCodeTTL time.Duration
+	salt         string
+	email        struct {
 		from     string
 		password string
 	}
 }
 
-func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepository, signingKey, salt string, tokenTTL time.Duration, emailFrom, emailPassword string) *AuthUseCase {
+func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepository, signingKey, salt string, tokenTTL, verifCodeTTL time.Duration, emailFrom, emailPassword string) *AuthUseCase {
 	return &AuthUseCase{
-		userRepo:   userRepo,
-		verifRepo:  verifRepo,
-		signingKey: signingKey,
-		tokenTTL:   tokenTTL,
-		salt:       salt,
+		userRepo:     userRepo,
+		verifRepo:    verifRepo,
+		signingKey:   signingKey,
+		tokenTTL:     tokenTTL,
+		verifCodeTTL: verifCodeTTL,
+		salt:         salt,
 		email: struct {
 			from     string
 			password string
@@ -68,18 +70,10 @@ func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepositor
 	}
 }
 
-// RegisterUser registers a new user in the database.
-//
-// It checks if the user with given email and name already exists.
-// If the user exists, it returns an error.
-// If the query to the database is failed, it returns the error.
+// TODO: Think of using goroutines for sending emails
 func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password string) error {
 	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Trace("registering new user")
 	const op string = "usecase.RegisterUser"
-
-	if name == "" || email == "" || password == "" {
-		return apperr.ErrNotAllFieldsProvided
-	}
 
 	user := entity.User{
 		Name:     name,
@@ -87,18 +81,27 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		Password: a.hashPassword(password),
 	}
 
-	exists, err := a.userRepo.IsUserExistsAndVerified(ctx, user.Email)
+	exists, err := a.userRepo.UserExists(ctx, user.Email)
 	if err != nil {
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user exists", op))
 	}
 	if exists {
-		go func() {
-			err = a.SendEmail(user.Email, "", EmailExistsMessage)
+		verified, err := a.userRepo.UserVerified(ctx, user.Email)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user is verified", op))
+		}
+
+		if verified {
+			err = a.sendEmail(email, "", EmailExistsMessage)
 			if err != nil {
-				logrus.WithError(err).Error("failed to send email")
+				return apperr.ErrSendingEmail.WithErr(err)
 			}
-		}()
-		return nil
+		} else {
+			err = a.userRepo.DeleteUser(ctx, email)
+			if err != nil {
+				return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to delete user", op))
+			}
+		}
 	}
 
 	err = a.userRepo.CreateUser(ctx, user)
@@ -106,34 +109,16 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create user", op))
 	}
 
-	go func() {
-		code := a.generateCode()
-		err = a.SendEmail(user.Email, code, ConfirmationMessage)
-		if err != nil {
-			logrus.WithError(err).Error("failed to send email")
-		}
-
-		err = a.verifRepo.CreateVerificationData(context.TODO(), user.Email, code)
-		if err != nil {
-			logrus.WithError(err).Error(fmt.Sprintf("%s: failed to create verification data", op))
-		}
-	}()
+	err = a.SendConfirmationCode(ctx, email)
+	if err != nil {
+		return apperr.ErrSendingEmail.WithErr(err)
+	}
 
 	return nil
 }
 
-// LoginUser logs a user in.
-//
-// It checks the user's credentials against the data in the database.
-// If the credentials are invalid, it returns an error.
-// If the query to the database is failed, it returns the error.
-// If the user is successfully logged in, it returns a JWT token.
 func (a *AuthUseCase) LoginUser(ctx context.Context, email, password string) (string, error) {
-	logrus.WithField("email", email).Trace("logging user")
-
-	if email == "" || password == "" {
-		return "", apperr.ErrNotAllFieldsProvided
-	}
+	logrus.WithField("email", email).Trace("logging user in")
 
 	user, err := a.userRepo.AuthenticateUser(ctx, email, a.hashPassword(password))
 	if err != nil {
@@ -152,17 +137,17 @@ func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code string) (stri
 	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("verifying user's email")
 	const op string = "usecase.VerifyEmail"
 
-	if email == "" || code == "" {
-		return "", apperr.ErrNotAllFieldsProvided
-	}
-
-	verifData, err := a.verifRepo.GetVerificationData(ctx, email) 
+	verifData, err := a.verifRepo.GetVerificationData(ctx, email)
 	if err != nil {
 		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to get verification data", op))
 	}
 
 	if code != verifData.Code {
 		return "", apperr.ErrInvalidVerifCode
+	}
+
+	if time.Now().After(verifData.ExpiresAt) {
+		return "", apperr.ErrVerifCodeExpired
 	}
 
 	err = a.userRepo.VerifyEmail(ctx, email)
@@ -179,7 +164,7 @@ func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code string) (stri
 	if err != nil {
 		return "", apperr.SystemError(err, "", fmt.Sprintf("%s: failed to get user by email", op))
 	}
-	
+
 	token, err := a.GenerateToken(user.ID, a.tokenTTL)
 	if err != nil {
 		return "", err
@@ -188,12 +173,60 @@ func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code string) (stri
 	return token, nil
 }
 
+func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) error {
+	logrus.WithField("email", email).Trace("sending confirmation code")
+	const op string = "usecase.SendConfirmationCode"
 
-// ParseToken parses the given JWT token and returns its payload.
-//
-// It checks the token's signing method and signature.
-// If the token is invalid, it returns an error.
-// If the token is successfully parsed, it returns its payload.
+	userExists, err := a.userRepo.UserExists(ctx, email)
+	if err != nil {
+		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user exists", op))
+	}
+
+	if userExists {
+		verified, err := a.userRepo.UserVerified(ctx, email)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if user is verified", op))
+		}
+
+		if verified {
+			return a.sendEmail(email, "", EmailExistsMessage)
+		}
+	} else {
+		return apperr.ErrNotFound
+	}
+
+	code := a.generateCode()
+	err = a.sendEmail(email, code, ConfirmationMessage)
+	if err != nil {
+		return apperr.ErrSendingEmail.WithErr(err)
+	}
+
+	exists, err := a.verifRepo.VerificationDataExists(ctx, email)
+	if err != nil {
+		return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to check if verification data exists", op))
+	}
+
+	verifData := entity.VerificationData{
+		Email:     email,
+		Code:      code,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(a.verifCodeTTL),
+	}
+	if exists {
+		err = a.verifRepo.UpdateVerificationDataCode(ctx, verifData)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to update verification data code", op))
+		}
+	} else {
+		err = a.verifRepo.CreateVerificationData(ctx, verifData)
+		if err != nil {
+			return apperr.SystemError(err, "", fmt.Sprintf("%s: failed to create verification data", op))
+		}
+	}
+
+	return nil
+}
+
 func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 	logrus.WithField("token", accessToken).Trace("parsing jwt-token")
 
@@ -218,11 +251,6 @@ func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
 	return payload, nil
 }
 
-// GenerateToken generates a JWT token for given user ID and token TTL.
-//
-// It creates a JWT token with user ID and current time as payload.
-// If the token signing is failed, it returns the error.
-// If the token is successfully signed, it returns the signed token.
 func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, error) {
 	logrus.WithField("id", id).Trace("generating jwt-token")
 	const op string = "usecase.GenerateToken"
@@ -242,14 +270,7 @@ func (a *AuthUseCase) GenerateToken(id string, tokenTTL time.Duration) (string, 
 	return signedToken, nil
 }
 
-// SendEmail sends a given email to the user with given code.
-//
-// It checks the type of message to be sent and renders a corresponding HTML-template.
-// If the template execution is failed, it returns an error.
-// If the template is successfully executed, it sends the message with the rendered HTML-body.
-// If the email sending is failed, it returns the error.
-// If the email is successfully sent, it returns nil.
-func (a *AuthUseCase) SendEmail(email, code string, emailType int) error {
+func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
 	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("sending email")
 
 	m := gomail.NewMessage()
@@ -276,17 +297,13 @@ func (a *AuthUseCase) SendEmail(email, code string, emailType int) error {
 
 	err = sender.Send(a.email.from, []string{email}, m)
 	if err != nil {
+		logrus.Error(err)
 		return apperr.ErrSendingEmail.WithErr(err)
 	}
 
 	return nil
 }
 
-// hashPassword hashes a given password with the stored salt.
-//
-// It uses the SHA-256 hashing algorithm.
-// The salt is used to prevent attacks using precomputed tables (rainbow tables).
-// The resulting hash is a hex string.
 func (a *AuthUseCase) hashPassword(password string) string {
 	hash := sha256.New()
 	hash.Write([]byte(password))
