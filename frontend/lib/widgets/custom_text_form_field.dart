@@ -52,7 +52,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: _getFillColor(),
-        borderRadius: BorderRadius.circular(8.w),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: _getBorderColor(),
           width: 1.w,
