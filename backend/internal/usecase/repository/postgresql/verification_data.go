@@ -34,7 +34,7 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 			"created_at",
 			"expires_at",
 		).
-		From(verificationDataTable).
+		From(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -60,7 +60,7 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("creating verification data")
 
 	sql, args, err := r.qb.
-		Insert(verificationDataTable).
+		Insert(TableVerificationData).
 		Columns(
 			"email",
 			"code",
@@ -96,7 +96,7 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(verificationDataTable).
+		From(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
@@ -120,7 +120,7 @@ func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context,
 	logrus.WithField("email", email).Trace("deleting verification data")
 
 	sql, args, err := r.qb.
-		Delete(verificationDataTable).
+		Delete(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -143,7 +143,7 @@ func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Cont
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("updating verification data code")
 
 	sql, args, err := r.qb.
-		Update(verificationDataTable).
+		Update(TableVerificationData).
 		SetMap(map[string]interface{}{
 			"code":       verifData.Code,
 			"created_at": verifData.CreatedAt,

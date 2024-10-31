@@ -1,7 +1,8 @@
 environment: 'local' # local/prod
 
 jwt:
-  token_ttl: 120h
+  access_token_ttl: 15m
+  refresh_token_ttl: 48h
   jwt_sign_key: 'fce9ee13dd03f63e21f86158e7b9cc79079886059d445ce7b0eca9ceceb88c76'
 
 hasher:

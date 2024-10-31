@@ -17,7 +17,7 @@ var (
 
 // AS - auth server. This is AS error.
 var (
-	ErrUserExists        = NewAppErr(nil, "", "user with provided email already exists", "user with provided email already exists", "AS-001", http.StatusConflict)
+	ErrUserExists        = NewAppErr(nil, "", "the email you have provided is already associated with an account", "user with provided email already exists", "AS-001", http.StatusConflict)
 	ErrEmptyAuthHeader   = NewAppErr(nil, "", "empty auth header", "empty auth header", "AS-002", http.StatusBadRequest)
 	ErrInvalidAuthHeader = NewAppErr(nil, "", "invalid auth header", "invalid auth header", "AS-003", http.StatusBadRequest)
 	ErrTokenExired       = NewAppErr(nil, "", "access token is expired", "access token is expired", "AS-004", http.StatusUnauthorized)

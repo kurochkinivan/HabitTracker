@@ -22,7 +22,10 @@ func Run(cfg *config.Config) error {
 
 	authRepo := postgresql.NewUserRepository(client)
 	verifRepo := postgresql.NewVerificationData(client)
-	authUseCase := usecase.NewAuthUseCase(authRepo, verifRepo, cfg.JWT.JWTSignKey, cfg.Hasher.HasherSalt, cfg.JWT.TokenTTL, cfg.Email.VerifCodeTTL, cfg.Email.EmailFrom, cfg.Email.EmailPassword)
+	refreshRepo := postgresql.NewRefreshSessionsRepository(client)
+	authUseCase := usecase.NewAuthUseCase(authRepo, verifRepo, refreshRepo, cfg.JWT.JWTSignKey, 
+		cfg.Hasher.HasherSalt, cfg.JWT.AccessTokenTTL, cfg.JWT.RefreshTokenTTL,
+		cfg.Email.VerifCodeTTL, cfg.Email.EmailFrom, cfg.Email.EmailPassword)
 
 	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, authUseCase)
 }

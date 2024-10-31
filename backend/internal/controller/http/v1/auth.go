@@ -24,11 +24,12 @@ func NewAuthHandler(a usecase.Auth, bytesLimit int64) Handler {
 
 const baseAuthPath = "/v1/auth"
 
-func (a *authHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(a.registerUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(a.loginUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(a.verifyEmail)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(a.getVerificationCode)))
+func (h *authHandler) Register(mux *http.ServeMux) {
+	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(h.registerUser)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(h.loginUser)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(h.verifyEmail)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(h.getVerificationCode)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/update-token-pair", http.MethodPost, baseAuthPath), errMdw(logMdw(h.updateTokenPair)))
 }
 
 type (
@@ -47,6 +48,7 @@ type (
 // @Produce		json
 // @Success		200 	"OK. Message was sent to user"
 // @Failure		400 	{object}	apperr.AppError		"Bad Request"
+// @Failure		409 	{object}	apperr.AppError		"Conflict. User with provided email already exists"
 // @Failure		500 	{object}	apperr.AppError		"Internal Server Error"
 // @Router		/auth/register [post]
 func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
@@ -78,12 +80,14 @@ func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error
 
 type (
 	verifyCodeRequest struct {
-		Email string `json:"email"`
-		Code  string `json:"code"`
+		Email       string `json:"email"`
+		Code        string `json:"code"`
+		Fingerprint string `json:"fingerprint"`
 	}
 
 	verifyCodeResponse struct {
-		JWT string `json:"jwt"`
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 )
 
@@ -113,17 +117,18 @@ func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error 
 		return apperr.ErrSerializeData
 	}
 
-	if req.Email == "" || req.Code == "" {
+	if req.Email == "" || req.Code == "" || req.Fingerprint == "" {
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	token, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code)
+	accessToken, refreshToken, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
 	if err != nil {
 		return err
 	}
 
 	resp := &verifyCodeResponse{
-		JWT: token,
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 	}
 
 	respData, err := json.Marshal(resp)
@@ -138,12 +143,14 @@ func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error 
 
 type (
 	loginRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email       string `json:"email"`
+		Password    string `json:"password"`
+		Fingerprint string `json:"fingerprint"`
 	}
 
 	loginResponse struct {
-		JWT string `json:"jwt"`
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 )
 
@@ -165,6 +172,7 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return apperr.ErrReadRequestBody.WithErr(err)
 	}
+	defer r.Body.Close()
 
 	var req loginRequest
 	err = json.Unmarshal(reqData, &req)
@@ -172,17 +180,18 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 		return apperr.ErrSerializeData.WithErr(err)
 	}
 
-	if req.Email == "" || req.Password == "" {
+	if req.Email == "" || req.Password == "" || req.Fingerprint == "" {
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	token, err := h.auth.LoginUser(r.Context(), req.Email, req.Password)
+	accessToken, refreshToken, err := h.auth.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
 	if err != nil {
 		return err
 	}
 
 	resp := &loginResponse{
-		JWT: token,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}
 
 	respData, err := json.Marshal(resp)
@@ -219,6 +228,7 @@ func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		return apperr.ErrReadRequestBody.WithErr(err)
 	}
+	defer r.Body.Close()
 
 	var req getVerifCodeRequest
 	err = json.Unmarshal(reqData, &req)
@@ -237,3 +247,28 @@ func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request
 
 	return nil
 }
+
+type (
+	updateTokenPairRequest struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+)
+
+func (h *authHandler) updateTokenPair(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
+
+	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
+	if err != nil {
+		return apperr.ErrReadRequestBody.WithErr(err)
+	}
+
+	var req updateTokenPairRequest
+	err = json.Unmarshal(reqData, &req)
+	if err != nil {
+		return apperr.ErrSerializeData.WithErr(err)
+	}
+
+	return nil
+}
+
+

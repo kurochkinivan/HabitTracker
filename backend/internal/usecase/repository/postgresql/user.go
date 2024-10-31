@@ -27,7 +27,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	logrus.WithFields(logrus.Fields{"name": user.Name, "email": user.Email}).Trace("creating user")
 
 	sql, args, err := r.qb.
-		Insert(usersTable).
+		Insert(TableUsers).
 		Columns(
 			"name",
 			"email",
@@ -66,7 +66,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 			"password",
 			"created_at",
 		).
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{
 			"email":       email,
 			"is_verified": true,
@@ -97,7 +97,7 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
@@ -122,7 +122,7 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 
 	sql, args, err := r.qb.
 		Select("is_verified").
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -145,7 +145,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting user")
 
 	sql, args, err := r.qb.
-		Delete(usersTable).
+		Delete(TableUsers).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -174,7 +174,7 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 			"email",
 			"created_at",
 		).
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{
 			"email":       email,
 			"password":    password,
@@ -203,7 +203,7 @@ func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("verifying user")
 
 	sql, args, err := r.qb.
-		Update(usersTable).
+		Update(TableUsers).
 		Set("is_verified", true).
 		Where(sq.Eq{"email": email}).
 		ToSql()
