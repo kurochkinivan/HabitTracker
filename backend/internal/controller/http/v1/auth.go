@@ -180,7 +180,7 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer r.Body.Close()
 
-	var req getVerifCodeRequest
+	var req loginRequest
 	err = json.Unmarshal(reqData, &req)
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
