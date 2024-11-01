@@ -24,6 +24,7 @@ func NewRefreshSessionsRepository(client *pgxpool.Pool) *resfreshSessionsReposit
 
 func (r *resfreshSessionsRepository) CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error) {
 	logrus.WithField("user_id", refreshSession.UserID).Trace("creating refresh session")
+	const op string = "postgresql.CreateRefreshSession"
 
 	sql, args, err := r.qb.
 		Insert(TableRefreshSessions).
@@ -40,13 +41,13 @@ func (r *resfreshSessionsRepository) CreateRefreshSession(ctx context.Context, r
 		).Suffix("RETURNING refresh_token").
 		ToSql()
 	if err != nil {
-		return "", psql.ErrCreateQuery(err)
+		return "", psql.ErrCreateQuery(op, err)
 	}
 
 	var refresh string
 	err = r.client.QueryRow(ctx, sql, args...).Scan(&refresh)
 	if err != nil {
-		return "", psql.ErrDoQuery(err)
+		return "", psql.ErrDoQuery(op, err)
 	}
 
 	return refresh, nil 

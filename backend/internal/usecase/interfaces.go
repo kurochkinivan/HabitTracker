@@ -18,7 +18,7 @@ type (
 	}
 
 	UserRepository interface {
-		AuthenticateUser(ctx context.Context, email, password string) (entity.User, error)
+		AuthenticateUser(ctx context.Context, email, password string) (string, error)
 		GetUserByEmail(ctx context.Context, email string) (entity.User, error)
 		UserVerified(ctx context.Context, email string) (bool, error)
 		UserExists(ctx context.Context, email string) (bool, error)

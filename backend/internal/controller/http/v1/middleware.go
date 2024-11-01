@@ -48,13 +48,13 @@ func errMdw(h appHandler) http.HandlerFunc {
 
 		if err != nil {
 			if errors.As(err, &appErr) {
-				w.WriteHeader(appErr.HttpCode)
-				w.Write(appErr.Marshal())
+				w.WriteHeader(appErr.HTTPCode)
+				w.Write(appErr.MarshalWithTrace(err.Error()))
 				return
 			}
 
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(apperr.SystemError(err, "error", "not custom error").Marshal())
+			w.Write(apperr.SystemError(err, "appHandler.errMdw", "not custom error").MarshalWithTrace(err.Error()))
 		}
 	}
 }

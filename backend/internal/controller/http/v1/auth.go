@@ -53,6 +53,7 @@ type (
 // @Router		/auth/register [post]
 func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.registerUser"
 
 	data, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
@@ -72,7 +73,7 @@ func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error
 
 	err = h.auth.RegisterUser(r.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	return nil
@@ -104,6 +105,7 @@ type (
 // @Router		/auth/verify-code [post]
 func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.verifyEmail"
 
 	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
@@ -123,11 +125,11 @@ func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error 
 
 	accessToken, refreshToken, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	resp := &verifyCodeResponse{
-		AccessToken: accessToken,
+		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
 
@@ -167,6 +169,7 @@ type (
 // @Router		/auth/login [post]
 func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.loginUser"
 
 	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
@@ -186,7 +189,7 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 
 	accessToken, refreshToken, err := h.auth.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	resp := &loginResponse{
@@ -223,6 +226,7 @@ type (
 // @Router		/auth/get-verification-code [post]
 func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.getVerificationCode"
 
 	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
@@ -242,7 +246,7 @@ func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request
 
 	err = h.auth.SendConfirmationCode(r.Context(), req.Email)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	return nil
@@ -256,6 +260,7 @@ type (
 
 func (h *authHandler) updateTokenPair(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.updateTokenPair"
 
 	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
@@ -268,7 +273,14 @@ func (h *authHandler) updateTokenPair(w http.ResponseWriter, r *http.Request) er
 		return apperr.ErrSerializeData.WithErr(err)
 	}
 
+	if req.RefreshToken == "" {
+		return apperr.ErrNotAllFieldsProvided
+	}
+
+	// err = h.auth.UpdateTokenPair(r.Context(), req.RefreshToken)
+	// if err != nil {
+	// 	return fmt.Errorf("%s: %w", op, err)
+	// }
+
 	return nil
 }
-
-
