@@ -11,20 +11,7 @@ import (
 type Config struct {
 	Environment string `yaml:"environment" env:"ENVIRONMENT" env-required:"true"`
 
-	JWT struct {
-		TokenTTL   time.Duration `yaml:"token_ttl" env:"JWT_TOKEN_TTL" env-required:"true"`
-		JWTSignKey string        `yaml:"jwt_sign_key" env:"JWT_SIGN_KEY" env-required:"true"`
-	} `yaml:"jwt"`
-
-	Hasher struct {
-		HasherSalt string `yaml:"hasher_salt" env:"HASHER_SALT" env-required:"true"`
-	} `yaml:"hasher"`
-
-	Email struct {
-		EmailFrom     string        `yaml:"email_from" env:"EMAIL_FROM" env-required:"true"`
-		EmailPassword string        `yaml:"email_password" env:"EMAIL_PASSWORD" env-required:"true"`
-		VerifCodeTTL  time.Duration `yaml:"verif_code_ttl" env:"EMAIL_VERIF_CODE_TTL" env-required:"true"`
-	}
+	Auth `yaml:"auth"`
 
 	HTTP struct {
 		Host         string        `yaml:"host" env:"HTTP_HOST" env-required:"true"`
@@ -42,6 +29,25 @@ type Config struct {
 		Password string `yaml:"password" env:"PSQL_PASSWORD" env-required:"true"`
 		Database string `yaml:"database" env:"PSQL_DATABASE" env-required:"true"`
 	} `yaml:"postgresql"`
+}
+
+type Auth struct {
+	JWT struct {
+		AccessTokenTTL  time.Duration `yaml:"access_token_ttl" env:"JWT_ACCESS_TOKEN_TTL" env-required:"true"`
+		RefreshTokenTTL time.Duration `yaml:"refresh_token_ttl" env:"JWT_REFRESH_TOKEN_TTL" env-required:"true"`
+		MaxUserSessions int           `yaml:"max_user_sessions" env:"JWT_MAX_USER_SESSIONS" env-required:"true"`
+		JWTSignKey      string        `yaml:"jwt_sign_key" env:"JWT_SIGN_KEY" env-required:"true"`
+	} `yaml:"jwt"`
+
+	Hasher struct {
+		HasherSalt string `yaml:"hasher_salt" env:"HASHER_SALT" env-required:"true"`
+	} `yaml:"hasher"`
+
+	Email struct {
+		EmailFrom     string        `yaml:"email_from" env:"EMAIL_FROM" env-required:"true"`
+		EmailPassword string        `yaml:"email_password" env:"EMAIL_PASSWORD" env-required:"true"`
+		VerifCodeTTL  time.Duration `yaml:"verif_code_ttl" env:"EMAIL_VERIF_CODE_TTL" env-required:"true"`
+	}
 }
 
 func MustLoad() *Config {

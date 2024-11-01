@@ -20,12 +20,32 @@ definitions:
     properties:
       email:
         type: string
+      fingerprint:
+        type: string
       password:
         type: string
     type: object
   v1.loginResponse:
     properties:
-      jwt:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  v1.refreshTokensRequest:
+    properties:
+      fingerprint:
+        type: string
+      refresh_token:
+        type: string
+      user_id:
+        type: string
+    type: object
+  v1.refreshTokensResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
   v1.registerRequest:
@@ -43,10 +63,14 @@ definitions:
         type: string
       email:
         type: string
+      fingerprint:
+        type: string
     type: object
   v1.verifyCodeResponse:
     properties:
-      jwt:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
 host: localhost:8080
@@ -122,6 +146,40 @@ paths:
       summary: Log user in
       tags:
       - auth
+  /auth/refresh-tokens:
+    post:
+      consumes:
+      - application/json
+      description: get new access and refresh tokens
+      parameters:
+      - description: refreshTokens request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.refreshTokensRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK. Tokens were refreshed
+          schema:
+            $ref: '#/definitions/v1.refreshTokensResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "401":
+          description: Unauthorized. Request cannot be processed with provided credentials
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+      summary: Refresh tokens
+      tags:
+      - auth
   /auth/register:
     post:
       consumes:
@@ -141,6 +199,10 @@ paths:
           description: OK. Message was sent to user
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "409":
+          description: Conflict. User with provided email already exists
           schema:
             $ref: '#/definitions/apperr.AppError'
         "500":

@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
@@ -25,9 +26,10 @@ func NewUserRepository(client *pgxpool.Pool) *userRepository {
 
 func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error {
 	logrus.WithFields(logrus.Fields{"name": user.Name, "email": user.Email}).Trace("creating user")
+	const op string = "userRepository.CreateUser"
 
 	sql, args, err := r.qb.
-		Insert(usersTable).
+		Insert(TableUsers).
 		Columns(
 			"name",
 			"email",
@@ -40,12 +42,12 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 		).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commtag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commtag.RowsAffected() == 0 {
@@ -57,6 +59,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 
 func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	logrus.WithField("email", email).Trace("getting user by email")
+	const op string = "userRepository.GetUserByEmail"
 
 	sql, args, err := r.qb.
 		Select(
@@ -66,14 +69,14 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 			"password",
 			"created_at",
 		).
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{
 			"email":       email,
 			"is_verified": true,
 		}).
 		ToSql()
 	if err != nil {
-		return entity.User{}, psql.ErrCreateQuery(err)
+		return entity.User{}, psql.ErrCreateQuery(op, err)
 	}
 
 	var user entity.User
@@ -85,7 +88,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 		&user.CreatedAt,
 	)
 	if err != nil {
-		return entity.User{}, psql.ErrDoQuery(err)
+		return entity.User{}, psql.ErrDoQuery(op, err)
 	}
 
 	return user, nil
@@ -93,16 +96,17 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 
 func (r *userRepository) UserExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
+	const op string = "userRepository.UserExists"
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
 	if err != nil {
-		return false, psql.ErrCreateQuery(err)
+		return false, psql.ErrCreateQuery(op, err)
 	}
 
 	var exists bool
@@ -111,7 +115,7 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 		if err == pgx.ErrNoRows {
 			return false, nil
 		}
-		return false, psql.ErrDoQuery(err)
+		return false, psql.ErrDoQuery(op, err)
 	}
 
 	return exists, nil
@@ -119,14 +123,15 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 
 func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user is verified")
+	const op string = "userRepository.UserVerified"
 
 	sql, args, err := r.qb.
 		Select("is_verified").
-		From(usersTable).
+		From(TableUsers).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return false, psql.ErrCreateQuery(err)
+		return false, psql.ErrCreateQuery(op, err)
 	}
 
 	var verified bool
@@ -135,7 +140,7 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 		if err == pgx.ErrNoRows {
 			return false, nil
 		}
-		return false, psql.ErrDoQuery(err)
+		return false, psql.ErrDoQuery(op, err)
 	}
 
 	return verified, nil
@@ -143,18 +148,19 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 
 func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting user")
+	const op string = "userRepository.DeleteUser"
 
 	sql, args, err := r.qb.
-		Delete(usersTable).
+		Delete(TableUsers).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commTag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commTag.RowsAffected() == 0 {
@@ -164,17 +170,13 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	return nil
 }
 
-func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (entity.User, error) {
+func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("authenticating user")
+	const op string = "userRepository.AuthenticateUser"
 
 	sql, args, err := r.qb.
-		Select(
-			"id",
-			"name",
-			"email",
-			"created_at",
-		).
-		From(usersTable).
+		Select("id").
+		From(TableUsers).
 		Where(sq.Eq{
 			"email":       email,
 			"password":    password,
@@ -182,38 +184,37 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 		}).
 		ToSql()
 	if err != nil {
-		return entity.User{}, psql.ErrCreateQuery(err)
+		return "", psql.ErrCreateQuery(op, err)
 	}
 
-	var user entity.User
-	err = r.client.QueryRow(ctx, sql, args...).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.CreatedAt,
-	)
+	var userID string
+	err = r.client.QueryRow(ctx, sql, args...).Scan(&userID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", nil
+	}
 	if err != nil {
-		return entity.User{}, psql.ErrDoQuery(err)
+		return "", psql.ErrDoQuery(op, err)
 	}
 
-	return user, nil
+	return userID, nil
 }
 
 func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("verifying user")
+	const op string = "userRepository.VerifyEmail"
 
 	sql, args, err := r.qb.
-		Update(usersTable).
+		Update(TableUsers).
 		Set("is_verified", true).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commTag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commTag.RowsAffected() == 0 {

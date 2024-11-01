@@ -2,9 +2,7 @@ package usecase
 
 import (
 	"context"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 )
 
@@ -13,29 +11,38 @@ import (
 
 type (
 	Auth interface {
+		LoginUser(ctx context.Context, email, password, fingerprint string) (string, string, error)
+		RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error)
+		VerifyEmail(ctx context.Context, email, code, fingerprint string) (string, string, error)
 		RegisterUser(ctx context.Context, name, email, password string) error
-		LoginUser(ctx context.Context, email, password string) (string, error)
-		VerifyEmail(ctx context.Context, email, code string) (string, error)
 		SendConfirmationCode(ctx context.Context, email string) error
-		GenerateToken(id string, tokenTTL time.Duration) (string, error)
-		ParseToken(accessToken string) (jwt.MapClaims, error)
 	}
 
 	UserRepository interface {
+		AuthenticateUser(ctx context.Context, email, password string) (string, error)
 		GetUserByEmail(ctx context.Context, email string) (entity.User, error)
 		UserVerified(ctx context.Context, email string) (bool, error)
 		UserExists(ctx context.Context, email string) (bool, error)
-		DeleteUser(ctx context.Context, email string) error
 		CreateUser(ctx context.Context, user entity.User) error
-		AuthenticateUser(ctx context.Context, email, password string) (entity.User, error)
 		VerifyEmail(ctx context.Context, email string) error
+		DeleteUser(ctx context.Context, email string) error
 	}
 
 	VerificationDataRepository interface {
+		UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error
 		GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error)
 		CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error
-		UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error
-		DeleteVerificationData(ctx context.Context, email string) error
 		VerificationDataExists(ctx context.Context, email string) (bool, error)
+		DeleteVerificationData(ctx context.Context, email string) error
+	}
+
+	RefreshSessionsRepository interface {
+		CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error)
+		GetRefreshSession(ctx context.Context, refreshToken string) (entity.RefreshSession, error)
+		CountRefreshSessions(ctx context.Context, userID string) (int, error)
+		DeleteRefreshSessionsByUserID(ctx context.Context, userID string) error
+		DeleteRefreshSessionByToken(ctx context.Context, refreshToken string) error
+		DeleteRefreshSessionByFingerprint(ctx context.Context, fingerprint string) error
+		RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error)
 	}
 )
