@@ -5,6 +5,7 @@ const scheme = "public."
 
 // The names of tables in the database.
 const (
-	usersTable            = scheme + "users"
-	verificationDataTable = scheme + "verification_data"
+	TableUsers            = scheme + "users"
+	TableVerificationData = scheme + "verification_data"
+	TableRefreshSessions  = scheme + "refresh_sessions"
 )

@@ -116,6 +116,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/refresh-tokens": {
+            "post": {
+                "description": "get new access and refresh tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh tokens",
+                "parameters": [
+                    {
+                        "description": "refreshTokens request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.refreshTokensRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. Tokens were refreshed",
+                        "schema": {
+                            "$ref": "#/definitions/v1.refreshTokensResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. Request cannot be processed with provided credentials",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "register new user",
@@ -146,6 +198,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict. User with provided email already exists",
                         "schema": {
                             "$ref": "#/definitions/apperr.AppError"
                         }
@@ -244,6 +302,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "fingerprint": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 }
@@ -252,7 +313,35 @@ const docTemplate = `{
         "v1.loginResponse": {
             "type": "object",
             "properties": {
-                "jwt": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.refreshTokensRequest": {
+            "type": "object",
+            "properties": {
+                "fingerprint": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.refreshTokensResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
                     "type": "string"
                 }
             }
@@ -279,13 +368,19 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "fingerprint": {
+                    "type": "string"
                 }
             }
         },
         "v1.verifyCodeResponse": {
             "type": "object",
             "properties": {
-                "jwt": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
                     "type": "string"
                 }
             }

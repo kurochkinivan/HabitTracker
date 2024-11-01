@@ -25,6 +25,7 @@ func NewVerificationData(client *pgxpool.Pool) *verificationDataRepository {
 
 func (r *verificationDataRepository) GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error) {
 	logrus.WithField("email", email).Trace("getting verification data")
+	const op string = "verificationDataRepository.GetVerificationData"
 
 	sql, args, err := r.qb.
 		Select(
@@ -34,11 +35,11 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 			"created_at",
 			"expires_at",
 		).
-		From(verificationDataTable).
+		From(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return entity.VerificationData{}, psql.ErrCreateQuery(err)
+		return entity.VerificationData{}, psql.ErrCreateQuery(op, err)
 	}
 
 	var verificationData entity.VerificationData
@@ -50,7 +51,7 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 		&verificationData.ExpiresAt,
 	)
 	if err != nil {
-		return entity.VerificationData{}, psql.ErrDoQuery(err)
+		return entity.VerificationData{}, psql.ErrDoQuery(op, err)
 	}
 
 	return verificationData, nil
@@ -58,9 +59,10 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 
 func (r *verificationDataRepository) CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("creating verification data")
+	const op string = "verificationDataRepository.CreateVerificationData"
 
 	sql, args, err := r.qb.
-		Insert(verificationDataTable).
+		Insert(TableVerificationData).
 		Columns(
 			"email",
 			"code",
@@ -75,12 +77,12 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 		).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commtag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commtag.RowsAffected() == 0 {
@@ -92,16 +94,17 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 
 func (r *verificationDataRepository) VerificationDataExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithField("email", email).Trace("checking if verification data exists")
+	const op string = "verificationDataRepository.VerificationDataExists"
 
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(verificationDataTable).
+		From(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
 	if err != nil {
-		return false, psql.ErrCreateQuery(err)
+		return false, psql.ErrCreateQuery(op, err)
 	}
 
 	var exists bool
@@ -110,7 +113,7 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 		if err == pgx.ErrNoRows {
 			return false, nil
 		}
-		return false, psql.ErrDoQuery(err)
+		return false, psql.ErrDoQuery(op, err)
 	}
 
 	return exists, nil
@@ -118,18 +121,19 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 
 func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting verification data")
+	const op string = "verificationDataRepository.DeleteVerificationData"
 
 	sql, args, err := r.qb.
-		Delete(verificationDataTable).
+		Delete(TableVerificationData).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commTag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commTag.RowsAffected() == 0 {
@@ -141,9 +145,10 @@ func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context,
 
 func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("updating verification data code")
+	const op string = "verificationDataRepository.UpdateVerificationDataCode"
 
 	sql, args, err := r.qb.
-		Update(verificationDataTable).
+		Update(TableVerificationData).
 		SetMap(map[string]interface{}{
 			"code":       verifData.Code,
 			"created_at": verifData.CreatedAt,
@@ -152,12 +157,12 @@ func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Cont
 		Where(sq.Eq{"email": verifData.Email}).
 		ToSql()
 	if err != nil {
-		return psql.ErrCreateQuery(err)
+		return psql.ErrCreateQuery(op, err)
 	}
 
 	commTag, err := r.client.Exec(ctx, sql, args...)
 	if err != nil {
-		return psql.ErrExec(err)
+		return psql.ErrExec(op, err)
 	}
 
 	if commTag.RowsAffected() == 0 {
@@ -166,3 +171,5 @@ func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Cont
 
 	return nil
 }
+
+
