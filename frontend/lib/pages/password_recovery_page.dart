@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
-import '../widgets/password_error_message.dart';
+import '../widgets/text_field_error_message.dart';
+
 
 @RoutePage()
 class PasswordRecoveryPage extends StatefulWidget {
@@ -24,8 +24,8 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
 
   void _validateEmail() {
-      final bool isValid = emailRegex.hasMatch(_emailController.text) ||
-          _emailController.text.isEmpty;
+    final bool isValid = emailRegex.hasMatch(_emailController.text) ||
+        _emailController.text.isEmpty;
     _isEmailValid.value = isValid;
     setState(() {});
   }
@@ -85,7 +85,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
                     validateController: _isEmailValid,
                     onChanged: _validateEmail,
                   ),
-                  PasswordErrorMessage(
+                  TextFieldErrorMessage(
                     validator: _isEmailValid,
                     message: "Некорректный формат почты",
                   ),

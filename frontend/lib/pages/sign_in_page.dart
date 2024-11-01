@@ -1,14 +1,17 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habit_tracker/app_colors.dart';
-import '../models/auth_models.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 import '../router/app_router.dart';
-import '../services/auth_service.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
-import '../widgets/password_error_message.dart';
+import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
 class SignInPage extends StatefulWidget {
@@ -22,26 +25,19 @@ class SignInPageState extends State<SignInPage> {
   static final RegExp emailRegex =
       RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
 
+  String _serverErrorText = '';
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
   final ValueNotifier<bool> _isPasswordValid = ValueNotifier(true);
 
-  final AuthService _authService = AuthService();
+  final ValueNotifier<bool> _isEmailCorrect = ValueNotifier(true);
+  final ValueNotifier<bool> _isPasswordCorrect = ValueNotifier(true);
 
-  // Функция для входа
-  void _login() async {
-    final request = LoginRequest(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-    final response = await _authService.loginUser(request);
-
-    if (response != null) {
-      print('Logged in! JWT: ${response.jwt}');
-    }
-  }
+  final ValueNotifier<bool> _isLoginCorrect = ValueNotifier(true);
+  final ValueNotifier<bool> _isLoadingController = ValueNotifier(false);
 
   void _validateInputs() {
     final bool isEmailValid = emailRegex.hasMatch(_emailController.text) ||
@@ -51,7 +47,31 @@ class SignInPageState extends State<SignInPage> {
 
     _isEmailValid.value = isEmailValid;
     _isPasswordValid.value = isPasswordValid;
+    _isEmailCorrect.value = isEmailValid;
+    _isPasswordCorrect.value = isPasswordValid;
+    _isLoginCorrect.value = true;
+
     setState(() {});
+  }
+
+  void _login() async {
+    final List<ConnectivityResult> connectivityResult =
+        await (Connectivity().checkConnectivity());
+
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      setState(() {
+        _serverErrorText =
+            'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
+        _isLoadingController.value = false;
+        _isEmailCorrect.value = false;
+        _isPasswordCorrect.value = false;
+        _isLoginCorrect.value = false;
+      });
+      return;
+    }
+    context
+        .read<AuthBloc>()
+        .add(AuthEvent.login(_emailController.text, _passwordController.text));
   }
 
   @override
@@ -60,6 +80,10 @@ class SignInPageState extends State<SignInPage> {
     _passwordController.dispose();
     _isEmailValid.dispose();
     _isPasswordValid.dispose();
+    _isEmailCorrect.dispose();
+    _isPasswordCorrect.dispose();
+    _isLoginCorrect.dispose();
+    _isLoadingController.dispose();
     super.dispose();
   }
 
@@ -108,10 +132,10 @@ class SignInPageState extends State<SignInPage> {
                     controller: _emailController,
                     hintText: 'E-mail',
                     obscureText: false,
-                    validateController: _isEmailValid,
+                    validateController: _isEmailCorrect,
                     onChanged: _validateInputs,
                   ),
-                  PasswordErrorMessage(
+                  TextFieldErrorMessage(
                     validator: _isEmailValid,
                     message: "Некорректный формат почты",
                   ),
@@ -120,39 +144,52 @@ class SignInPageState extends State<SignInPage> {
                     controller: _passwordController,
                     hintText: 'Пароль',
                     obscureText: true,
-                    validateController: _isPasswordValid,
+                    validateController: _isPasswordCorrect,
                     onChanged: _validateInputs,
                   ),
-                  PasswordErrorMessage(
+                  TextFieldErrorMessage(
                     validator: _isPasswordValid,
                     message: "Слишком короткий пароль",
                   ),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 16.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextFieldErrorMessage(
+                              validator: _isLoginCorrect,
+                              message: _serverErrorText,
+                            ),
+                          ],
+                        ),
+                      ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [],
-                      ),
-                      InkWell(
-                        borderRadius: BorderRadius.circular(8.w),
-                        onTap: () {
-                          context.router.navigate(PasswordRecoveryRoute());
-                        },
-                        child: Text(
-                          "Восстановить пароль",
-                          style: TextStyle(
-                            color: AppColors.black02,
-                            fontSize: 12.sp,
-                            fontFamily: 'Gilroy',
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
-                            letterSpacing: 0.2,
-                            height: 1.3,
+                        children: [
+                          SizedBox(height: 4.h),
+                          InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () {
+                              context.router.navigate(PasswordRecoveryRoute());
+                            },
+                            child: Text(
+                              "Восстановить пароль",
+                              style: TextStyle(
+                                color: AppColors.black02,
+                                fontSize: 12.sp,
+                                fontFamily: 'Gilroy',
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                letterSpacing: 0.2,
+                                height: 1.3,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -173,13 +210,35 @@ class SignInPageState extends State<SignInPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CustomElevatedButton(
-            text: 'Войти',
-            isEnabled: _isEmailValid.value &&
-                _isPasswordValid.value &&
-                _emailController.text.isNotEmpty &&
-                _passwordController.text.isNotEmpty,
-            onPressed: _login,
+          BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthSuccess) {
+                _isLoadingController.value = false;
+              } else if (state is AuthFailure) {
+                setState(() {
+                  _serverErrorText = state.errorMessage;
+                  _isLoadingController.value = false;
+                  _isEmailCorrect.value = false;
+                  _isPasswordCorrect.value = false;
+                  _isLoginCorrect.value = false;
+                });
+              }
+            },
+            builder: (context, state) {
+              if (state is AuthLoading) {
+                _isLoadingController.value = true;
+              }
+              return CustomElevatedButton(
+                text: 'Войти',
+                isEnabled: _isEmailValid.value &&
+                    _isPasswordValid.value &&
+                    _emailController.text.isNotEmpty &&
+                    _passwordController.text.isNotEmpty &&
+                    _isLoginCorrect.value,
+                onPressed: _login,
+                isLoadingController: _isLoadingController,
+              );
+            },
           ),
           SizedBox(height: 12.h),
           OutlinedButton(

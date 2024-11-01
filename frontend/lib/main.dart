@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/router/app_router.dart';
-import 'package:habit_tracker/theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:habit_tracker/router/app_router.dart';
+import 'package:habit_tracker/services/api_client.dart';
+import 'package:habit_tracker/theme.dart';
+import 'bloc/auth_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,17 +18,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dio = Dio();
+    final apiClient = ApiClient(dio);
+
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp.router(
-          routerDelegate: _appRouter.delegate(),
-          routeInformationParser: _appRouter.defaultRouteParser(),
-          debugShowCheckedModeBanner: false,
-          title: 'Habit Tracker',
-          theme: habitTrackerTheme(),
+        return BlocProvider(
+          create: (_) => AuthBloc(apiClient),
+          child: MaterialApp.router(
+            routerDelegate: _appRouter.delegate(),
+            routeInformationParser: _appRouter.defaultRouteParser(),
+            debugShowCheckedModeBanner: false,
+            title: 'Habit Tracker',
+            theme: habitTrackerTheme(),
+          ),
         );
       },
     );

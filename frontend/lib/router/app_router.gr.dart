@@ -106,10 +106,17 @@ class StartRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [VerifyEmailPage]
-class VerifyEmailRoute extends PageRouteInfo<void> {
-  const VerifyEmailRoute({List<PageRouteInfo>? children})
-      : super(
+class VerifyEmailRoute extends PageRouteInfo<VerifyEmailRouteArgs> {
+  VerifyEmailRoute({
+    Key? key,
+    required String email,
+    List<PageRouteInfo>? children,
+  }) : super(
           VerifyEmailRoute.name,
+          args: VerifyEmailRouteArgs(
+            key: key,
+            email: email,
+          ),
           initialChildren: children,
         );
 
@@ -118,9 +125,29 @@ class VerifyEmailRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const VerifyEmailPage();
+      final args = data.argsAs<VerifyEmailRouteArgs>();
+      return VerifyEmailPage(
+        key: args.key,
+        email: args.email,
+      );
     },
   );
+}
+
+class VerifyEmailRouteArgs {
+  const VerifyEmailRouteArgs({
+    this.key,
+    required this.email,
+  });
+
+  final Key? key;
+
+  final String email;
+
+  @override
+  String toString() {
+    return 'VerifyEmailRouteArgs{key: $key, email: $email}';
+  }
 }
 
 /// generated route for

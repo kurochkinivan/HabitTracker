@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:habit_tracker/router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
 
@@ -21,7 +22,25 @@ class StartPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 120.h),
+                    SizedBox(height: 50.h),
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Centering the row
+                      children: [
+                        SvgPicture.asset(
+                          "assets/images/logo.svg",
+                          width: 28.w,
+                          fit: BoxFit.contain,
+                        ), // Replace with your desired icon
+                        SizedBox(width: 8.w), // Space between icon and text
+                        Text(
+                          'Habit Tracker',
+                          style: TextStyle(
+                              fontSize: 24.sp, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 40.h),
                     Image.asset("assets/images/Start_v1.png"),
                     SizedBox(height: 40.h),
                     RichText(

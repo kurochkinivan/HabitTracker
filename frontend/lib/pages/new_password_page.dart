@@ -2,11 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
-import '../widgets/password_error_message.dart';
+import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
 class NewPasswordPage extends StatefulWidget {
@@ -22,6 +21,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
 
   final ValueNotifier<bool> _isPassword1Valid = ValueNotifier(true);
   final ValueNotifier<bool> _isPassword2Valid = ValueNotifier(true);
+  final ValueNotifier<bool> _isPassword1Correct = ValueNotifier(true);
 
   void _validatePasswords() {
     final password1 = _passwordController1.text;
@@ -31,6 +31,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
     final bool isPassword2Valid = password2.length >= 6 || password2.isEmpty;
     final bool isPasswordsMatch = password1 == password2 || password2.isEmpty;
 
+    _isPassword1Correct.value = isPassword1Valid;
     _isPassword1Valid.value = isPassword1Valid && isPasswordsMatch;
     _isPassword2Valid.value = isPassword2Valid && isPasswordsMatch;
     setState(() {});
@@ -91,8 +92,8 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                     validateController: _isPassword1Valid,
                     onChanged: _validatePasswords,
                   ),
-                  PasswordErrorMessage(
-                      validator: _isPassword1Valid,
+                  TextFieldErrorMessage(
+                      validator: _isPassword1Correct,
                       message: "Слишком короткий пароль"),
                   SizedBox(height: 10.h),
                   CustomTextFormField(
@@ -102,7 +103,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                     validateController: _isPassword2Valid,
                     onChanged: _validatePasswords,
                   ),
-                  PasswordErrorMessage(
+                  TextFieldErrorMessage(
                       validator: _isPassword2Valid,
                       message:
                           "Слишком короткий пароль или пароли не совпадают"),
