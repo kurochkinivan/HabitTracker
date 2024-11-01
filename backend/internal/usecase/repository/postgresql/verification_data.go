@@ -25,7 +25,7 @@ func NewVerificationData(client *pgxpool.Pool) *verificationDataRepository {
 
 func (r *verificationDataRepository) GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error) {
 	logrus.WithField("email", email).Trace("getting verification data")
-	const op string = "postgresql.GetVerificationData"
+	const op string = "verificationDataRepository.GetVerificationData"
 
 	sql, args, err := r.qb.
 		Select(
@@ -59,7 +59,7 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 
 func (r *verificationDataRepository) CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("creating verification data")
-	const op string = "postgresql.CreateVerificationData"
+	const op string = "verificationDataRepository.CreateVerificationData"
 
 	sql, args, err := r.qb.
 		Insert(TableVerificationData).
@@ -94,7 +94,7 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 
 func (r *verificationDataRepository) VerificationDataExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithField("email", email).Trace("checking if verification data exists")
-	const op string = "postgresql.VerificationDataExists"
+	const op string = "verificationDataRepository.VerificationDataExists"
 
 	sql, args, err := r.qb.
 		Select("1").
@@ -121,7 +121,7 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 
 func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting verification data")
-	const op string = "postgresql.DeleteVerificationData"
+	const op string = "verificationDataRepository.DeleteVerificationData"
 
 	sql, args, err := r.qb.
 		Delete(TableVerificationData).
@@ -145,7 +145,7 @@ func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context,
 
 func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("updating verification data code")
-	const op string = "postgresql.UpdateVerificationDataCode"
+	const op string = "verificationDataRepository.UpdateVerificationDataCode"
 
 	sql, args, err := r.qb.
 		Update(TableVerificationData).

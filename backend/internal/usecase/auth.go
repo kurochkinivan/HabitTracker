@@ -72,8 +72,8 @@ func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepositor
 
 // TODO: Think of using goroutines for sending emails
 func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password string) error {
-	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Trace("registering new user")
-	const op string = "usecase.RegisterUser"
+	logrus.WithFields(logrus.Fields{"name": name, "email": email}).Debug("registering new user")
+	const op string = "AuthUseCase.RegisterUser"
 
 	user := entity.User{
 		Name:     name,
@@ -108,15 +108,15 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 
 	err = a.SendConfirmationCode(ctx, email)
 	if err != nil {
-		return apperr.ErrSendingEmail.WithErr(err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	return nil
 }
 
 func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprint string) (string, string, error) {
-	logrus.WithField("email", email).Trace("logging user in")
-	const op string = "usecase.LoginUser"
+	logrus.WithField("email", email).Debug("logging user in")
+	const op string = "AuthUseCase.LoginUser"
 
 	userID, err := a.userRepo.AuthenticateUser(ctx, email, a.hashPassword(password))
 	if err != nil {
@@ -126,7 +126,7 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprin
 		return "", "", apperr.ErrAuthorizing
 	}
 
-	accessToken, refreshToken, err := a.GenerateTokenPair(ctx, userID, fingerprint, a.accessTokenTTL, a.refreshTokenTTL)
+	accessToken, refreshToken, err := a.GenerateTokenPair(ctx, userID, fingerprint)
 	if err != nil {
 		return "", "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -135,8 +135,8 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprin
 }
 
 func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code, fingerprint string) (accessToken, refreshToken string, err error) {
-	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("verifying user's email")
-	const op string = "usecase.VerifyEmail"
+	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Debug("verifying user's email")
+	const op string = "AuthUseCase.VerifyEmail"
 
 	verifData, err := a.verifRepo.GetVerificationData(ctx, email)
 	if err != nil {
@@ -166,7 +166,7 @@ func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code, fingerprint 
 		return "", "", apperr.SystemError(err, op, "failed to get user by email")
 	}
 
-	accessToken, refreshToken, err = a.GenerateTokenPair(ctx, user.ID, fingerprint, a.accessTokenTTL, a.refreshTokenTTL)
+	accessToken, refreshToken, err = a.GenerateTokenPair(ctx, user.ID, fingerprint)
 	if err != nil {
 		return "", "", err
 	}
@@ -175,12 +175,11 @@ func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code, fingerprint 
 }
 
 func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) error {
-	logrus.WithField("email", email).Trace("sending confirmation code")
-	const op string = "usecase.SendConfirmationCode"
+	logrus.WithField("email", email).Debug("sending confirmation code")
+	const op string = "AuthUseCase.SendConfirmationCode"
 
 	userExists, err := a.userRepo.UserExists(ctx, email)
 	if err != nil {
-
 		return apperr.SystemError(err, op, "failed to check if user exists")
 	}
 
@@ -191,7 +190,11 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 		}
 
 		if verified {
-			return a.sendEmail(email, "", EmailExistsMessage)
+			err = a.sendEmail(email, "", EmailExistsMessage)
+			if err != nil {
+				return fmt.Errorf("%s: %w", op, err)
+			}
+			return nil
 		}
 	} else {
 		return apperr.ErrNotFound
@@ -200,8 +203,7 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 	code := a.generateCode()
 	err = a.sendEmail(email, code, ConfirmationMessage)
 	if err != nil {
-
-		return apperr.ErrSendingEmail.WithErr(err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	exists, err := a.verifRepo.VerificationDataExists(ctx, email)
@@ -230,39 +232,64 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 	return nil
 }
 
-func (a *AuthUseCase) ParseToken(accessToken string) (jwt.MapClaims, error) {
-	logrus.WithField("token", accessToken).Trace("parsing jwt-token")
-	const op string = "usecase.ParseToken"
+func (a *AuthUseCase) RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error) {
+	logrus.WithFields(logrus.Fields{"refresh_token": refreshTkn, "fingerprint": fingerprint}).Debug("refreshing tokens")
+	const op string = "AuthUseCase.RefreshTokens"
 
-	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			logrus.WithField("alg", t.Header["alg"]).Error("unexpected signing method")
-			return nil, apperr.SystemError(nil, op, "unexpected signing method")
-		}
-		return []byte(a.signingKey), nil
-	})
-
+	refreshSession, err := a.refreshRepo.GetRefreshSession(ctx, refreshTkn)
 	if err != nil {
-
-		return nil, apperr.ErrInvalidAuthHeader.WithErr(err)
+		return "", "", apperr.SystemError(err, op, "failed to get refresh session")
+	}
+	if refreshSession == (entity.RefreshSession{}) {
+		return "", "", apperr.ErrInvalidRefreshToken
 	}
 
-	payload, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, apperr.SystemError(nil, op, "claims are not of type jwt.MapClaims")
+	err = a.refreshRepo.DeleteRefreshSessionByToken(ctx, refreshTkn)
+	if err != nil {
+		return "", "", apperr.SystemError(err, op, "failed to delete refresh session by refresh token")
 	}
 
-	return payload, nil
+	if refreshSession.Expiration.Before(time.Now()) {
+		return "", "", apperr.ErrTokenExired
+	}
+
+	if refreshSession.Fingerprint != fingerprint {
+		return "", "", apperr.ErrInvalidFingerprint
+	}
+
+	accessToken, refreshToken, err = a.GenerateTokenPair(ctx, userID, fingerprint)
+	if err != nil {
+		return "", "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return accessToken, refreshToken, nil
 }
 
-func (a *AuthUseCase) GenerateAccessToken(id string, tokenTTL time.Duration) (string, error) {
-	logrus.WithField("id", id).Trace("generating access token")
-	const op string = "usecase.GenerateAccessToken"
+func (a *AuthUseCase) GenerateTokenPair(ctx context.Context, userID, fingerprint string) (accessToken, refreshToken string, err error) {
+	logrus.WithFields(logrus.Fields{"userID": userID, "fingerprint": fingerprint}).Debug("generating token pair")
+	const op string = "AuthUseCase.GenerateTokenPair"
+
+	accesstoken, err := a.GenerateAccessToken(userID)
+	if err != nil {
+		return "", "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	refreshToken, err = a.GenerateRefreshToken(ctx, userID, fingerprint)
+	if err != nil {
+		return "", "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return accesstoken, refreshToken, nil
+}
+
+func (a *AuthUseCase) GenerateAccessToken(userID string) (string, error) {
+	logrus.WithField("id", userID).Debug("generating access token")
+	const op string = "AuthUseCase.GenerateAccessToken"
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"ueid": id,
+		"ueid": userID,
 		"iat":  time.Now().Unix(),
-		"exp":  time.Now().Add(tokenTTL).Unix(),
+		"exp":  time.Now().Add(a.accessTokenTTL).Unix(),
 	})
 
 	signedToken, err := token.SignedString([]byte(a.signingKey))
@@ -275,15 +302,39 @@ func (a *AuthUseCase) GenerateAccessToken(id string, tokenTTL time.Duration) (st
 	return signedToken, nil
 }
 
-func (a *AuthUseCase) GenerateRefreshToken(ctx context.Context, userID, fingerprint string, tokenTTL time.Duration) (string, error) {
-	logrus.WithFields(logrus.Fields{"userID": userID, "fingerprint": fingerprint}).Trace("generating refresh token")
-	const op string = "usecase.GenerateRefreshToken"
+func (a *AuthUseCase) GenerateRefreshToken(ctx context.Context, userID, fingerprint string) (string, error) {
+	logrus.WithFields(logrus.Fields{"userID": userID, "fingerprint": fingerprint}).Debug("generating refresh token")
+	const op string = "AuthUseCase.GenerateRefreshToken"
+
+	count, err := a.refreshRepo.CountRefreshSessions(ctx, userID)
+	if err != nil {
+		return "", apperr.SystemError(err, op, "failed to count refresh sessions")
+	}
+
+	if count >= 5 {
+		err = a.refreshRepo.DeleteRefreshSessionsByUserID(ctx, userID)
+		if err != nil {
+			return "", apperr.SystemError(err, op, "failed to delete refresh sessions")
+		}
+	}
+
+	exists, err := a.refreshRepo.RefreshSessionExists(ctx, fingerprint)
+	if err != nil {
+		return "", apperr.SystemError(err, op, "failed to check if refresh session exists")
+	}
+
+	if exists {
+		err = a.refreshRepo.DeleteRefreshSessionByFingerprint(ctx, fingerprint)
+		if err != nil {
+			return "", apperr.SystemError(err, op, "failed to delete refresh session by fingerprint")
+		}
+	}
 
 	refreshSession := entity.RefreshSession{
 		UserID:      userID,
 		Fingerprint: fingerprint,
 		IssuedAt:    time.Now(),
-		Expiration:  time.Now().Add(tokenTTL),
+		Expiration:  time.Now().Add(a.refreshTokenTTL),
 	}
 	refreshToken, err := a.refreshRepo.CreateRefreshSession(ctx, refreshSession)
 	if err != nil {
@@ -293,26 +344,9 @@ func (a *AuthUseCase) GenerateRefreshToken(ctx context.Context, userID, fingerpr
 	return refreshToken, nil
 }
 
-func (a *AuthUseCase) GenerateTokenPair(ctx context.Context, userID, fingerprint string, accesstokenTTL, refreshtokenTTL time.Duration) (accessToken, refreshToken string, err error) {
-	logrus.WithFields(logrus.Fields{"userID": userID, "fingerprint": fingerprint}).Trace("generating token pair")
-	const op string = "usecase.GenerateTokenPair"
-
-	accesstoken, err := a.GenerateAccessToken(userID, accesstokenTTL)
-	if err != nil {
-		return "", "", fmt.Errorf("%s: %w", op, err)
-	}
-
-	refreshToken, err = a.GenerateRefreshToken(ctx, userID, fingerprint, refreshtokenTTL)
-	if err != nil {
-		return "", "", fmt.Errorf("%s: %w", op, err)
-	}
-
-	return accesstoken, refreshToken, nil
-}
-
 func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
-	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Trace("sending email")
-	const op string = "usecase.sendEmail"
+	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Debug("sending email")
+	const op string = "AuthUseCase.sendEmail"
 
 	m := gomail.NewMessage()
 	m.SetHeaders(map[string][]string{
@@ -331,7 +365,6 @@ func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
 		err = tmplEmailExists.Execute(&body, struct{ Code string }{Code: code})
 	}
 	if err != nil {
-
 		return apperr.SystemError(err, op, "failed to execute html-template")
 	}
 
@@ -339,8 +372,7 @@ func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
 
 	err = sender.Send(a.emailFrom, []string{email}, m)
 	if err != nil {
-
-		return apperr.ErrSendingEmail.WithErr(err)
+		return apperr.ErrSendingEmail.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
 
 	return nil

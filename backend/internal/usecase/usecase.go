@@ -17,7 +17,6 @@ type UseCasesDependencies struct {
 
 func NewUseCases(d UseCasesDependencies) *UseCases {
 	return &UseCases{
-		Auth: NewAuthUseCase(
-			d.UserRepo, d.VerifRepo, d.RefreshRepo, d.Config.Auth),
+		Auth: NewAuthUseCase(d.UserRepo, d.VerifRepo, d.RefreshRepo, d.Config.Auth),
 	}
 }

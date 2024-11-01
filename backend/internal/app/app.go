@@ -31,5 +31,5 @@ func Run(cfg *config.Config) error {
 	}
 	authUseCase := usecase.NewUseCases(dependencies)
 
-	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, authUseCase)
+	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, cfg.JWT.JWTSignKey, authUseCase)
 }

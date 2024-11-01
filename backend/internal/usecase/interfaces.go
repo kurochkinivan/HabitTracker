@@ -12,8 +12,9 @@ import (
 type (
 	Auth interface {
 		LoginUser(ctx context.Context, email, password, fingerprint string) (string, string, error)
-		RegisterUser(ctx context.Context, name, email, password string) error
+		RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error)
 		VerifyEmail(ctx context.Context, email, code, fingerprint string) (string, string, error)
+		RegisterUser(ctx context.Context, name, email, password string) error
 		SendConfirmationCode(ctx context.Context, email string) error
 	}
 
@@ -37,5 +38,11 @@ type (
 
 	RefreshSessionsRepository interface {
 		CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error)
+		GetRefreshSession(ctx context.Context, refreshToken string) (entity.RefreshSession, error)
+		CountRefreshSessions(ctx context.Context, userID string) (int, error)
+		DeleteRefreshSessionsByUserID(ctx context.Context, userID string) error
+		DeleteRefreshSessionByToken(ctx context.Context, refreshToken string) error
+		DeleteRefreshSessionByFingerprint(ctx context.Context, fingerprint string) error
+		RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error)
 	}
 )

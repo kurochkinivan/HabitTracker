@@ -26,7 +26,7 @@ func NewUserRepository(client *pgxpool.Pool) *userRepository {
 
 func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error {
 	logrus.WithFields(logrus.Fields{"name": user.Name, "email": user.Email}).Trace("creating user")
-	const op string = "postgresql.CreateUser"
+	const op string = "userRepository.CreateUser"
 
 	sql, args, err := r.qb.
 		Insert(TableUsers).
@@ -59,7 +59,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 
 func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	logrus.WithField("email", email).Trace("getting user by email")
-	const op string = "postgresql.GetUserByEmail"
+	const op string = "userRepository.GetUserByEmail"
 
 	sql, args, err := r.qb.
 		Select(
@@ -96,7 +96,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 
 func (r *userRepository) UserExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
-	const op string = "postgresql.UserExists"
+	const op string = "userRepository.UserExists"
 
 	sql, args, err := r.qb.
 		Select("1").
@@ -123,7 +123,7 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 
 func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user is verified")
-	const op string = "postgresql.UserVerified"
+	const op string = "userRepository.UserVerified"
 
 	sql, args, err := r.qb.
 		Select("is_verified").
@@ -148,7 +148,7 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 
 func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting user")
-	const op string = "postgresql.DeleteUser"
+	const op string = "userRepository.DeleteUser"
 
 	sql, args, err := r.qb.
 		Delete(TableUsers).
@@ -172,7 +172,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 
 func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("authenticating user")
-	const op string = "postgresql.AuthenticateUser"
+	const op string = "userRepository.AuthenticateUser"
 
 	sql, args, err := r.qb.
 		Select("id").
@@ -201,7 +201,7 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 
 func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("verifying user")
-	const op string = "postgresql.VerifyEmail"
+	const op string = "userRepository.VerifyEmail"
 
 	sql, args, err := r.qb.
 		Update(TableUsers).

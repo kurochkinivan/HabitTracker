@@ -7,9 +7,9 @@ import (
 	"runtime"
 
 	"github.com/kurochkinivan/HabitTracker/config"
+	_ "github.com/kurochkinivan/HabitTracker/docs"
 	"github.com/kurochkinivan/HabitTracker/internal/app"
 	"github.com/sirupsen/logrus"
-	_ "github.com/kurochkinivan/HabitTracker/docs"
 )
 
 const (
