@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     container_name: ht-backend
@@ -10,7 +8,7 @@ services:
       - postgresql
 
   postgresql:
-    container_name: nt-db
+    container_name: ht-db
     image: postgres:16.2-alpine
     restart: always
     ports:

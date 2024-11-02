@@ -9,6 +9,44 @@
     "host": "localhost:8080",
     "basePath": "/v1",
     "paths": {
+        "/auth/check-auth": {
+            "get": {
+                "description": "check access token",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check auth header",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization header must be set for valid response. It should be in format: Bearer {access_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. Access token is valid"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/get-verification-code": {
             "post": {
                 "description": "send verification code to user's email",
