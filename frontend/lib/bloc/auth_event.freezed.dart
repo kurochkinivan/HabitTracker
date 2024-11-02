@@ -16,30 +16,40 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$AuthEvent {
-  String get email => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String email, String name, String password)
         register,
-    required TResult Function(String email, String password) login,
-    required TResult Function(String email) sendVerificationCode,
-    required TResult Function(String email, String code) verifyEmail,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String email, String name, String password)? register,
-    TResult? Function(String email, String password)? login,
-    TResult? Function(String email)? sendVerificationCode,
-    TResult? Function(String email, String code)? verifyEmail,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String email, String name, String password)? register,
-    TResult Function(String email, String password)? login,
-    TResult Function(String email)? sendVerificationCode,
-    TResult Function(String email, String code)? verifyEmail,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -47,32 +57,29 @@ mixin _$AuthEvent {
   TResult map<TResult extends Object?>({
     required TResult Function(RegisterUser value) register,
     required TResult Function(LoginUser value) login,
-    required TResult Function(SendVerificationCode value) sendVerificationCode,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
     required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(RegisterUser value)? register,
     TResult? Function(LoginUser value)? login,
-    TResult? Function(SendVerificationCode value)? sendVerificationCode,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
     TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(RegisterUser value)? register,
     TResult Function(LoginUser value)? login,
-    TResult Function(SendVerificationCode value)? sendVerificationCode,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
     TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
     required TResult orElse(),
   }) =>
-      throw _privateConstructorUsedError;
-
-  /// Create a copy of AuthEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $AuthEventCopyWith<AuthEvent> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -80,8 +87,6 @@ mixin _$AuthEvent {
 abstract class $AuthEventCopyWith<$Res> {
   factory $AuthEventCopyWith(AuthEvent value, $Res Function(AuthEvent) then) =
       _$AuthEventCopyWithImpl<$Res, AuthEvent>;
-  @useResult
-  $Res call({String email});
 }
 
 /// @nodoc
@@ -96,27 +101,13 @@ class _$AuthEventCopyWithImpl<$Res, $Val extends AuthEvent>
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? email = null,
-  }) {
-    return _then(_value.copyWith(
-      email: null == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
 }
 
 /// @nodoc
-abstract class _$$RegisterUserImplCopyWith<$Res>
-    implements $AuthEventCopyWith<$Res> {
+abstract class _$$RegisterUserImplCopyWith<$Res> {
   factory _$$RegisterUserImplCopyWith(
           _$RegisterUserImpl value, $Res Function(_$RegisterUserImpl) then) =
       __$$RegisterUserImplCopyWithImpl<$Res>;
-  @override
   @useResult
   $Res call({String email, String name, String password});
 }
@@ -199,9 +190,14 @@ class _$RegisterUserImpl implements RegisterUser {
   TResult when<TResult extends Object?>({
     required TResult Function(String email, String name, String password)
         register,
-    required TResult Function(String email, String password) login,
-    required TResult Function(String email) sendVerificationCode,
-    required TResult Function(String email, String code) verifyEmail,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
   }) {
     return register(email, name, password);
   }
@@ -210,9 +206,12 @@ class _$RegisterUserImpl implements RegisterUser {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String email, String name, String password)? register,
-    TResult? Function(String email, String password)? login,
-    TResult? Function(String email)? sendVerificationCode,
-    TResult? Function(String email, String code)? verifyEmail,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
   }) {
     return register?.call(email, name, password);
   }
@@ -221,9 +220,12 @@ class _$RegisterUserImpl implements RegisterUser {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String email, String name, String password)? register,
-    TResult Function(String email, String password)? login,
-    TResult Function(String email)? sendVerificationCode,
-    TResult Function(String email, String code)? verifyEmail,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
     required TResult orElse(),
   }) {
     if (register != null) {
@@ -237,8 +239,9 @@ class _$RegisterUserImpl implements RegisterUser {
   TResult map<TResult extends Object?>({
     required TResult Function(RegisterUser value) register,
     required TResult Function(LoginUser value) login,
-    required TResult Function(SendVerificationCode value) sendVerificationCode,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
     required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
   }) {
     return register(this);
   }
@@ -248,8 +251,9 @@ class _$RegisterUserImpl implements RegisterUser {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(RegisterUser value)? register,
     TResult? Function(LoginUser value)? login,
-    TResult? Function(SendVerificationCode value)? sendVerificationCode,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
     TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
   }) {
     return register?.call(this);
   }
@@ -259,8 +263,9 @@ class _$RegisterUserImpl implements RegisterUser {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(RegisterUser value)? register,
     TResult Function(LoginUser value)? login,
-    TResult Function(SendVerificationCode value)? sendVerificationCode,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
     TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
     required TResult orElse(),
   }) {
     if (register != null) {
@@ -275,28 +280,24 @@ abstract class RegisterUser implements AuthEvent {
           final String email, final String name, final String password) =
       _$RegisterUserImpl;
 
-  @override
   String get email;
   String get name;
   String get password;
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$RegisterUserImplCopyWith<_$RegisterUserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$LoginUserImplCopyWith<$Res>
-    implements $AuthEventCopyWith<$Res> {
+abstract class _$$LoginUserImplCopyWith<$Res> {
   factory _$$LoginUserImplCopyWith(
           _$LoginUserImpl value, $Res Function(_$LoginUserImpl) then) =
       __$$LoginUserImplCopyWithImpl<$Res>;
-  @override
   @useResult
-  $Res call({String email, String password});
+  $Res call({String email, String fingerprint, String password});
 }
 
 /// @nodoc
@@ -313,12 +314,17 @@ class __$$LoginUserImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? email = null,
+    Object? fingerprint = null,
     Object? password = null,
   }) {
     return _then(_$LoginUserImpl(
       null == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      null == fingerprint
+          ? _value.fingerprint
+          : fingerprint // ignore: cast_nullable_to_non_nullable
               as String,
       null == password
           ? _value.password
@@ -331,16 +337,18 @@ class __$$LoginUserImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$LoginUserImpl implements LoginUser {
-  const _$LoginUserImpl(this.email, this.password);
+  const _$LoginUserImpl(this.email, this.fingerprint, this.password);
 
   @override
   final String email;
+  @override
+  final String fingerprint;
   @override
   final String password;
 
   @override
   String toString() {
-    return 'AuthEvent.login(email: $email, password: $password)';
+    return 'AuthEvent.login(email: $email, fingerprint: $fingerprint, password: $password)';
   }
 
   @override
@@ -349,12 +357,14 @@ class _$LoginUserImpl implements LoginUser {
         (other.runtimeType == runtimeType &&
             other is _$LoginUserImpl &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.fingerprint, fingerprint) ||
+                other.fingerprint == fingerprint) &&
             (identical(other.password, password) ||
                 other.password == password));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, email, password);
+  int get hashCode => Object.hash(runtimeType, email, fingerprint, password);
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -369,35 +379,46 @@ class _$LoginUserImpl implements LoginUser {
   TResult when<TResult extends Object?>({
     required TResult Function(String email, String name, String password)
         register,
-    required TResult Function(String email, String password) login,
-    required TResult Function(String email) sendVerificationCode,
-    required TResult Function(String email, String code) verifyEmail,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
   }) {
-    return login(email, password);
+    return login(email, fingerprint, password);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String email, String name, String password)? register,
-    TResult? Function(String email, String password)? login,
-    TResult? Function(String email)? sendVerificationCode,
-    TResult? Function(String email, String code)? verifyEmail,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
   }) {
-    return login?.call(email, password);
+    return login?.call(email, fingerprint, password);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String email, String name, String password)? register,
-    TResult Function(String email, String password)? login,
-    TResult Function(String email)? sendVerificationCode,
-    TResult Function(String email, String code)? verifyEmail,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
     required TResult orElse(),
   }) {
     if (login != null) {
-      return login(email, password);
+      return login(email, fingerprint, password);
     }
     return orElse();
   }
@@ -407,8 +428,9 @@ class _$LoginUserImpl implements LoginUser {
   TResult map<TResult extends Object?>({
     required TResult Function(RegisterUser value) register,
     required TResult Function(LoginUser value) login,
-    required TResult Function(SendVerificationCode value) sendVerificationCode,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
     required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
   }) {
     return login(this);
   }
@@ -418,8 +440,9 @@ class _$LoginUserImpl implements LoginUser {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(RegisterUser value)? register,
     TResult? Function(LoginUser value)? login,
-    TResult? Function(SendVerificationCode value)? sendVerificationCode,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
     TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
   }) {
     return login?.call(this);
   }
@@ -429,8 +452,9 @@ class _$LoginUserImpl implements LoginUser {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(RegisterUser value)? register,
     TResult Function(LoginUser value)? login,
-    TResult Function(SendVerificationCode value)? sendVerificationCode,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
     TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
     required TResult orElse(),
   }) {
     if (login != null) {
@@ -441,38 +465,36 @@ class _$LoginUserImpl implements LoginUser {
 }
 
 abstract class LoginUser implements AuthEvent {
-  const factory LoginUser(final String email, final String password) =
+  const factory LoginUser(
+          final String email, final String fingerprint, final String password) =
       _$LoginUserImpl;
 
-  @override
   String get email;
+  String get fingerprint;
   String get password;
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$LoginUserImplCopyWith<_$LoginUserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$SendVerificationCodeImplCopyWith<$Res>
-    implements $AuthEventCopyWith<$Res> {
-  factory _$$SendVerificationCodeImplCopyWith(_$SendVerificationCodeImpl value,
-          $Res Function(_$SendVerificationCodeImpl) then) =
-      __$$SendVerificationCodeImplCopyWithImpl<$Res>;
-  @override
+abstract class _$$GetVerificationCodeImplCopyWith<$Res> {
+  factory _$$GetVerificationCodeImplCopyWith(_$GetVerificationCodeImpl value,
+          $Res Function(_$GetVerificationCodeImpl) then) =
+      __$$GetVerificationCodeImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String email});
 }
 
 /// @nodoc
-class __$$SendVerificationCodeImplCopyWithImpl<$Res>
-    extends _$AuthEventCopyWithImpl<$Res, _$SendVerificationCodeImpl>
-    implements _$$SendVerificationCodeImplCopyWith<$Res> {
-  __$$SendVerificationCodeImplCopyWithImpl(_$SendVerificationCodeImpl _value,
-      $Res Function(_$SendVerificationCodeImpl) _then)
+class __$$GetVerificationCodeImplCopyWithImpl<$Res>
+    extends _$AuthEventCopyWithImpl<$Res, _$GetVerificationCodeImpl>
+    implements _$$GetVerificationCodeImplCopyWith<$Res> {
+  __$$GetVerificationCodeImplCopyWithImpl(_$GetVerificationCodeImpl _value,
+      $Res Function(_$GetVerificationCodeImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of AuthEvent
@@ -482,7 +504,7 @@ class __$$SendVerificationCodeImplCopyWithImpl<$Res>
   $Res call({
     Object? email = null,
   }) {
-    return _then(_$SendVerificationCodeImpl(
+    return _then(_$GetVerificationCodeImpl(
       null == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
@@ -493,22 +515,22 @@ class __$$SendVerificationCodeImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$SendVerificationCodeImpl implements SendVerificationCode {
-  const _$SendVerificationCodeImpl(this.email);
+class _$GetVerificationCodeImpl implements GetVerificationCode {
+  const _$GetVerificationCodeImpl(this.email);
 
   @override
   final String email;
 
   @override
   String toString() {
-    return 'AuthEvent.sendVerificationCode(email: $email)';
+    return 'AuthEvent.getVerificationCode(email: $email)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SendVerificationCodeImpl &&
+            other is _$GetVerificationCodeImpl &&
             (identical(other.email, email) || other.email == email));
   }
 
@@ -520,45 +542,55 @@ class _$SendVerificationCodeImpl implements SendVerificationCode {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$SendVerificationCodeImplCopyWith<_$SendVerificationCodeImpl>
-      get copyWith =>
-          __$$SendVerificationCodeImplCopyWithImpl<_$SendVerificationCodeImpl>(
-              this, _$identity);
+  _$$GetVerificationCodeImplCopyWith<_$GetVerificationCodeImpl> get copyWith =>
+      __$$GetVerificationCodeImplCopyWithImpl<_$GetVerificationCodeImpl>(
+          this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String email, String name, String password)
         register,
-    required TResult Function(String email, String password) login,
-    required TResult Function(String email) sendVerificationCode,
-    required TResult Function(String email, String code) verifyEmail,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
   }) {
-    return sendVerificationCode(email);
+    return getVerificationCode(email);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String email, String name, String password)? register,
-    TResult? Function(String email, String password)? login,
-    TResult? Function(String email)? sendVerificationCode,
-    TResult? Function(String email, String code)? verifyEmail,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
   }) {
-    return sendVerificationCode?.call(email);
+    return getVerificationCode?.call(email);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String email, String name, String password)? register,
-    TResult Function(String email, String password)? login,
-    TResult Function(String email)? sendVerificationCode,
-    TResult Function(String email, String code)? verifyEmail,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
     required TResult orElse(),
   }) {
-    if (sendVerificationCode != null) {
-      return sendVerificationCode(email);
+    if (getVerificationCode != null) {
+      return getVerificationCode(email);
     }
     return orElse();
   }
@@ -568,10 +600,11 @@ class _$SendVerificationCodeImpl implements SendVerificationCode {
   TResult map<TResult extends Object?>({
     required TResult Function(RegisterUser value) register,
     required TResult Function(LoginUser value) login,
-    required TResult Function(SendVerificationCode value) sendVerificationCode,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
     required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
   }) {
-    return sendVerificationCode(this);
+    return getVerificationCode(this);
   }
 
   @override
@@ -579,10 +612,11 @@ class _$SendVerificationCodeImpl implements SendVerificationCode {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(RegisterUser value)? register,
     TResult? Function(LoginUser value)? login,
-    TResult? Function(SendVerificationCode value)? sendVerificationCode,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
     TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
   }) {
-    return sendVerificationCode?.call(this);
+    return getVerificationCode?.call(this);
   }
 
   @override
@@ -590,41 +624,38 @@ class _$SendVerificationCodeImpl implements SendVerificationCode {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(RegisterUser value)? register,
     TResult Function(LoginUser value)? login,
-    TResult Function(SendVerificationCode value)? sendVerificationCode,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
     TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
     required TResult orElse(),
   }) {
-    if (sendVerificationCode != null) {
-      return sendVerificationCode(this);
+    if (getVerificationCode != null) {
+      return getVerificationCode(this);
     }
     return orElse();
   }
 }
 
-abstract class SendVerificationCode implements AuthEvent {
-  const factory SendVerificationCode(final String email) =
-      _$SendVerificationCodeImpl;
+abstract class GetVerificationCode implements AuthEvent {
+  const factory GetVerificationCode(final String email) =
+      _$GetVerificationCodeImpl;
 
-  @override
   String get email;
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SendVerificationCodeImplCopyWith<_$SendVerificationCodeImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  _$$GetVerificationCodeImplCopyWith<_$GetVerificationCodeImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$VerifyEmailImplCopyWith<$Res>
-    implements $AuthEventCopyWith<$Res> {
+abstract class _$$VerifyEmailImplCopyWith<$Res> {
   factory _$$VerifyEmailImplCopyWith(
           _$VerifyEmailImpl value, $Res Function(_$VerifyEmailImpl) then) =
       __$$VerifyEmailImplCopyWithImpl<$Res>;
-  @override
   @useResult
-  $Res call({String email, String code});
+  $Res call({String code, String email, String fingerprint});
 }
 
 /// @nodoc
@@ -640,17 +671,22 @@ class __$$VerifyEmailImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? email = null,
     Object? code = null,
+    Object? email = null,
+    Object? fingerprint = null,
   }) {
     return _then(_$VerifyEmailImpl(
+      null == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String,
       null == email
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      null == code
-          ? _value.code
-          : code // ignore: cast_nullable_to_non_nullable
+      null == fingerprint
+          ? _value.fingerprint
+          : fingerprint // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -659,16 +695,18 @@ class __$$VerifyEmailImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$VerifyEmailImpl implements VerifyEmail {
-  const _$VerifyEmailImpl(this.email, this.code);
+  const _$VerifyEmailImpl(this.code, this.email, this.fingerprint);
 
+  @override
+  final String code;
   @override
   final String email;
   @override
-  final String code;
+  final String fingerprint;
 
   @override
   String toString() {
-    return 'AuthEvent.verifyEmail(email: $email, code: $code)';
+    return 'AuthEvent.verifyEmail(code: $code, email: $email, fingerprint: $fingerprint)';
   }
 
   @override
@@ -676,12 +714,14 @@ class _$VerifyEmailImpl implements VerifyEmail {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$VerifyEmailImpl &&
+            (identical(other.code, code) || other.code == code) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.code, code) || other.code == code));
+            (identical(other.fingerprint, fingerprint) ||
+                other.fingerprint == fingerprint));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, email, code);
+  int get hashCode => Object.hash(runtimeType, code, email, fingerprint);
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -696,35 +736,46 @@ class _$VerifyEmailImpl implements VerifyEmail {
   TResult when<TResult extends Object?>({
     required TResult Function(String email, String name, String password)
         register,
-    required TResult Function(String email, String password) login,
-    required TResult Function(String email) sendVerificationCode,
-    required TResult Function(String email, String code) verifyEmail,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
   }) {
-    return verifyEmail(email, code);
+    return verifyEmail(code, email, fingerprint);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String email, String name, String password)? register,
-    TResult? Function(String email, String password)? login,
-    TResult? Function(String email)? sendVerificationCode,
-    TResult? Function(String email, String code)? verifyEmail,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
   }) {
-    return verifyEmail?.call(email, code);
+    return verifyEmail?.call(code, email, fingerprint);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String email, String name, String password)? register,
-    TResult Function(String email, String password)? login,
-    TResult Function(String email)? sendVerificationCode,
-    TResult Function(String email, String code)? verifyEmail,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
     required TResult orElse(),
   }) {
     if (verifyEmail != null) {
-      return verifyEmail(email, code);
+      return verifyEmail(code, email, fingerprint);
     }
     return orElse();
   }
@@ -734,8 +785,9 @@ class _$VerifyEmailImpl implements VerifyEmail {
   TResult map<TResult extends Object?>({
     required TResult Function(RegisterUser value) register,
     required TResult Function(LoginUser value) login,
-    required TResult Function(SendVerificationCode value) sendVerificationCode,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
     required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
   }) {
     return verifyEmail(this);
   }
@@ -745,8 +797,9 @@ class _$VerifyEmailImpl implements VerifyEmail {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(RegisterUser value)? register,
     TResult? Function(LoginUser value)? login,
-    TResult? Function(SendVerificationCode value)? sendVerificationCode,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
     TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
   }) {
     return verifyEmail?.call(this);
   }
@@ -756,8 +809,9 @@ class _$VerifyEmailImpl implements VerifyEmail {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(RegisterUser value)? register,
     TResult Function(LoginUser value)? login,
-    TResult Function(SendVerificationCode value)? sendVerificationCode,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
     TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
     required TResult orElse(),
   }) {
     if (verifyEmail != null) {
@@ -768,17 +822,206 @@ class _$VerifyEmailImpl implements VerifyEmail {
 }
 
 abstract class VerifyEmail implements AuthEvent {
-  const factory VerifyEmail(final String email, final String code) =
+  const factory VerifyEmail(
+          final String code, final String email, final String fingerprint) =
       _$VerifyEmailImpl;
 
-  @override
-  String get email;
   String get code;
+  String get email;
+  String get fingerprint;
 
   /// Create a copy of AuthEvent
   /// with the given fields replaced by the non-null parameter values.
-  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$VerifyEmailImplCopyWith<_$VerifyEmailImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$RefreshTokensImplCopyWith<$Res> {
+  factory _$$RefreshTokensImplCopyWith(
+          _$RefreshTokensImpl value, $Res Function(_$RefreshTokensImpl) then) =
+      __$$RefreshTokensImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String fingerprint, String refreshToken, String userId});
+}
+
+/// @nodoc
+class __$$RefreshTokensImplCopyWithImpl<$Res>
+    extends _$AuthEventCopyWithImpl<$Res, _$RefreshTokensImpl>
+    implements _$$RefreshTokensImplCopyWith<$Res> {
+  __$$RefreshTokensImplCopyWithImpl(
+      _$RefreshTokensImpl _value, $Res Function(_$RefreshTokensImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? fingerprint = null,
+    Object? refreshToken = null,
+    Object? userId = null,
+  }) {
+    return _then(_$RefreshTokensImpl(
+      null == fingerprint
+          ? _value.fingerprint
+          : fingerprint // ignore: cast_nullable_to_non_nullable
+              as String,
+      null == refreshToken
+          ? _value.refreshToken
+          : refreshToken // ignore: cast_nullable_to_non_nullable
+              as String,
+      null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$RefreshTokensImpl implements RefreshTokens {
+  const _$RefreshTokensImpl(this.fingerprint, this.refreshToken, this.userId);
+
+  @override
+  final String fingerprint;
+  @override
+  final String refreshToken;
+  @override
+  final String userId;
+
+  @override
+  String toString() {
+    return 'AuthEvent.refreshTokens(fingerprint: $fingerprint, refreshToken: $refreshToken, userId: $userId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$RefreshTokensImpl &&
+            (identical(other.fingerprint, fingerprint) ||
+                other.fingerprint == fingerprint) &&
+            (identical(other.refreshToken, refreshToken) ||
+                other.refreshToken == refreshToken) &&
+            (identical(other.userId, userId) || other.userId == userId));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, fingerprint, refreshToken, userId);
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$RefreshTokensImplCopyWith<_$RefreshTokensImpl> get copyWith =>
+      __$$RefreshTokensImplCopyWithImpl<_$RefreshTokensImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String email, String name, String password)
+        register,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
+  }) {
+    return refreshTokens(fingerprint, refreshToken, userId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String email, String name, String password)? register,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
+  }) {
+    return refreshTokens?.call(fingerprint, refreshToken, userId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String email, String name, String password)? register,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
+    required TResult orElse(),
+  }) {
+    if (refreshTokens != null) {
+      return refreshTokens(fingerprint, refreshToken, userId);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(RegisterUser value) register,
+    required TResult Function(LoginUser value) login,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
+    required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
+  }) {
+    return refreshTokens(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(RegisterUser value)? register,
+    TResult? Function(LoginUser value)? login,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
+    TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
+  }) {
+    return refreshTokens?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(RegisterUser value)? register,
+    TResult Function(LoginUser value)? login,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
+    TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
+    required TResult orElse(),
+  }) {
+    if (refreshTokens != null) {
+      return refreshTokens(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class RefreshTokens implements AuthEvent {
+  const factory RefreshTokens(final String fingerprint,
+      final String refreshToken, final String userId) = _$RefreshTokensImpl;
+
+  String get fingerprint;
+  String get refreshToken;
+  String get userId;
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$RefreshTokensImplCopyWith<_$RefreshTokensImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -8,10 +8,12 @@ part of 'get_jwt_response.dart';
 
 GetJwtResponse _$GetJwtResponseFromJson(Map<String, dynamic> json) =>
     GetJwtResponse(
-      jwt: json['jwt'] as String,
+      accessToken: json['access_token'] as String,
+      refreshToken: json['refresh_token'] as String,
     );
 
 Map<String, dynamic> _$GetJwtResponseToJson(GetJwtResponse instance) =>
     <String, dynamic>{
-      'jwt': instance.jwt,
+      'access_token': instance.accessToken,
+      'refresh_token': instance.refreshToken,
     };

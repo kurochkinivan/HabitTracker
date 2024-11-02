@@ -1,3 +1,4 @@
+import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -69,9 +70,12 @@ class SignInPageState extends State<SignInPage> {
       });
       return;
     }
-    context
-        .read<AuthBloc>()
-        .add(AuthEvent.login(_emailController.text, _passwordController.text));
+
+    const androidIdPlugin = AndroidId();
+    final String? androidId = await androidIdPlugin.getId();
+
+    context.read<AuthBloc>().add(AuthEvent.login(
+        _emailController.text, androidId!, _passwordController.text));
   }
 
   @override

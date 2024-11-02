@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:habit_tracker/models/refresh_tokens_request.dart';
 import 'package:habit_tracker/models/verify_email_request.dart';
 import 'package:retrofit/retrofit.dart';
 import '../models/get_jwt_response.dart';
@@ -27,4 +28,7 @@ abstract class ApiClient {
 
   @POST("/auth/verify-email")
   Future<GetJwtResponse> verifyEmail(@Body() VerifyEmailRequest request);
+
+  @POST("/auth/refresh-tokens")
+  Future<GetJwtResponse> refreshTokens(@Body() RefreshTokensRequest request);
 }

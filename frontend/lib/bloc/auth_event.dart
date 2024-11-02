@@ -6,8 +6,15 @@ part 'auth_event.freezed.dart';
 class AuthEvent with _$AuthEvent {
   const factory AuthEvent.register(String email, String name, String password) =
       RegisterUser;
-  const factory AuthEvent.login(String email, String password) = LoginUser;
-  const factory AuthEvent.sendVerificationCode(String email) =
-      SendVerificationCode;
-  const factory AuthEvent.verifyEmail(String email, String code) = VerifyEmail;
+  const factory AuthEvent.login(
+      String email, String fingerprint, String password) = LoginUser;
+  const factory AuthEvent.getVerificationCode(String email) =
+      GetVerificationCode;
+  const factory AuthEvent.verifyEmail(
+      String code, String email, String fingerprint) = VerifyEmail;
+  const factory AuthEvent.refreshTokens(
+    String fingerprint,
+    String refreshToken,
+    String userId,
+  ) = RefreshTokens;
 }

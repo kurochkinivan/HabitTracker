@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../app_colors.dart';
 
 class ResendCodeButton extends StatefulWidget {
@@ -67,7 +68,7 @@ class ResendCodeButtonState extends State<ResendCodeButton> {
             ? 'Отправить код повторно'
             : 'Повторная отправка через $_formattedTime',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontSize: 14,
+            fontSize: 14.sp,
             color: _canResend ? AppColors.black02 : AppColors.grey01),
       ),
     );

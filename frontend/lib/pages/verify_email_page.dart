@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +50,10 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
       });
       return;
     }
-
-    context
-        .read<AuthBloc>()
-        .add(AuthEvent.verifyEmail(widget.email, _textEditingController.text));
+    const androidIdPlugin = AndroidId();
+    final String? androidId = await androidIdPlugin.getId();
+    context.read<AuthBloc>().add(AuthEvent.verifyEmail(
+        _textEditingController.text, widget.email, androidId!));
   }
 
   void resendCode() async {
@@ -68,7 +69,7 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
       return;
     }
 
-    context.read<AuthBloc>().add(AuthEvent.sendVerificationCode(widget.email));
+    context.read<AuthBloc>().add(AuthEvent.getVerificationCode(widget.email));
   }
 
   @override
