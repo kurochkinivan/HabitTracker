@@ -45,7 +45,7 @@ class CustomElevatedButton extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 fontSize: 14.sp,
                 letterSpacing: -0.4,
-                height: 1.3,
+                height: 1.2,
                 color: states.contains(WidgetState.disabled)
                     ? AppColors.grey01
                     : AppColors.white,

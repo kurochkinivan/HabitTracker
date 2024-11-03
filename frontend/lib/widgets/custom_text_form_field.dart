@@ -120,7 +120,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
     return TextStyle(
       color: !widget.validateController.value
           ? AppColors.redError
-          : (_isActive ? AppColors.purple : AppColors.grey02),
+          : (_isActive ? AppColors.black01 : AppColors.grey02),
       fontSize: 12.sp,
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,
