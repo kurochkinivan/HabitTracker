@@ -7,12 +7,20 @@ ThemeData habitTrackerTheme() {
     scaffoldBackgroundColor: AppColors.white,
     primaryColor: AppColors.black01,
     textTheme: TextTheme(
+      titleMedium:  TextStyle(
+      fontFamily: 'Unbounded',
+      fontWeight: FontWeight.w500,
+      fontSize: 16.sp,
+      letterSpacing: 0,
+      height: 1.2,
+      color: AppColors.black01,
+    ),
       displayLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w600,
         fontSize: 32.sp,
         letterSpacing: 1.1,
-        height: 1.3,
+        height: 1.2,
         color: AppColors.black01,
       ),
       displayMedium: TextStyle(
@@ -20,7 +28,7 @@ ThemeData habitTrackerTheme() {
         fontWeight: FontWeight.w600,
         fontSize: 32.sp,
         letterSpacing: 1.1,
-        height: 1.3,
+        height: 1.2,
         color: AppColors.purple,
       ),
       bodyLarge: TextStyle(
@@ -28,7 +36,7 @@ ThemeData habitTrackerTheme() {
         fontWeight: FontWeight.w500,
         fontSize: 14.sp,
         letterSpacing: -0.4,
-        height: 1.3,
+        height: 1.2,
         color: AppColors.grey01,
       ),
       labelLarge: TextStyle(
@@ -36,7 +44,7 @@ ThemeData habitTrackerTheme() {
         fontWeight: FontWeight.w600,
         fontSize: 14.sp,
         letterSpacing: 0.2,
-        height: 1.3,
+        height: 1.2,
         color: AppColors.white,
       ),
       labelSmall: TextStyle(
@@ -44,7 +52,7 @@ ThemeData habitTrackerTheme() {
         fontWeight: FontWeight.w500,
         fontSize: 12.sp,
         letterSpacing: -0.4,
-        height: 1.3,
+        height: 1.2,
         color: AppColors.redError,
       ),
     ),
@@ -63,7 +71,7 @@ ThemeData habitTrackerTheme() {
           fontWeight: FontWeight.w600,
           fontSize: 14.sp,
           letterSpacing: -0.4,
-          height: 1.3,
+          height: 1.2,
           color: AppColors.black01,
         ),
       ),

@@ -22,6 +22,7 @@ mixin _$AuthState {
     required TResult Function() loading,
     required TResult Function(String message) success,
     required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -30,6 +31,7 @@ mixin _$AuthState {
     TResult? Function()? loading,
     TResult? Function(String message)? success,
     TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -38,6 +40,7 @@ mixin _$AuthState {
     TResult Function()? loading,
     TResult Function(String message)? success,
     TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -47,6 +50,7 @@ mixin _$AuthState {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthSuccess value) success,
     required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -55,6 +59,7 @@ mixin _$AuthState {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthSuccess value)? success,
     TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -63,6 +68,7 @@ mixin _$AuthState {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthSuccess value)? success,
     TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -133,6 +139,7 @@ class _$AuthInitialImpl implements AuthInitial {
     required TResult Function() loading,
     required TResult Function(String message) success,
     required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
   }) {
     return initial();
   }
@@ -144,6 +151,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult? Function()? loading,
     TResult? Function(String message)? success,
     TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
   }) {
     return initial?.call();
   }
@@ -155,6 +163,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult Function()? loading,
     TResult Function(String message)? success,
     TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -170,6 +179,7 @@ class _$AuthInitialImpl implements AuthInitial {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthSuccess value) success,
     required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
   }) {
     return initial(this);
   }
@@ -181,6 +191,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthSuccess value)? success,
     TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
   }) {
     return initial?.call(this);
   }
@@ -192,6 +203,7 @@ class _$AuthInitialImpl implements AuthInitial {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthSuccess value)? success,
     TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -250,6 +262,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     required TResult Function() loading,
     required TResult Function(String message) success,
     required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
   }) {
     return loading();
   }
@@ -261,6 +274,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult? Function()? loading,
     TResult? Function(String message)? success,
     TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
   }) {
     return loading?.call();
   }
@@ -272,6 +286,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult Function()? loading,
     TResult Function(String message)? success,
     TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -287,6 +302,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthSuccess value) success,
     required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
   }) {
     return loading(this);
   }
@@ -298,6 +314,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthSuccess value)? success,
     TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
   }) {
     return loading?.call(this);
   }
@@ -309,6 +326,7 @@ class _$AuthLoadingImpl implements AuthLoading {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthSuccess value)? success,
     TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -394,6 +412,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     required TResult Function() loading,
     required TResult Function(String message) success,
     required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
   }) {
     return success(message);
   }
@@ -405,6 +424,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     TResult? Function()? loading,
     TResult? Function(String message)? success,
     TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
   }) {
     return success?.call(message);
   }
@@ -416,6 +436,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     TResult Function()? loading,
     TResult Function(String message)? success,
     TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -431,6 +452,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthSuccess value) success,
     required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
   }) {
     return success(this);
   }
@@ -442,6 +464,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthSuccess value)? success,
     TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
   }) {
     return success?.call(this);
   }
@@ -453,6 +476,7 @@ class _$AuthSuccessImpl implements AuthSuccess {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthSuccess value)? success,
     TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -547,6 +571,7 @@ class _$AuthFailureImpl implements AuthFailure {
     required TResult Function() loading,
     required TResult Function(String message) success,
     required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
   }) {
     return failure(errorMessage);
   }
@@ -558,6 +583,7 @@ class _$AuthFailureImpl implements AuthFailure {
     TResult? Function()? loading,
     TResult? Function(String message)? success,
     TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
   }) {
     return failure?.call(errorMessage);
   }
@@ -569,6 +595,7 @@ class _$AuthFailureImpl implements AuthFailure {
     TResult Function()? loading,
     TResult Function(String message)? success,
     TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
     required TResult orElse(),
   }) {
     if (failure != null) {
@@ -584,6 +611,7 @@ class _$AuthFailureImpl implements AuthFailure {
     required TResult Function(AuthLoading value) loading,
     required TResult Function(AuthSuccess value) success,
     required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
   }) {
     return failure(this);
   }
@@ -595,6 +623,7 @@ class _$AuthFailureImpl implements AuthFailure {
     TResult? Function(AuthLoading value)? loading,
     TResult? Function(AuthSuccess value)? success,
     TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
   }) {
     return failure?.call(this);
   }
@@ -606,6 +635,7 @@ class _$AuthFailureImpl implements AuthFailure {
     TResult Function(AuthLoading value)? loading,
     TResult Function(AuthSuccess value)? success,
     TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
     required TResult orElse(),
   }) {
     if (failure != null) {
@@ -624,5 +654,163 @@ abstract class AuthFailure implements AuthState {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AuthFailureImplCopyWith<_$AuthFailureImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AuthCheckedImplCopyWith<$Res> {
+  factory _$$AuthCheckedImplCopyWith(
+          _$AuthCheckedImpl value, $Res Function(_$AuthCheckedImpl) then) =
+      __$$AuthCheckedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool isValid});
+}
+
+/// @nodoc
+class __$$AuthCheckedImplCopyWithImpl<$Res>
+    extends _$AuthStateCopyWithImpl<$Res, _$AuthCheckedImpl>
+    implements _$$AuthCheckedImplCopyWith<$Res> {
+  __$$AuthCheckedImplCopyWithImpl(
+      _$AuthCheckedImpl _value, $Res Function(_$AuthCheckedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AuthState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? isValid = null,
+  }) {
+    return _then(_$AuthCheckedImpl(
+      null == isValid
+          ? _value.isValid
+          : isValid // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$AuthCheckedImpl implements AuthChecked {
+  const _$AuthCheckedImpl(this.isValid);
+
+  @override
+  final bool isValid;
+
+  @override
+  String toString() {
+    return 'AuthState.authChecked(isValid: $isValid)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AuthCheckedImpl &&
+            (identical(other.isValid, isValid) || other.isValid == isValid));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, isValid);
+
+  /// Create a copy of AuthState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AuthCheckedImplCopyWith<_$AuthCheckedImpl> get copyWith =>
+      __$$AuthCheckedImplCopyWithImpl<_$AuthCheckedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String message) success,
+    required TResult Function(String errorMessage) failure,
+    required TResult Function(bool isValid) authChecked,
+  }) {
+    return authChecked(isValid);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String message)? success,
+    TResult? Function(String errorMessage)? failure,
+    TResult? Function(bool isValid)? authChecked,
+  }) {
+    return authChecked?.call(isValid);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String message)? success,
+    TResult Function(String errorMessage)? failure,
+    TResult Function(bool isValid)? authChecked,
+    required TResult orElse(),
+  }) {
+    if (authChecked != null) {
+      return authChecked(isValid);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(AuthInitial value) initial,
+    required TResult Function(AuthLoading value) loading,
+    required TResult Function(AuthSuccess value) success,
+    required TResult Function(AuthFailure value) failure,
+    required TResult Function(AuthChecked value) authChecked,
+  }) {
+    return authChecked(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(AuthInitial value)? initial,
+    TResult? Function(AuthLoading value)? loading,
+    TResult? Function(AuthSuccess value)? success,
+    TResult? Function(AuthFailure value)? failure,
+    TResult? Function(AuthChecked value)? authChecked,
+  }) {
+    return authChecked?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(AuthInitial value)? initial,
+    TResult Function(AuthLoading value)? loading,
+    TResult Function(AuthSuccess value)? success,
+    TResult Function(AuthFailure value)? failure,
+    TResult Function(AuthChecked value)? authChecked,
+    required TResult orElse(),
+  }) {
+    if (authChecked != null) {
+      return authChecked(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AuthChecked implements AuthState {
+  const factory AuthChecked(final bool isValid) = _$AuthCheckedImpl;
+
+  bool get isValid;
+
+  /// Create a copy of AuthState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AuthCheckedImplCopyWith<_$AuthCheckedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

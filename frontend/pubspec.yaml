@@ -57,3 +57,8 @@ flutter:
           weight: 500
         - asset: assets/fonts/Gilroy-Semibold.ttf
           weight: 600
+
+    - family: Unbounded
+      fonts:
+        - asset: assets/fonts/Unbounded-Medium.ttf
+          weight: 500

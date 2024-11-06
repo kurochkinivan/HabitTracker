@@ -22,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<GetVerificationCode>(_onGetVerificationCode);
     on<VerifyEmail>(_onVerifyEmail);
     on<RefreshTokens>(_onRefreshTokens);
+    on<CheckAuth>(_onCheckAuth);
   }
 
   Future<void> _onRegisterUser(
@@ -107,6 +108,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           code: event.code, email: event.email, fingerprint: event.fingerprint);
       final response =
           await apiClient.verifyEmail(request).timeout(Duration(seconds: 15));
+      await storage.write(key: 'access_token', value: response.accessToken);
+      await storage.write(key: 'refresh_token', value: response.refreshToken);
       emit(AuthState.success('Email verified successfully.'));
     } on TimeoutException {
       emit(const AuthState.failure(
@@ -146,6 +149,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(const AuthState.failure(
           "При проверке кода произошла непредвиденная ошибка."));
+    }
+  }
+
+  Future<void> _onCheckAuth(
+      CheckAuth event, Emitter<AuthState> emit) async {
+    emit(const AuthState.loading());
+    try {
+      final response = await apiClient
+          .checkAuth("Bearer ${event.token}")
+          .timeout(const Duration(seconds: 15));
+      emit(AuthState.authChecked(response.isValid));
+    } on TimeoutException {
+      emit(const AuthState.failure(
+          "Сервер не ответил. Пожалуйста, попробуйте еще раз."));
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        emit(const AuthState.authChecked(false));
+      } else if (e.error is AppError) {
+        emit(AuthState.failure((e.error as AppError).userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при проверке токена."));
+      }
+    } catch (e) {
+      emit(const AuthState.failure(
+          "Произошла непредвиденная ошибка при проверке токена."));
     }
   }
 }

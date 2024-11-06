@@ -15,67 +15,59 @@ class StartPage extends StatelessWidget {
       bottomNavigationBar: _buildActionButtons(context),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 32.w),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 46.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    "assets/images/logo.svg",
+                    width: 28.w,
+                    fit: BoxFit.contain,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Habit Tracker',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
+              ),
+              SizedBox(height: 48.h),
+              Image.asset("assets/images/Start_v1.png"),
+              SizedBox(height: 40.h),
+              RichText(
+                text: TextSpan(
                   children: [
-                    SizedBox(height: 50.h),
-                    Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center, // Centering the row
-                      children: [
-                        SvgPicture.asset(
-                          "assets/images/logo.svg",
-                          width: 28.w,
-                          fit: BoxFit.contain,
-                        ), // Replace with your desired icon
-                        SizedBox(width: 8.w), // Space between icon and text
-                        Text(
-                          'Habit Tracker',
-                          style: TextStyle(
-                              fontSize: 24.sp, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 40.h),
-                    Image.asset("assets/images/Start_v1.png"),
-                    SizedBox(height: 40.h),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'В путь за ',
-                            style: Theme.of(context).textTheme.displayLarge,
-                          ),
-                          TextSpan(
-                            text: 'лучшей',
-                            style: Theme.of(context).textTheme.displayMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      'версией себя',
+                    TextSpan(
+                      text: 'В путь за ',
                       style: Theme.of(context).textTheme.displayLarge,
                     ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'Устанавливай цели и достигай их. Наше приложение '
-                      'поможет тебе строить полезные привычки, напоминать '
-                      'о них и анализировать твой прогресс.',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                    TextSpan(
+                      text: 'лучшей',
+                      style: Theme.of(context).textTheme.displayMedium,
                     ),
                   ],
                 ),
               ),
-            ),
-            // Bottom buttons
-          ],
+              Text(
+                'версией себя',
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Устанавливай цели и достигай их. Наше приложение '
+                'поможет тебе строить полезные привычки, напоминать '
+                'о них и анализировать твой прогресс.',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ],
+          ),
         ),
       ),
+      // Bottom buttons
     );
   }
 
