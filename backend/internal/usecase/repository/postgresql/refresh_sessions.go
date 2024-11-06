@@ -24,6 +24,8 @@ func NewRefreshSessionsRepository(client *pgxpool.Pool) *refreshSessionsReposito
 	}
 }
 
+// TODO: think about no rows affected error
+
 func (r *refreshSessionsRepository) CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error) {
 	logrus.WithField("user_id", refreshSession.UserID).Trace("creating refresh session")
 	const op string = "refreshSessionsRepository.CreateRefreshSession"

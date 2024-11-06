@@ -32,6 +32,11 @@ definitions:
       refresh_token:
         type: string
     type: object
+  v1.logoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
   v1.refreshTokensRequest:
     properties:
       fingerprint:
@@ -170,6 +175,36 @@ paths:
           schema:
             $ref: '#/definitions/apperr.AppError'
       summary: Log user in
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: log user out using refresh-token
+      parameters:
+      - description: logout request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/v1.logoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK. User was logged out
+          schema:
+            $ref: '#/definitions/v1.refreshTokensResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperr.AppError'
+      summary: Log user out
       tags:
       - auth
   /auth/refresh-tokens:

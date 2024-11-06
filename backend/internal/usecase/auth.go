@@ -232,6 +232,18 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 	return nil
 }
 
+func (a *AuthUseCase) LogoutUser(ctx context.Context, refreshToken string) error {
+	logrus.WithField("refresh_token", refreshToken).Debug("logging user out")
+	const op string = "authUseCase.LogoutUser"
+	
+	err := a.refreshRepo.DeleteRefreshSessionByToken(ctx, refreshToken)
+	if err != nil {
+		return apperr.SystemError(err, op, "failed to delete refresh session")
+	}
+
+	return nil 
+}
+
 func (a *AuthUseCase) RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error) {
 	logrus.WithFields(logrus.Fields{"refresh_token": refreshTkn, "fingerprint": fingerprint}).Debug("refreshing tokens")
 	const op string = "AuthUseCase.RefreshTokens"

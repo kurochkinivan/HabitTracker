@@ -18,11 +18,15 @@ const (
 )
 
 func main() {
+	logrus.Info("starting app...")
+	
+	logrus.Info("reading config...")
 	cfg := config.MustLoad()
+
+	logrus.Info("setting up logger...")
 	setupLogger(cfg.Environment)
 
 	logrus.WithField("env", cfg.Environment).Info("starting habit-tracker server")
-
 	err := app.Run(cfg)
 	if err != nil {
 		logrus.WithError(err).Fatal("app.Run failed")

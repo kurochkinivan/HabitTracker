@@ -16,6 +16,7 @@ type (
 		VerifyEmail(ctx context.Context, email, code, fingerprint string) (string, string, error)
 		RegisterUser(ctx context.Context, name, email, password string) error
 		SendConfirmationCode(ctx context.Context, email string) error
+		LogoutUser(ctx context.Context, refreshToken string) error
 	}
 
 	UserRepository interface {

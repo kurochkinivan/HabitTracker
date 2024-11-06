@@ -29,8 +29,9 @@ const baseAuthPath = "/v1/auth"
 
 func (h *authHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(h.registerUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(h.loginUser)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(h.verifyEmail)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(h.loginUser)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/logout", http.MethodPost, baseAuthPath), errMdw(logMdw(h.logout)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(h.getVerificationCode)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/refresh-tokens", http.MethodPost, baseAuthPath), errMdw(logMdw(h.refreshTokens)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/check-auth", http.MethodGet, baseAuthPath), errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
@@ -326,6 +327,54 @@ func (h *authHandler) refreshTokens(w http.ResponseWriter, r *http.Request) erro
 
 	return nil
 }
+
+type (
+	logoutRequest struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+)
+
+//	@Summary		Log user out
+//	@Description	log user out using refresh-token
+//	@Tags			auth
+//	@Accept			json
+//	@Param			request	body	v1.logoutRequest	true	"logout request parameters"
+//	@Produce		json
+//	@Success		200	{object}	v1.refreshTokensResponse	"OK. User was logged out"
+//	@Failure		400	{object}	apperr.AppError				"Bad Request"
+//	@Failure		500	{object}	apperr.AppError				"Internal Server Error"
+//	@Router			/auth/logout [post]
+func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
+	const op string = "authHandler.logout"
+
+	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
+	if err != nil {
+		return apperr.ErrReadRequestBody.WithErr(fmt.Errorf("%s: %w", op, err))
+	}
+
+	var req logoutRequest
+	err = json.Unmarshal(reqData, &req)
+	if err != nil {
+		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
+	}
+
+	if req.RefreshToken == "" {
+		return apperr.ErrNotAllFieldsProvided
+	}
+
+	if _, err := uuid.Parse(req.RefreshToken); err != nil {
+		return apperr.ErrInvalidUUID
+	}
+
+	err = h.auth.LogoutUser(r.Context(), req.RefreshToken)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil 
+}
+
 
 //	@Summary		Check auth header
 //	@Description	check access token 

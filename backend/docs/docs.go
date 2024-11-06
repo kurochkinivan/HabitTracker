@@ -154,6 +154,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "log user out using refresh-token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log user out",
+                "parameters": [
+                    {
+                        "description": "logout request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.logoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK. User was logged out",
+                        "schema": {
+                            "$ref": "#/definitions/v1.refreshTokensResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh-tokens": {
             "post": {
                 "description": "get new access and refresh tokens",
@@ -354,6 +400,14 @@ const docTemplate = `{
                 "access_token": {
                     "type": "string"
                 },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.logoutRequest": {
+            "type": "object",
+            "properties": {
                 "refresh_token": {
                     "type": "string"
                 }
