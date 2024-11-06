@@ -31,7 +31,7 @@ func (h *authHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(h.registerUser)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(h.verifyEmail)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(h.loginUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/logout", http.MethodPost, baseAuthPath), errMdw(logMdw(h.logout)))
+	mux.HandleFunc(fmt.Sprintf("%s %s/logout", http.MethodDelete, baseAuthPath), errMdw(logMdw(h.logout)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(h.getVerificationCode)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/refresh-tokens", http.MethodPost, baseAuthPath), errMdw(logMdw(h.refreshTokens)))
 	mux.HandleFunc(fmt.Sprintf("%s %s/check-auth", http.MethodGet, baseAuthPath), errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
@@ -343,7 +343,7 @@ type (
 //	@Success		200	{object}	v1.refreshTokensResponse	"OK. User was logged out"
 //	@Failure		400	{object}	apperr.AppError				"Bad Request"
 //	@Failure		500	{object}	apperr.AppError				"Internal Server Error"
-//	@Router			/auth/logout [post]
+//	@Router			/auth/logout [delete]
 func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.logout"
