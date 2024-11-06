@@ -29,6 +29,7 @@ mixin _$AuthEvent {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -41,6 +42,7 @@ mixin _$AuthEvent {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -53,6 +55,7 @@ mixin _$AuthEvent {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -64,6 +67,7 @@ mixin _$AuthEvent {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -74,6 +78,7 @@ mixin _$AuthEvent {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -84,6 +89,7 @@ mixin _$AuthEvent {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -205,6 +211,7 @@ class _$RegisterUserImpl implements RegisterUser {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return register(email, name, password);
   }
@@ -220,6 +227,7 @@ class _$RegisterUserImpl implements RegisterUser {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return register?.call(email, name, password);
   }
@@ -235,6 +243,7 @@ class _$RegisterUserImpl implements RegisterUser {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (register != null) {
@@ -252,6 +261,7 @@ class _$RegisterUserImpl implements RegisterUser {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return register(this);
   }
@@ -265,6 +275,7 @@ class _$RegisterUserImpl implements RegisterUser {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return register?.call(this);
   }
@@ -278,6 +289,7 @@ class _$RegisterUserImpl implements RegisterUser {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (register != null) {
@@ -400,6 +412,7 @@ class _$LoginUserImpl implements LoginUser {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return login(email, fingerprint, password);
   }
@@ -415,6 +428,7 @@ class _$LoginUserImpl implements LoginUser {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return login?.call(email, fingerprint, password);
   }
@@ -430,6 +444,7 @@ class _$LoginUserImpl implements LoginUser {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (login != null) {
@@ -447,6 +462,7 @@ class _$LoginUserImpl implements LoginUser {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return login(this);
   }
@@ -460,6 +476,7 @@ class _$LoginUserImpl implements LoginUser {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return login?.call(this);
   }
@@ -473,6 +490,7 @@ class _$LoginUserImpl implements LoginUser {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (login != null) {
@@ -578,6 +596,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return getVerificationCode(email);
   }
@@ -593,6 +612,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return getVerificationCode?.call(email);
   }
@@ -608,6 +628,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (getVerificationCode != null) {
@@ -625,6 +646,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return getVerificationCode(this);
   }
@@ -638,6 +660,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return getVerificationCode?.call(this);
   }
@@ -651,6 +674,7 @@ class _$GetVerificationCodeImpl implements GetVerificationCode {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (getVerificationCode != null) {
@@ -769,6 +793,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return verifyEmail(code, email, fingerprint);
   }
@@ -784,6 +809,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return verifyEmail?.call(code, email, fingerprint);
   }
@@ -799,6 +825,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (verifyEmail != null) {
@@ -816,6 +843,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return verifyEmail(this);
   }
@@ -829,6 +857,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return verifyEmail?.call(this);
   }
@@ -842,6 +871,7 @@ class _$VerifyEmailImpl implements VerifyEmail {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (verifyEmail != null) {
@@ -965,6 +995,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return refreshTokens(fingerprint, refreshToken, userId);
   }
@@ -980,6 +1011,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return refreshTokens?.call(fingerprint, refreshToken, userId);
   }
@@ -995,6 +1027,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (refreshTokens != null) {
@@ -1012,6 +1045,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return refreshTokens(this);
   }
@@ -1025,6 +1059,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return refreshTokens?.call(this);
   }
@@ -1038,6 +1073,7 @@ class _$RefreshTokensImpl implements RefreshTokens {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (refreshTokens != null) {
@@ -1141,6 +1177,7 @@ class _$CheckAuthImpl implements CheckAuth {
             String fingerprint, String refreshToken, String userId)
         refreshTokens,
     required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
   }) {
     return checkAuth(token);
   }
@@ -1156,6 +1193,7 @@ class _$CheckAuthImpl implements CheckAuth {
     TResult? Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
   }) {
     return checkAuth?.call(token);
   }
@@ -1171,6 +1209,7 @@ class _$CheckAuthImpl implements CheckAuth {
     TResult Function(String fingerprint, String refreshToken, String userId)?
         refreshTokens,
     TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
     required TResult orElse(),
   }) {
     if (checkAuth != null) {
@@ -1188,6 +1227,7 @@ class _$CheckAuthImpl implements CheckAuth {
     required TResult Function(VerifyEmail value) verifyEmail,
     required TResult Function(RefreshTokens value) refreshTokens,
     required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
   }) {
     return checkAuth(this);
   }
@@ -1201,6 +1241,7 @@ class _$CheckAuthImpl implements CheckAuth {
     TResult? Function(VerifyEmail value)? verifyEmail,
     TResult? Function(RefreshTokens value)? refreshTokens,
     TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
   }) {
     return checkAuth?.call(this);
   }
@@ -1214,6 +1255,7 @@ class _$CheckAuthImpl implements CheckAuth {
     TResult Function(VerifyEmail value)? verifyEmail,
     TResult Function(RefreshTokens value)? refreshTokens,
     TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
     required TResult orElse(),
   }) {
     if (checkAuth != null) {
@@ -1232,5 +1274,185 @@ abstract class CheckAuth implements AuthEvent {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CheckAuthImplCopyWith<_$CheckAuthImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LogoutUserImplCopyWith<$Res> {
+  factory _$$LogoutUserImplCopyWith(
+          _$LogoutUserImpl value, $Res Function(_$LogoutUserImpl) then) =
+      __$$LogoutUserImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String refreshToken});
+}
+
+/// @nodoc
+class __$$LogoutUserImplCopyWithImpl<$Res>
+    extends _$AuthEventCopyWithImpl<$Res, _$LogoutUserImpl>
+    implements _$$LogoutUserImplCopyWith<$Res> {
+  __$$LogoutUserImplCopyWithImpl(
+      _$LogoutUserImpl _value, $Res Function(_$LogoutUserImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? refreshToken = null,
+  }) {
+    return _then(_$LogoutUserImpl(
+      null == refreshToken
+          ? _value.refreshToken
+          : refreshToken // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$LogoutUserImpl implements LogoutUser {
+  const _$LogoutUserImpl(this.refreshToken);
+
+  @override
+  final String refreshToken;
+
+  @override
+  String toString() {
+    return 'AuthEvent.logout(refreshToken: $refreshToken)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LogoutUserImpl &&
+            (identical(other.refreshToken, refreshToken) ||
+                other.refreshToken == refreshToken));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, refreshToken);
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LogoutUserImplCopyWith<_$LogoutUserImpl> get copyWith =>
+      __$$LogoutUserImplCopyWithImpl<_$LogoutUserImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String email, String name, String password)
+        register,
+    required TResult Function(String email, String fingerprint, String password)
+        login,
+    required TResult Function(String email) getVerificationCode,
+    required TResult Function(String code, String email, String fingerprint)
+        verifyEmail,
+    required TResult Function(
+            String fingerprint, String refreshToken, String userId)
+        refreshTokens,
+    required TResult Function(String token) checkAuth,
+    required TResult Function(String refreshToken) logout,
+  }) {
+    return logout(refreshToken);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String email, String name, String password)? register,
+    TResult? Function(String email, String fingerprint, String password)? login,
+    TResult? Function(String email)? getVerificationCode,
+    TResult? Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult? Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
+    TResult? Function(String token)? checkAuth,
+    TResult? Function(String refreshToken)? logout,
+  }) {
+    return logout?.call(refreshToken);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String email, String name, String password)? register,
+    TResult Function(String email, String fingerprint, String password)? login,
+    TResult Function(String email)? getVerificationCode,
+    TResult Function(String code, String email, String fingerprint)?
+        verifyEmail,
+    TResult Function(String fingerprint, String refreshToken, String userId)?
+        refreshTokens,
+    TResult Function(String token)? checkAuth,
+    TResult Function(String refreshToken)? logout,
+    required TResult orElse(),
+  }) {
+    if (logout != null) {
+      return logout(refreshToken);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(RegisterUser value) register,
+    required TResult Function(LoginUser value) login,
+    required TResult Function(GetVerificationCode value) getVerificationCode,
+    required TResult Function(VerifyEmail value) verifyEmail,
+    required TResult Function(RefreshTokens value) refreshTokens,
+    required TResult Function(CheckAuth value) checkAuth,
+    required TResult Function(LogoutUser value) logout,
+  }) {
+    return logout(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(RegisterUser value)? register,
+    TResult? Function(LoginUser value)? login,
+    TResult? Function(GetVerificationCode value)? getVerificationCode,
+    TResult? Function(VerifyEmail value)? verifyEmail,
+    TResult? Function(RefreshTokens value)? refreshTokens,
+    TResult? Function(CheckAuth value)? checkAuth,
+    TResult? Function(LogoutUser value)? logout,
+  }) {
+    return logout?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(RegisterUser value)? register,
+    TResult Function(LoginUser value)? login,
+    TResult Function(GetVerificationCode value)? getVerificationCode,
+    TResult Function(VerifyEmail value)? verifyEmail,
+    TResult Function(RefreshTokens value)? refreshTokens,
+    TResult Function(CheckAuth value)? checkAuth,
+    TResult Function(LogoutUser value)? logout,
+    required TResult orElse(),
+  }) {
+    if (logout != null) {
+      return logout(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class LogoutUser implements AuthEvent {
+  const factory LogoutUser(final String refreshToken) = _$LogoutUserImpl;
+
+  String get refreshToken;
+
+  /// Create a copy of AuthEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LogoutUserImplCopyWith<_$LogoutUserImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

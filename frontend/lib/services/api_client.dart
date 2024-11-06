@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:habit_tracker/models/logout_request.dart';
 import 'package:habit_tracker/models/refresh_tokens_request.dart';
 import 'package:habit_tracker/models/verify_email_request.dart';
 import 'package:retrofit/retrofit.dart';
@@ -35,4 +36,7 @@ abstract class ApiClient {
 
   @GET("/auth/check-auth")
   Future<CheckAuthResponse> checkAuth(@Header("Authorization") String authorization);
+
+  @POST("/auth/logout")
+  Future<GetJwtResponse> logout(@Body() LogoutRequest request);
 }

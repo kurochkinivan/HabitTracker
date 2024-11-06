@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/app_error.dart';
 import '../models/get_verification_code_request.dart';
 import '../models/login_request.dart';
+import '../models/logout_request.dart';
 import '../models/refresh_tokens_request.dart';
 import '../models/register_request.dart';
 import '../models/verify_email_request.dart';
@@ -23,6 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyEmail>(_onVerifyEmail);
     on<RefreshTokens>(_onRefreshTokens);
     on<CheckAuth>(_onCheckAuth);
+    on<LogoutUser>(_onLogoutUser);
   }
 
   Future<void> _onRegisterUser(
@@ -43,6 +45,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final error = e.error;
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при регистрации."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -70,6 +74,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final error = e.error;
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при входе в систему."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -93,6 +99,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final error = e.error;
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при отправке кода проверки."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -118,6 +126,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final error = e.error;
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при проверке кода."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -145,15 +155,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final error = e.error;
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при отправке токенов."));
       }
     } catch (e) {
       emit(const AuthState.failure(
-          "При проверке кода произошла непредвиденная ошибка."));
+          "При отправке токенов произошла непредвиденная ошибка."));
     }
   }
 
-  Future<void> _onCheckAuth(
-      CheckAuth event, Emitter<AuthState> emit) async {
+  Future<void> _onCheckAuth(CheckAuth event, Emitter<AuthState> emit) async {
     emit(const AuthState.loading());
     try {
       final response = await apiClient
@@ -174,6 +185,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(const AuthState.failure(
           "Произошла непредвиденная ошибка при проверке токена."));
+    }
+  }
+
+  Future<void> _onLogoutUser(LogoutUser event, Emitter<AuthState> emit) async {
+    emit(const AuthState.loading());
+    try {
+      final request = LogoutRequest(refreshToken: event.refreshToken);
+      final response =
+          await apiClient.logout(request).timeout(const Duration(seconds: 15));
+      await storage.write(key: 'access_token', value: response.accessToken);
+      await storage.write(key: 'refresh_token', value: response.refreshToken);
+    } on TimeoutException {
+      emit(const AuthState.failure(
+          "Сервер не ответил. Пожалуйста, попробуйте еще раз."));
+    } on DioException catch (e) {
+      final error = e.error;
+      if (error is AppError) {
+        emit(AuthState.failure(error.userMessage));
+      } else {
+        emit(const AuthState.failure("Ошибка при выходе. Попробуйте снова."));
+      }
+    } catch (e) {
+      emit(const AuthState.failure(
+          "Произошла непредвиденная ошибка при выходе."));
     }
   }
 }
