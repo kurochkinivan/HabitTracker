@@ -17,4 +17,5 @@ class AuthEvent with _$AuthEvent {
     String refreshToken,
     String userId,
   ) = RefreshTokens;
+  const factory AuthEvent.checkAuth(String token) = CheckAuth;
 }
