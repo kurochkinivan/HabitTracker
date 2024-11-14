@@ -3,47 +3,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import '../app_colors.dart';
 
-class CustomTextFormField extends StatefulWidget {
-  final String hintText;
-  final bool obscureText;
+class CustomSearchBar extends StatefulWidget {
   final TextEditingController controller;
-  final ValueNotifier<bool> validateController;
   final VoidCallback onChanged;
 
-  const CustomTextFormField({
+  const CustomSearchBar({
     super.key,
-    required this.hintText,
     required this.controller,
-    required this.validateController,
     required this.onChanged,
-    this.obscureText = false,
   });
 
   @override
-  CustomTextFormFieldState createState() => CustomTextFormFieldState();
+  CustomSearchBarState createState() => CustomSearchBarState();
 }
 
-class CustomTextFormFieldState extends State<CustomTextFormField> {
+class CustomSearchBarState extends State<CustomSearchBar> {
   bool _isActive = false;
-  late bool _isObscured;
-
-  @override
-  void initState() {
-    super.initState();
-    _isObscured = widget.obscureText;
-
-    widget.validateController.addListener(_updateState);
-  }
-
-  void _updateState() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    widget.validateController.removeListener(_updateState);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +35,6 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
       ),
       child: TextFormField(
         controller: widget.controller,
-        obscureText: _isObscured,
-        obscuringCharacter: '●',
         onChanged: (value) {
           setState(() {
             _isActive = value.isNotEmpty;
@@ -69,8 +42,8 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           widget.onChanged();
         },
         decoration: InputDecoration(
-          hintText: widget.hintText,
           hintStyle: _getTextStyle(),
+          hintText: 'Поиск...',
           contentPadding:
               EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
           border: InputBorder.none,
@@ -78,19 +51,17 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           focusedBorder: InputBorder.none,
           errorBorder: InputBorder.none,
           focusedErrorBorder: InputBorder.none,
-          suffixIcon: widget.obscureText
-              ? IconButton(
-                  icon: SvgPicture.asset(
-                    _isObscured
-                        ? "assets/icons/view.svg"
-                        : "assets/icons/view_hide.svg",
-                    height: 24.w,
-                    width: 24.w,
-                    color: _getBorderColor(),
-                  ),
-                  onPressed: () => setState(() => _isObscured = !_isObscured),
-                )
-              : null,
+          suffixIcon: IconButton(
+            icon: SvgPicture.asset(
+              "assets/icons/search.svg",
+              height: 24.w,
+              width: 24.w,
+              color: _getBorderColor(),
+            ),
+            onPressed: () {},
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+          ),
         ),
         style: _getTextStyle(),
         textAlignVertical: TextAlignVertical.center,
@@ -99,18 +70,14 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   Color _getFillColor() {
-    if (!widget.validateController.value) {
-      return AppColors.red02;
-    } else if (_isActive) {
+    if (_isActive) {
       return AppColors.gray03;
     }
     return AppColors.white;
   }
 
   Color _getBorderColor() {
-    if (!widget.validateController.value) {
-      return AppColors.redError;
-    } else if (_isActive) {
+    if (_isActive) {
       return AppColors.purple;
     }
     return AppColors.gray02;
@@ -118,9 +85,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
 
   TextStyle _getTextStyle() {
     return TextStyle(
-      color: !widget.validateController.value
-          ? AppColors.redError
-          : (_isActive ? AppColors.black01 : AppColors.gray02),
+      color: _isActive ? AppColors.black01 : AppColors.gray02,
       fontSize: 12.sp,
       fontFamily: 'Gilroy',
       fontWeight: FontWeight.w500,

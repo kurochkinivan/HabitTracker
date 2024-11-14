@@ -7,14 +7,14 @@ ThemeData habitTrackerTheme() {
     scaffoldBackgroundColor: AppColors.white,
     primaryColor: AppColors.black01,
     textTheme: TextTheme(
-      titleMedium:  TextStyle(
-      fontFamily: 'Unbounded',
-      fontWeight: FontWeight.w500,
-      fontSize: 16.sp,
-      letterSpacing: 0,
-      height: 1.2,
-      color: AppColors.black01,
-    ),
+      titleMedium: TextStyle(
+        fontFamily: 'Unbounded',
+        fontWeight: FontWeight.w500,
+        fontSize: 16.sp,
+        letterSpacing: 0,
+        height: 1.2,
+        color: AppColors.black01,
+      ),
       displayLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w600,
@@ -37,7 +37,7 @@ ThemeData habitTrackerTheme() {
         fontSize: 14.sp,
         letterSpacing: -0.4,
         height: 1.2,
-        color: AppColors.grey01,
+        color: AppColors.gray01,
       ),
       labelLarge: TextStyle(
         fontFamily: 'Gilroy',

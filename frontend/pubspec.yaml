@@ -11,13 +11,13 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_svg: ^2.0.13
+  flutter_svg: ^2.0.14
   auto_route: ^9.2.2
   pin_code_fields: ^8.0.1
   dio: ^5.7.0
   retrofit: ^4.4.1
   json_annotation: ^4.9.0
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.3.3
   flutter_screenutil: ^5.9.3
   flutter_bloc: ^8.1.6
   freezed_annotation: ^2.4.4
@@ -36,7 +36,7 @@ dev_dependencies:
 
   auto_route_generator: ^9.0.0
   build_runner: ^2.4.13
-  retrofit_generator: ^9.1.4
+  retrofit_generator: ^9.1.5
   json_serializable: ^6.8.0
   freezed: ^2.5.7
   flutter_lints: ^5.0.0
@@ -48,6 +48,8 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/icons/
+    - assets/icons/habit_icons/
 
 
   fonts:

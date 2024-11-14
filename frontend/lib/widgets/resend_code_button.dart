@@ -69,7 +69,7 @@ class ResendCodeButtonState extends State<ResendCodeButton> {
             : 'Повторная отправка через $_formattedTime',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontSize: 14.sp,
-            color: _canResend ? AppColors.black02 : AppColors.grey01),
+            color: _canResend ? AppColors.black02 : AppColors.gray01),
       ),
     );
   }

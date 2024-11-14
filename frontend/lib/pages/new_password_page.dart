@@ -57,7 +57,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
               padding: EdgeInsets.only(top: 64.h, left: 20),
               child: IconButton(
                 icon: SvgPicture.asset(
-                  "assets/images/Arrow_left.svg",
+                  "assets/icons/arrow_left.svg",
                   height: 32.w,
                   width: 32.w,
                   fit: BoxFit.contain,

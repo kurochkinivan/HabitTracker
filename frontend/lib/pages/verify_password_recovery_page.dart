@@ -48,7 +48,7 @@ class VerifyPasswordRecoveryPageState
           padding: EdgeInsets.only(top: 64.h, left: 20),
           child: IconButton(
             icon: SvgPicture.asset(
-              "assets/images/Arrow_left.svg",
+              "assets/icons/arrow_left.svg",
               height: 32.w,
               width: 32.w,
               fit: BoxFit.contain,
@@ -101,12 +101,12 @@ class VerifyPasswordRecoveryPageState
                   fieldHeight: 80,
                   shape: PinCodeFieldShape.underline,
                   selectedFillColor: AppColors.black01,
-                  selectedColor: hasError ? AppColors.red02 : AppColors.grey02,
+                  selectedColor: hasError ? AppColors.red02 : AppColors.gray02,
                   activeFillColor: AppColors.black01,
                   activeColor: AppColors.black01,
                   errorBorderColor: AppColors.redError,
-                  inactiveFillColor: AppColors.grey02,
-                  inactiveColor: AppColors.grey02,
+                  inactiveFillColor: AppColors.gray02,
+                  inactiveColor: AppColors.gray02,
                 ),
               ),
               if (hasError)

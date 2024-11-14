@@ -36,7 +36,7 @@ class StartPage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 48.h),
-              Image.asset("assets/images/Start_v1.png"),
+              Image.asset("assets/images/start_v1.png"),
               SizedBox(height: 40.h),
               RichText(
                 text: TextSpan(

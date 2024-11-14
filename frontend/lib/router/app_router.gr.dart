@@ -10,6 +10,25 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [AddHabitPage]
+class AddHabitRoute extends PageRouteInfo<void> {
+  const AddHabitRoute({List<PageRouteInfo>? children})
+      : super(
+          AddHabitRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AddHabitRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AddHabitPage();
+    },
+  );
+}
+
+/// generated route for
 /// [NewPasswordPage]
 class NewPasswordRoute extends PageRouteInfo<void> {
   const NewPasswordRoute({List<PageRouteInfo>? children})

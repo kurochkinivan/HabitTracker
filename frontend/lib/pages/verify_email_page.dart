@@ -94,7 +94,7 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
           padding: EdgeInsets.only(top: 64.h, left: 20),
           child: IconButton(
             icon: SvgPicture.asset(
-              "assets/images/Arrow_left.svg",
+              "assets/icons/arrow_left.svg",
               height: 32.w,
               width: 32.w,
               fit: BoxFit.contain,
@@ -152,12 +152,12 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
                   selectedFillColor: AppColors.black01,
                   selectedColor: !_isSendCodeCorrect.value
                       ? AppColors.red02
-                      : AppColors.grey02,
+                      : AppColors.gray02,
                   activeFillColor: AppColors.black01,
                   activeColor: AppColors.black01,
                   errorBorderColor: AppColors.redError,
-                  inactiveFillColor: AppColors.grey02,
-                  inactiveColor: AppColors.grey02,
+                  inactiveFillColor: AppColors.gray02,
+                  inactiveColor: AppColors.gray02,
                 ),
               ),
               Center(

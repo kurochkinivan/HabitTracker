@@ -24,12 +24,12 @@ class CustomElevatedButton extends StatelessWidget {
         onPressed: isEnabled ? onPressed : null,
         style: ButtonStyle(
           padding: WidgetStateProperty.all(
-            EdgeInsets.symmetric(vertical: 16.h, horizontal: 38.w),
+            EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
           ),
           backgroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
               return states.contains(WidgetState.disabled)
-                  ? AppColors.grey03
+                  ? AppColors.gray04
                   : AppColors.black01;
             },
           ),
@@ -47,7 +47,7 @@ class CustomElevatedButton extends StatelessWidget {
                 letterSpacing: -0.4,
                 height: 1.2,
                 color: states.contains(WidgetState.disabled)
-                    ? AppColors.grey01
+                    ? AppColors.gray02
                     : AppColors.white,
               );
             },
