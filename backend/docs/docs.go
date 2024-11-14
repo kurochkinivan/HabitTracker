@@ -155,7 +155,7 @@ const docTemplate = `{
             }
         },
         "/auth/logout": {
-            "post": {
+            "delete": {
                 "description": "log user out using refresh-token",
                 "consumes": [
                     "application/json"

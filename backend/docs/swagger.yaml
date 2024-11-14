@@ -178,7 +178,7 @@ paths:
       tags:
       - auth
   /auth/logout:
-    post:
+    delete:
       consumes:
       - application/json
       description: log user out using refresh-token

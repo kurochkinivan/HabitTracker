@@ -19,7 +19,7 @@ const (
 
 func main() {
 	logrus.Info("starting app...")
-	
+
 	logrus.Info("reading config...")
 	cfg := config.MustLoad()
 

@@ -28,11 +28,11 @@ const (
 )
 
 func init() {
-	// tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
-	// tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
-	tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
-	tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
+	tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
+	tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
+	// tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
+	// tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
+	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "arbwryopgryikgpo")
 	var err error
 	sender, err = dialer.Dial()
 	if err != nil {
@@ -235,13 +235,13 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 func (a *AuthUseCase) LogoutUser(ctx context.Context, refreshToken string) error {
 	logrus.WithField("refresh_token", refreshToken).Debug("logging user out")
 	const op string = "authUseCase.LogoutUser"
-	
+
 	err := a.refreshRepo.DeleteRefreshSessionByToken(ctx, refreshToken)
 	if err != nil {
 		return apperr.SystemError(err, op, "failed to delete refresh session")
 	}
 
-	return nil 
+	return nil
 }
 
 func (a *AuthUseCase) RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error) {
