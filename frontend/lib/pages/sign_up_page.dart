@@ -101,13 +101,19 @@ class SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 64.h, left: 22.w),
-              child: IconButton(
+      appBar: AppBar(
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
                 icon: SvgPicture.asset(
                   "assets/icons/arrow_left.svg",
                   height: 32.w,
@@ -115,72 +121,75 @@ class SignUpPageState extends State<SignUpPage> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.navigate(StartRoute());
+                  context.router.back();
                 },
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  Text(
-                    "Регистрация",
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(fontSize: 26.sp),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                      "Присоединяйся к сообществу, где каждый шаг "
-                      "приближает тебя к лучшей цели!",
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  SizedBox(height: 24.h),
-                  CustomTextFormField(
-                    controller: _nameController,
-                    hintText: 'Имя',
-                    obscureText: false,
-                    validateController: _isNameCorrect,
-                    onChanged: _validateInputs,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isNameValid,
-                    message: "Слишком короткое имя",
-                  ),
-                  SizedBox(height: 10.h),
-                  CustomTextFormField(
-                    controller: _emailController,
-                    hintText: 'E-mail',
-                    obscureText: false,
-                    validateController: _isEmailCorrect,
-                    onChanged: _validateInputs,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isEmailValid,
-                    message: "Некорректный формат почты",
-                  ),
-                  SizedBox(height: 10.h),
-                  CustomTextFormField(
-                    controller: _passwordController,
-                    hintText: 'Пароль',
-                    obscureText: true,
-                    validateController: _isPasswordCorrect,
-                    onChanged: _validateInputs,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isPasswordValid,
-                    message: "Слишком короткий пароль",
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isRegisterCorrect,
-                    message: _serverErrorText,
-                  ),
-                ],
+              Spacer(),
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                "Регистрация",
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 26.sp),
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Text(
+                  "Присоединяйся к сообществу, где каждый шаг "
+                  "приближает тебя к лучшей цели!",
+                  style: Theme.of(context).textTheme.bodyLarge),
+              SizedBox(height: 24.h),
+              CustomTextFormField(
+                controller: _nameController,
+                hintText: 'Имя',
+                obscureText: false,
+                validateController: _isNameCorrect,
+                onChanged: _validateInputs,
+              ),
+              TextFieldErrorMessage(
+                validator: _isNameValid,
+                message: "Слишком короткое имя",
+              ),
+              SizedBox(height: 10.h),
+              CustomTextFormField(
+                controller: _emailController,
+                hintText: 'E-mail',
+                obscureText: false,
+                validateController: _isEmailCorrect,
+                onChanged: _validateInputs,
+              ),
+              TextFieldErrorMessage(
+                validator: _isEmailValid,
+                message: "Некорректный формат почты",
+              ),
+              SizedBox(height: 10.h),
+              CustomTextFormField(
+                controller: _passwordController,
+                hintText: 'Пароль',
+                obscureText: true,
+                validateController: _isPasswordCorrect,
+                onChanged: _validateInputs,
+              ),
+              TextFieldErrorMessage(
+                validator: _isPasswordValid,
+                message: "Слишком короткий пароль",
+              ),
+              TextFieldErrorMessage(
+                validator: _isRegisterCorrect,
+                message: _serverErrorText,
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildActionButtons(context),

@@ -72,7 +72,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           hintText: widget.hintText,
           hintStyle: _getTextStyle(),
           contentPadding:
-              EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+              EdgeInsets.symmetric(vertical: 16, horizontal: 16.w),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

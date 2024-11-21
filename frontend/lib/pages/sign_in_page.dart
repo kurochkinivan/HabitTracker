@@ -94,13 +94,19 @@ class SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 64.h, left: 20),
-              child: IconButton(
+      appBar: AppBar(
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
                 icon: SvgPicture.asset(
                   "assets/icons/arrow_left.svg",
                   height: 32.w,
@@ -108,99 +114,102 @@ class SignInPageState extends State<SignInPage> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.navigate(StartRoute());
+                  context.router.back();
                 },
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
-              child: Column(
+              Spacer(),
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                "Вход",
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 26.sp),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                "С возвращением! Продолжай улучшать свои "
+                "привычки — каждый шаг важен на пути к успеху.",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              SizedBox(height: 24.h),
+              CustomTextFormField(
+                controller: _emailController,
+                hintText: 'E-mail',
+                obscureText: false,
+                validateController: _isEmailCorrect,
+                onChanged: _validateInputs,
+              ),
+              TextFieldErrorMessage(
+                validator: _isEmailValid,
+                message: "Некорректный формат почты",
+              ),
+              SizedBox(height: 10.h),
+              CustomTextFormField(
+                controller: _passwordController,
+                hintText: 'Пароль',
+                obscureText: true,
+                validateController: _isPasswordCorrect,
+                onChanged: _validateInputs,
+              ),
+              TextFieldErrorMessage(
+                validator: _isPasswordValid,
+                message: "Слишком короткий пароль",
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 16.h),
-                  Text(
-                    "Вход",
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(fontSize: 26.sp),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFieldErrorMessage(
+                          validator: _isLoginCorrect,
+                          message: _serverErrorText,
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    "С возвращением! Продолжай улучшать свои "
-                    "привычки — каждый шаг важен на пути к успеху.",
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  SizedBox(height: 24.h),
-                  CustomTextFormField(
-                    controller: _emailController,
-                    hintText: 'E-mail',
-                    obscureText: false,
-                    validateController: _isEmailCorrect,
-                    onChanged: _validateInputs,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isEmailValid,
-                    message: "Некорректный формат почты",
-                  ),
-                  SizedBox(height: 10.h),
-                  CustomTextFormField(
-                    controller: _passwordController,
-                    hintText: 'Пароль',
-                    obscureText: true,
-                    validateController: _isPasswordCorrect,
-                    onChanged: _validateInputs,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isPasswordValid,
-                    message: "Слишком короткий пароль",
-                  ),
-                  SizedBox(height: 16.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextFieldErrorMessage(
-                              validator: _isLoginCorrect,
-                              message: _serverErrorText,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 4.h),
-                          InkWell(
-                            borderRadius: BorderRadius.circular(8),
-                            onTap: () {
-                              context.router.navigate(PasswordRecoveryRoute());
-                            },
-                            child: Text(
-                              "Восстановить пароль",
-                              style: TextStyle(
-                                color: AppColors.black02,
-                                fontSize: 12.sp,
-                                fontFamily: 'Gilroy',
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                letterSpacing: 0.2,
-                                height: 1.3,
-                              ),
-                            ),
+                      SizedBox(height: 4.h),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          context.router.navigate(PasswordRecoveryRoute());
+                        },
+                        child: Text(
+                          "Восстановить пароль",
+                          style: TextStyle(
+                            color: AppColors.black02,
+                            fontSize: 12.sp,
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                            letterSpacing: 0.2,
+                            height: 1.3,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildActionButtons(context),

@@ -22,6 +22,7 @@ class CustomSearchBarState extends State<CustomSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    _isActive = widget.controller.text.isNotEmpty;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -45,7 +46,7 @@ class CustomSearchBarState extends State<CustomSearchBar> {
           hintStyle: _getTextStyle(),
           hintText: 'Поиск...',
           contentPadding:
-              EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
+              EdgeInsets.symmetric(vertical: 16, horizontal: 16.w),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

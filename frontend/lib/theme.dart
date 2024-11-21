@@ -31,6 +31,14 @@ ThemeData habitTrackerTheme() {
         height: 1.2,
         color: AppColors.purple,
       ),
+      displaySmall: TextStyle(
+        fontFamily: 'Gilroy',
+        fontWeight: FontWeight.w600,
+        fontSize: 16.sp,
+        letterSpacing: 0.4,
+        height: 1.2,
+        color: AppColors.black02,
+      ),
       bodyLarge: TextStyle(
         fontFamily: 'Gilroy',
         fontWeight: FontWeight.w500,

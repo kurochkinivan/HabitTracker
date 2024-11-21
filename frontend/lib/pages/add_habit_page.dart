@@ -20,12 +20,7 @@ class AddHabitPage extends StatefulWidget {
 }
 
 class AddHabitPageState extends State<AddHabitPage> {
-  final TextEditingController _searchContriller = TextEditingController();
-
-  _searchHabits() {
-    print(_searchContriller.text);
-  }
-
+  final TextEditingController _searchController = TextEditingController();
   Map<String, List<Habit>> habitsByCategory = {
     'Fitness': [
       Habit(
@@ -48,16 +43,6 @@ class AddHabitPageState extends State<AddHabitPage> {
           color: Colors.blueAccent,
           icon: 'assets/icons/swimming.png',
           popularityIndex: 4),
-      Habit(
-          name: 'Weightlifting',
-          color: Colors.grey,
-          icon: 'assets/icons/weightlifting.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Walking',
-          color: Colors.greenAccent,
-          icon: 'assets/icons/walking.png',
-          popularityIndex: 1),
     ],
     'Productivity': [
       Habit(
@@ -200,161 +185,255 @@ class AddHabitPageState extends State<AddHabitPage> {
           popularityIndex: 4),
     ],
   };
+
+  late List<Habit> sortedHabits;
+  List<Habit> filteredHabits = [];
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
   @override
   void initState() {
+    super.initState();
     sortedHabits = habitsByCategory.values.expand((list) => list).toList()
       ..sort((a, b) => a.popularityIndex.compareTo(b.popularityIndex));
-    super.initState();
+
+    _searchController.addListener(_filterHabits);
   }
 
   @override
   void dispose() {
-    _searchContriller.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _filterHabits() {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      // Очистить filteredHabits и удалить все элементы из AnimatedList
+      for (var i = filteredHabits.length - 1; i >= 0; i--) {
+        final removedHabit = filteredHabits.removeAt(i);
+        _listKey.currentState?.removeItem(
+          i,
+          (context, animation) => _buildHabitItem(removedHabit, animation),
+        );
+      }
+    } else {
+      final newFilteredHabits = sortedHabits
+          .where((habit) => habit.name.toLowerCase().contains(query))
+          .toList();
+
+      // Удаляем элементы, не соответствующие запросу
+      for (var i = filteredHabits.length - 1; i >= 0; i--) {
+        if (!newFilteredHabits.contains(filteredHabits[i])) {
+          final removedHabit = filteredHabits.removeAt(i);
+          _listKey.currentState?.removeItem(
+            i,
+            (context, animation) => _buildHabitItem(removedHabit, animation),
+          );
+        }
+      }
+
+      // Добавляем новые элементы, соответствующие запросу
+      for (var i = 0; i < newFilteredHabits.length; i++) {
+        if (!filteredHabits.contains(newFilteredHabits[i])) {
+          filteredHabits.insert(i, newFilteredHabits[i]);
+          _listKey.currentState?.insertItem(i);
+        }
+      }
+    }
+  }
+
+  Widget _buildHabitItem(Habit habit, Animation<double> animation) {
+    return SlideTransition(
+      position: animation.drive(
+        Tween<Offset>(begin: Offset(1, 0), end: Offset(0, 0))
+            .chain(CurveTween(curve: Curves.easeOut)),
+      ),
+      child: Column(
+        children: [
+          HabitItem(
+            icon: habit.icon,
+            title: habit.name,
+            color: habit.color,
+          ),
+          SizedBox(height: 10),
+        ],
+      ),
+    );
   }
 
   final List<String> _sortOptions = [
     'по популярности',
     'по категориям',
+    'по поиску',
   ];
   String _selectedSort = 'по категориям';
 
-  List<Habit> sortedHabits = [];
   @override
   Widget build(BuildContext context) {
+    if (_searchController.text.isNotEmpty && _selectedSort != 'по поиску') {
+      _selectedSort = 'по поиску';
+    }
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                  top: 64.h, left: 22.w, right: 32.w, bottom: 20.h),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: SvgPicture.asset(
-                      "assets/icons/arrow_left.svg",
-                      height: 32.w,
-                      width: 32.w,
-                      fit: BoxFit.contain,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: SvgPicture.asset(
+                  "assets/icons/arrow_left.svg",
+                  height: 32.w,
+                  width: 32.w,
+                  fit: BoxFit.contain,
+                ),
+                onPressed: () {
+                  context.router.back();
+                },
+              ),
+              Spacer(),
+              Text(
+                'Добавить привычку',
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 20.sp),
+              ),
+              Spacer(),
+              SizedBox(
+                width: 20.w,
+              )
+            ],
+          ),
+        ),
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomSearchBar(
+                    controller: _searchController,
+                    onChanged: () {
+                      setState(() {});
+                    }),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    Text(
+                      'Сортировка: ',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(color: AppColors.black02),
                     ),
-                    onPressed: () {
-                      context.router.navigate(StartRoute());
-                    },
-                  ),
-                  Spacer(),
-                  Text(
-                    'Добавить привычку',
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(fontSize: 20.sp),
-                  ),
-                  Spacer(),
-                  SizedBox(
-                    width: 32.w,
-                  )
-                ],
+                    DropdownButton<String>(
+                      value: _selectedSort,
+                      icon: SizedBox.shrink(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          if (newValue != 'по поиску') {
+                            _selectedSort = newValue!;
+                            _searchController.clear();
+                          }
+                        });
+                      },
+                      items: _sortOptions
+                          .where((option) =>
+                              option != 'по поиску' ||
+                              _selectedSort == 'по поиску')
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: AppColors.purple,
+                                    ),
+                          ),
+                        );
+                      }).toList(),
+                      borderRadius: BorderRadius.circular(8),
+                      underline: SizedBox.shrink(),
+                      dropdownColor: AppColors.white,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          if (_searchController.text.isNotEmpty)
+            Expanded(
+              child: AnimatedList(
+                key: _listKey,
+                initialItemCount: filteredHabits.length,
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                itemBuilder: (context, index, animation) {
+                  final habit = filteredHabits[index];
+                  return _buildHabitItem(habit, animation);
+                },
               ),
             ),
+          if (_selectedSort == 'по категориям' &&
+              _searchController.text.isEmpty)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 32.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomSearchBar(
-                      controller: _searchContriller, onChanged: _searchHabits),
-                  SizedBox(height: 16.h),
-                  Row(
-                    children: [
-                      Text(
-                        'Сортировка: ',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(color: AppColors.black02),
-                      ),
-                      DropdownButton<String>(
-                        value: _selectedSort,
-                        icon: SizedBox.shrink(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedSort = newValue!;
-                          });
-                        },
-                        items: _sortOptions
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                    color: AppColors.purple,
-                                  ),
-                            ),
-                          );
-                        }).toList(),
-                        borderRadius: BorderRadius.circular(8),
-                        underline: SizedBox.shrink(),
-                        dropdownColor: AppColors.white,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.h),
-                  if (_selectedSort == 'по категориям')
-                    Column(children: [
-                      Divider(
-                        color: AppColors.gray04,
-                        thickness: 1.h,
-                        height: 0,
-                      ),
-                      SizedBox(height: 16.h),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: habitsByCategory.length,
-                        itemBuilder: (context, index) {
-                          final entry =
-                              habitsByCategory.entries.elementAt(index);
-                          return CategorySection(
-                              title: entry.key, habits: entry.value);
-                        },
-                      ),
-                    ]),
-                  if (_selectedSort == 'по популярности')
-                    Column(children: [
-                      SizedBox(height: 16.h),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: sortedHabits.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            children: [
-                              HabitItem(
-                                icon: sortedHabits[index].icon,
-                                title: sortedHabits[index].name,
-                                color: sortedHabits[index].color,
-                              ),
-                              if (index < sortedHabits.length - 1)
-                                SizedBox(height: 10.h),
-                            ],
-                          );
-                        },
-                      ),
-                    ]),
-                ],
+              child: Column(children: [
+                Divider(
+                  color: AppColors.gray04,
+                  thickness: 1.h,
+                  height: 0,
+                ),
+                SizedBox(height: 16.h),
+              ]),
+            ),
+          if (_selectedSort == 'по категориям' &&
+              _searchController.text.isEmpty)
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                itemCount: habitsByCategory.length,
+                itemBuilder: (context, index) {
+                  final entry = habitsByCategory.entries.elementAt(index);
+                  return CategorySection(title: entry.key, habits: entry.value);
+                },
               ),
             ),
-          ],
-        ),
+          if (_selectedSort == 'по популярности' &&
+              _searchController.text.isEmpty)
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                itemCount: sortedHabits.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      HabitItem(
+                        icon: sortedHabits[index].icon,
+                        title: sortedHabits[index].name,
+                        color: sortedHabits[index].color,
+                      ),
+                      if (index < sortedHabits.length - 1)
+                        SizedBox(height: 10.h),
+                    ],
+                  );
+                },
+              ),
+            ),
+          SizedBox(height: 16),
+        ],
       ),
       bottomNavigationBar: _buildActionButtons(context),
     );
@@ -368,9 +447,10 @@ Widget _buildActionButtons(BuildContext context) {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 16.h),
         OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              context.router.navigate(HabitSettingsRoute());
+            },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -394,7 +474,7 @@ Widget _buildActionButtons(BuildContext context) {
           text: 'Продолжить',
           isEnabled: true,
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 24.h),
       ],
     ),
   );
