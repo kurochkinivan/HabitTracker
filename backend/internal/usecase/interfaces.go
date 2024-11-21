@@ -47,3 +47,13 @@ type (
 		RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error)
 	}
 )
+
+type (
+	Habit interface {
+		CreateNewHabit(habit entity.Habit) error
+	}
+
+	HabitRepository interface {
+		CreateHabit(habit entity.Habit) error
+	}
+)

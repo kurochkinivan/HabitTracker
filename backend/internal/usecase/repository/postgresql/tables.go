@@ -8,4 +8,5 @@ const (
 	TableUsers            = scheme + "users"
 	TableVerificationData = scheme + "verification_data"
 	TableRefreshSessions  = scheme + "refresh_sessions"
+	TableHabits           = scheme + "habits"
 )

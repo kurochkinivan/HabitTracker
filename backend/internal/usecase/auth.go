@@ -27,12 +27,13 @@ const (
 	EmailExistsMessage
 )
 
+// TODO: change this logic, it should not be here and it should depend on config prod/local
 func init() {
-	// tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
-	// tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
-	tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
-	tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "hiqecckzffwewzqc")
+	tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
+	tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
+	// tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
+	// tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
+	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "vwapfrlhzqpglpec")
 	var err error
 	sender, err = dialer.Dial()
 	if err != nil {
