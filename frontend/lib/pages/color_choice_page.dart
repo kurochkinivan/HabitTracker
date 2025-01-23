@@ -86,10 +86,14 @@ class ColorChoicePageState extends State<ColorChoicePage> {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFDDC6F7)
-                      : Color(int.parse(habitColors[index], radix: 16)),
+                  color: Color(int.parse(habitColors[index], radix: 16)),
                   borderRadius: BorderRadius.circular(6),
+                  border: isSelected
+                      ? Border.all(
+                          color: AppColors.purple,
+                          width: 1,
+                        )
+                      : null,
                 ),
               ),
             );

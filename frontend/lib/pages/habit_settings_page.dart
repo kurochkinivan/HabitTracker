@@ -5,9 +5,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/widgets/custom_text_form_field.dart';
-
+import '../models/repeat_type.dart';
 import '../router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
+import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
 class HabitSettingsPage extends StatefulWidget {
@@ -32,16 +33,20 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   final ValueNotifier<bool> _isNameValid = ValueNotifier(true);
   final ValueNotifier<bool> _isDescriptionValid = ValueNotifier(true);
   final ValueNotifier<bool> _isCategoryValid = ValueNotifier(true);
+  final ValueNotifier<bool> _isRepeatTypeValid = ValueNotifier(true);
+  final ValueNotifier<bool> _isTimeValid = ValueNotifier(true);
 
-  final ValueNotifier<bool> _isMon = ValueNotifier(false);
-  final ValueNotifier<bool> _isTue = ValueNotifier(false);
-  final ValueNotifier<bool> _isWed = ValueNotifier(true);
-  final ValueNotifier<bool> _isThu = ValueNotifier(false);
-  final ValueNotifier<bool> _isFri = ValueNotifier(false);
-  final ValueNotifier<bool> _isSat = ValueNotifier(false);
-  final ValueNotifier<bool> _isSun = ValueNotifier(false);
+  RepeatType _repeatType = RepeatType.none;
 
-  late bool _isAllDaysChecked = false;
+  final Map<String, ValueNotifier<bool>> _days = {
+    'ПН': ValueNotifier(false),
+    'ВТ': ValueNotifier(false),
+    'СР': ValueNotifier(false),
+    'ЧТ': ValueNotifier(false),
+    'ПТ': ValueNotifier(false),
+    'СБ': ValueNotifier(false),
+    'ВС': ValueNotifier(false),
+  };
 
   @override
   void initState() {
@@ -50,6 +55,22 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
         'assets/icons/habit_icons/woman_in_lotus_position.png';
 
     selectedColor = widget.selectedColor ?? 'FFC6D1FE';
+  }
+
+  int _compareTimes(String a, String b) {
+    final TimeOfDay aTime = _parseTime(a);
+    final TimeOfDay bTime = _parseTime(b);
+    final int aMinutes = aTime.hour * 60 + aTime.minute;
+    final int bMinutes = bTime.hour * 60 + bTime.minute;
+    return aMinutes.compareTo(bMinutes);
+  }
+
+  TimeOfDay _parseTime(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    );
   }
 
   @override
@@ -68,26 +89,48 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
     }
   }
 
-  void _toggleCheck() {
+  void _setRepeatType(RepeatType type) {
     setState(() {
-      _isAllDaysChecked = !_isAllDaysChecked;
-      if (_isAllDaysChecked) {
-        _isMon.value = true;
-        _isTue.value = true;
-        _isWed.value = true;
-        _isThu.value = true;
-        _isFri.value = true;
-        _isSat.value = true;
-        _isSun.value = true;
-      } else {
-        _isMon.value = false;
-        _isTue.value = false;
-        _isWed.value = false;
-        _isThu.value = false;
-        _isFri.value = false;
-        _isSat.value = false;
-        _isSun.value = false;
+      _repeatType = _repeatType == type ? RepeatType.none : type;
+
+      if (_repeatType == RepeatType.daily) {
+        _days.forEach((_, value) => value.value = true);
+      } else if (_repeatType == RepeatType.weekly) {
+        _days.forEach((_, value) => value.value = false);
+      } else if (type == RepeatType.daily && _repeatType == RepeatType.none) {
+        _days.forEach((_, value) => value.value = false);
       }
+
+      if (_repeatType != RepeatType.weekly &&
+          _days.values.every((n) => !n.value)) {
+        _repeatType = RepeatType.none;
+      }
+
+      _isRepeatTypeValid.value = _repeatType != RepeatType.none;
+    });
+  }
+
+  void _updateDayState(String day) {
+    setState(() {
+      _days[day]?.value = !_days[day]!.value;
+
+      if (_repeatType != RepeatType.custom) {
+        _repeatType = RepeatType.custom;
+      }
+
+      if (_days.values.every((n) => n.value)) {
+        _repeatType = RepeatType.daily;
+      } else if (_repeatType == RepeatType.daily) {
+        _repeatType = RepeatType.none;
+        _days.forEach((_, value) => value.value = false);
+      }
+
+      if (_days.values.every((n) => !n.value) &&
+          _repeatType != RepeatType.weekly) {
+        _repeatType = RepeatType.none;
+      }
+
+      _isRepeatTypeValid.value = _repeatType != RepeatType.none;
     });
   }
 
@@ -152,8 +195,14 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   controller: _nameController,
                   validateController: _isNameValid,
                   onChanged: () {
-                    _isNameValid.value = _nameController.text.isNotEmpty;
+                    setState(() {
+                      _isNameValid.value = _nameController.text.isNotEmpty;
+                    });
                   }),
+              TextFieldErrorMessage(
+                validator: _isNameValid,
+                message: "Поле не должно быть пустым",
+              ),
               SizedBox(height: 16.h),
               Row(
                 children: [
@@ -248,9 +297,15 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   controller: _descriptionController,
                   validateController: _isDescriptionValid,
                   onChanged: () {
-                    _isDescriptionValid.value =
-                        _descriptionController.text.isNotEmpty;
+                    setState(() {
+                      _isDescriptionValid.value =
+                          _descriptionController.text.isNotEmpty;
+                    });
                   }),
+              TextFieldErrorMessage(
+                validator: _isDescriptionValid,
+                message: "Поле не должно быть пустым",
+              ),
               SizedBox(height: 32.h),
               Text(
                 "Категория",
@@ -262,55 +317,36 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   controller: _categoryController,
                   validateController: _isCategoryValid,
                   onChanged: () {
-                    _isCategoryValid.value =
-                        _categoryController.text.isNotEmpty;
+                    _isCategoryValid.value = true;
                   }),
               SizedBox(height: 32.h),
               Text(
-                "Выберите дни выполнения",
+                "Выберите дни повторения",
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildDayButton('ПН', _isMon),
-                  _buildDayButton('ВТ', _isTue),
-                  _buildDayButton('СР', _isWed),
-                  _buildDayButton('ЧТ', _isThu),
-                  _buildDayButton('ПТ', _isFri),
-                  _buildDayButton('СБ', _isSat),
-                  _buildDayButton('ВС', _isSun),
+                  for (final day in _days.keys)
+                    _buildDayButton(day, _days[day]!),
                 ],
               ),
               SizedBox(height: 16.h),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: _toggleCheck,
-                    child: Container(
-                      width: 16.w,
-                      height: 16.w,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.gray02),
-                        borderRadius: BorderRadius.circular(100),
-                        color: _isAllDaysChecked
-                            ? AppColors.purple
-                            : Colors.transparent,
-                      ),
-                      child: _isAllDaysChecked
-                          ? Icon(Icons.check,
-                              size: 12.w, color: AppColors.white)
-                          : null,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text('Каждый день',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(color: AppColors.black02)),
-                ],
+              _buildRepeatOption(
+                title: 'Каждый день',
+                type: RepeatType.daily,
+                currentType: _repeatType,
+              ),
+              SizedBox(height: 8.h),
+              _buildRepeatOption(
+                title: 'На протяжении недели',
+                type: RepeatType.weekly,
+                currentType: _repeatType,
+              ),
+              TextFieldErrorMessage(
+                validator: _isRepeatTypeValid,
+                message: "Должен быть выбран тип повторения",
               ),
               SizedBox(height: 32.h),
               Row(
@@ -337,11 +373,19 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   ),
                 ],
               ),
+              TextFieldErrorMessage(
+                validator: _isTimeValid,
+                message: "Должено быть добавлено время напоминания",
+              ),
               SizedBox(height: 16.h),
               Wrap(
-                children: selectedTimes
-                    .map((time) => _buildTimeButton(time))
-                    .toList(),
+                children: () {
+                  final sortedTimes = List<String>.from(selectedTimes)
+                    ..sort(_compareTimes);
+                  return sortedTimes
+                      .map((time) => _buildTimeButton(time))
+                      .toList();
+                }(),
               ),
               SizedBox(height: 16.h)
             ],
@@ -395,13 +439,16 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
             SnackBar(content: Text('Это время уже добавлено.')),
           );
         }
+        _isTimeValid.value = selectedTimes.isNotEmpty;
       });
     }
   }
 
   Widget _buildTimeButton(String time) {
     return GestureDetector(
-      onTap: () => _selectTime(context, existingTime: time),
+      onTap: () => setState(() {
+        _selectTime(context, existingTime: time);
+      }),
       child: Container(
         margin: EdgeInsets.only(right: 8.w, bottom: 8.h),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
@@ -423,6 +470,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 onTap: () {
                   setState(() {
                     selectedTimes.remove(time);
+                    _isTimeValid.value = selectedTimes.isNotEmpty;
                   });
                 },
                 child: SvgPicture.asset('assets/icons/trash-outline.svg',
@@ -434,40 +482,80 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   }
 
   Widget _buildDayButton(String day, ValueNotifier<bool> isSelected) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isSelected,
+      builder: (context, value, _) {
+        return GestureDetector(
+          onTap: () => _updateDayState(day),
+          child: Container(
+            width: 40.w,
+            height: 60.h,
+            decoration: BoxDecoration(
+              color: value ? AppColors.purple : AppColors.gray03,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(day,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: value ? AppColors.white : AppColors.gray01,
+                        )),
+                SizedBox(height: 14.h),
+                value
+                    ? SvgPicture.asset('assets/icons/done_light.svg',
+                        width: 20.w, height: 20.w)
+                    : SizedBox(width: 20.w, height: 20.h),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRepeatOption({
+    required String title,
+    required RepeatType type,
+    required RepeatType currentType,
+  }) {
+    final isSelected = currentType == type;
+
     return GestureDetector(
-        onTap: () {
-          setState(() {
-            isSelected.value = !isSelected.value;
-            if(isSelected.value == false) {
-              _isAllDaysChecked = false;
-            }
-          });
-        },
-        child: Container(
-          width: 40.w,
-          height: 65.h,
-          decoration: BoxDecoration(
-            color: isSelected.value ? AppColors.purple : AppColors.gray03,
-            borderRadius: BorderRadius.circular(4),
+      onTap: () => _setRepeatType(type),
+      child: Row(
+        children: [
+          Container(
+            width: 16.w,
+            height: 16.w,
+            padding: EdgeInsets.all(2.w),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(
+                color: isSelected ? AppColors.black02 : AppColors.gray02,
+                width: 1.w,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: isSelected
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.black02,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  )
+                : null,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(day,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: isSelected.value
-                            ? AppColors.white
-                            : AppColors.gray01,
-                      )),
-              if (isSelected.value) SizedBox(height: 14.h),
-              if (isSelected.value)
-                SvgPicture.asset('assets/icons/done_light.svg',
-                    width: 20.w, height: 20.w),
-              if (!isSelected.value) SizedBox(height: 14.h),
-              if (!isSelected.value) SizedBox(width: 20.w, height: 20.h),
-            ],
+          SizedBox(width: 8.w),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.black02,
+                ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 
   Widget _buildActionButtons(BuildContext context) {
@@ -480,7 +568,10 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
           CustomElevatedButton(
             onPressed: () {},
             text: 'Сохранить',
-            isEnabled: true,
+            isEnabled: selectedTimes.isNotEmpty &&
+                _repeatType != RepeatType.none &&
+                _descriptionController.text.isNotEmpty &&
+                _nameController.text.isNotEmpty,
           ),
           SizedBox(height: 24.h),
         ],

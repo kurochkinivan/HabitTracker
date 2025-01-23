@@ -187,6 +187,13 @@ class AddHabitPageState extends State<AddHabitPage> {
     ],
   };
 
+  final List<String> _sortOptions = [
+    'по популярности',
+    'по категориям',
+    'по поиску',
+  ];
+  String _selectedSort = 'по категориям';
+
   late List<Habit> sortedHabits;
   List<Habit> filteredHabits = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -210,48 +217,41 @@ class AddHabitPageState extends State<AddHabitPage> {
     final query = _searchController.text.toLowerCase();
 
     if (query.isEmpty) {
-      // Очистить список и удалить все элементы из AnimatedList
       for (var i = filteredHabits.length - 1; i >= 0; i--) {
         final removedHabit = filteredHabits.removeAt(i);
         _listKey.currentState?.removeItem(
           i,
-              (context, animation) => _buildHabitItem(removedHabit, animation),
+          (context, animation) => _buildHabitItem(removedHabit, animation),
         );
       }
     } else {
-      // Настройка Fuzzy поиска
       final fuse = Fuzzy<Habit>(
         sortedHabits,
         options: FuzzyOptions(
           keys: [
             WeightedKey<Habit>(
-              name: 'name', // Поле для поиска
-              getter: (habit) => habit.name, // Метод доступа к значению
-              weight: 1.0, // Вес поля в поиске
+              name: 'name',
+              getter: (habit) => habit.name,
+              weight: 1.0,
             ),
           ],
-          threshold: 0.1, // Уровень "неточности"
+          threshold: 0.1,
         ),
       );
 
-      // Поиск по запросу
       final results = fuse.search(query);
-
-      // Результаты Fuzzy
       final newFilteredHabits = results.map((result) => result.item).toList();
 
-      // Удаляем элементы, не соответствующие запросу
       for (var i = filteredHabits.length - 1; i >= 0; i--) {
         if (!newFilteredHabits.contains(filteredHabits[i])) {
           final removedHabit = filteredHabits.removeAt(i);
           _listKey.currentState?.removeItem(
             i,
-                (context, animation) => _buildHabitItem(removedHabit, animation),
+            (context, animation) => _buildHabitItem(removedHabit, animation),
           );
         }
       }
 
-      // Добавляем новые элементы, соответствующие запросу
       for (var i = 0; i < newFilteredHabits.length; i++) {
         if (!filteredHabits.contains(newFilteredHabits[i])) {
           filteredHabits.insert(i, newFilteredHabits[i]);
@@ -285,29 +285,6 @@ class AddHabitPageState extends State<AddHabitPage> {
     );
   }
 
-// Дополнительная проверка на отсутствие результатов
-  Widget _buildNoResultsMessage() {
-    if (filteredHabits.isEmpty) {
-      return Center(
-        child: Text(
-          'No habits found.',
-          style: TextStyle(fontSize: 18, color: Colors.grey),
-        ),
-      );
-    } else {
-      return SizedBox.shrink();
-    }
-  }
-
-
-
-  final List<String> _sortOptions = [
-    'по популярности',
-    'по категориям',
-    'по поиску',
-  ];
-  String _selectedSort = 'по категориям';
-
   @override
   Widget build(BuildContext context) {
     if (_searchController.text.isNotEmpty && _selectedSort != 'по поиску') {
@@ -330,8 +307,9 @@ class AddHabitPageState extends State<AddHabitPage> {
                   width: 32.w,
                   fit: BoxFit.contain,
                 ),
+                // context.router.back();
                 onPressed: () {
-                  context.router.back();
+                  context.router.navigate(StartRoute());
                 },
               ),
               Spacer(),
@@ -418,19 +396,20 @@ class AddHabitPageState extends State<AddHabitPage> {
             Expanded(
               child: filteredHabits.isEmpty
                   ? Center(
-                child: Text('Ничего не найдено', style: TextStyle(fontSize: 20.sp, color: AppColors.gray01)),
-              )
+                      child: Text('Ничего не найдено',
+                          style: TextStyle(
+                              fontSize: 20.sp, color: AppColors.gray01)),
+                    )
                   : AnimatedList(
-                key: _listKey,
-                initialItemCount: filteredHabits.length,
-                padding: EdgeInsets.symmetric(horizontal: 32.w),
-                itemBuilder: (context, index, animation) {
-                  final habit = filteredHabits[index];
-                  return _buildHabitItem(habit, animation);
-                },
-              ),
+                      key: _listKey,
+                      initialItemCount: filteredHabits.length,
+                      padding: EdgeInsets.symmetric(horizontal: 32.w),
+                      itemBuilder: (context, index, animation) {
+                        final habit = filteredHabits[index];
+                        return _buildHabitItem(habit, animation);
+                      },
+                    ),
             ),
-
           if (_selectedSort == 'по категориям' &&
               _searchController.text.isEmpty)
             Padding(
