@@ -36,23 +36,32 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   final ValueNotifier<bool> _isRepeatTypeValid = ValueNotifier(true);
   final ValueNotifier<bool> _isTimeValid = ValueNotifier(true);
 
+  final ValueNotifier<bool> _isMon = ValueNotifier(false);
+  final ValueNotifier<bool> _isTue = ValueNotifier(false);
+  final ValueNotifier<bool> _isWed = ValueNotifier(true);
+  final ValueNotifier<bool> _isThu = ValueNotifier(false);
+  final ValueNotifier<bool> _isFri = ValueNotifier(false);
+  final ValueNotifier<bool> _isSat = ValueNotifier(false);
+  final ValueNotifier<bool> _isSun = ValueNotifier(false);
+
   RepeatType _repeatType = RepeatType.none;
 
-  final Map<String, ValueNotifier<bool>> _days = {
-    'ПН': ValueNotifier(false),
-    'ВТ': ValueNotifier(false),
-    'СР': ValueNotifier(false),
-    'ЧТ': ValueNotifier(false),
-    'ПТ': ValueNotifier(false),
-    'СБ': ValueNotifier(false),
-    'ВС': ValueNotifier(false),
-  };
+  final String _pathToIcon = 'assets/icons/habit_icons/';
+
+  Map<String, ValueNotifier<bool>> get _days => {
+        'ПН': _isMon,
+        'ВТ': _isTue,
+        'СР': _isWed,
+        'ЧТ': _isThu,
+        'ПТ': _isFri,
+        'СБ': _isSat,
+        'ВС': _isSun,
+      };
 
   @override
   void initState() {
     super.initState();
-    selectedIcon = widget.selectedIcon ??
-        'assets/icons/habit_icons/woman_in_lotus_position.png';
+    selectedIcon = widget.selectedIcon ?? 'woman_in_lotus_position.png';
 
     selectedColor = widget.selectedColor ?? 'FFC6D1FE';
   }
@@ -78,8 +87,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedIcon != selectedIcon) {
       setState(() {
-        selectedIcon = widget.selectedIcon ??
-            'assets/icons/habit_icons/woman_in_lotus_position.png';
+        selectedIcon = widget.selectedIcon ?? 'woman_in_lotus_position.png';
       });
     }
     if (widget.selectedColor != selectedColor) {
@@ -228,7 +236,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                                 color: const Color(0xFFE4E2EC),
                                 borderRadius: BorderRadius.circular(100),
                               ),
-                              child: Image.asset(selectedIcon,
+                              child: Image.asset(_pathToIcon + selectedIcon,
                                   width: 20.w, height: 20.w),
                             ),
                             SizedBox(width: 12.w),
@@ -566,7 +574,26 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           CustomElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Map<String, bool> days = {
+                'Mon': _isMon.value,
+                'Tue': _isTue.value,
+                'Wed': _isWed.value,
+                'Thu': _isThu.value,
+                'Fri': _isFri.value,
+                'Sat': _isSat.value,
+                'Sun': _isSun.value,
+              };
+              print('Name: ${_nameController.text}');
+              print('Description: ${_descriptionController.text}');
+              print('Category: ${_categoryController.text}');
+              print('Repeat Type: ${_repeatType.name}');
+              print('Days: $days');
+              print('Selected Times: $selectedTimes');
+              print('Selected Icon: $selectedIcon');
+              print('Selected Color: $selectedColor');
+
+            },
             text: 'Сохранить',
             isEnabled: selectedTimes.isNotEmpty &&
                 _repeatType != RepeatType.none &&

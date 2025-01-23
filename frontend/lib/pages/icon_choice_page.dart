@@ -17,13 +17,13 @@ class IconChoicePage extends StatefulWidget {
 
 class IconChoicePageState extends State<IconChoicePage> {
   final List<String> imageUrls = [
-    'assets/icons/habit_icons/books.png',
-    'assets/icons/habit_icons/books.png',
-    'assets/icons/habit_icons/books.png',
-    'assets/icons/habit_icons/books.png',
-    'assets/icons/habit_icons/running.png',
-    'assets/icons/habit_icons/books.png',
-    'assets/icons/habit_icons/books.png',
+    'books.png',
+    'books.png',
+    'books.png',
+    'books.png',
+    'running.png',
+    'books.png',
+    'books.png',
   ];
 
   int? selectedIndex;
@@ -93,7 +93,7 @@ class IconChoicePageState extends State<IconChoicePage> {
                 ),
                 child: Center(
                   child: Image.asset(
-                    imageUrls[index],
+                    "assets/icons/habit_icons/${imageUrls[index]}",
                     width: 33,
                     height: 33,
                     semanticLabel: 'Icon option ${index + 1}',
