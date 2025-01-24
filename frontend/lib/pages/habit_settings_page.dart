@@ -14,17 +14,30 @@ import '../widgets/text_field_error_message.dart';
 class HabitSettingsPage extends StatefulWidget {
   final String? selectedIcon;
   final String? selectedColor;
-  const HabitSettingsPage({super.key, this.selectedIcon, this.selectedColor});
+  final int? popularityIndex;
+  final String? name;
+  final String? description;
+  final String? category;
+  final bool? isActive;
+
+  const HabitSettingsPage(
+      {super.key,
+      this.selectedIcon,
+      this.selectedColor,
+      this.popularityIndex,
+      this.name,
+      this.description,
+      this.category, this.isActive});
 
   @override
   HabitSettingsPageState createState() => HabitSettingsPageState();
 }
 
 class HabitSettingsPageState extends State<HabitSettingsPage> {
-  late String selectedIcon;
-  late String selectedColor;
-  TimeOfDay? selectedTime;
-  final List<String> selectedTimes = [];
+  late String _selectedIcon;
+  late String _selectedColor;
+
+  final List<String> _selectedTimes = [];
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -51,10 +64,10 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   @override
   void initState() {
     super.initState();
-    selectedIcon = widget.selectedIcon ??
+    _selectedIcon = widget.selectedIcon ??
         'assets/icons/habit_icons/woman_in_lotus_position.png';
 
-    selectedColor = widget.selectedColor ?? 'FFC6D1FE';
+    _selectedColor = widget.selectedColor ?? 'FFC6D1FE';
   }
 
   int _compareTimes(String a, String b) {
@@ -76,15 +89,15 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   @override
   void didUpdateWidget(HabitSettingsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedIcon != selectedIcon) {
+    if (widget.selectedIcon != _selectedIcon) {
       setState(() {
-        selectedIcon = widget.selectedIcon ??
+        _selectedIcon = widget.selectedIcon ??
             'assets/icons/habit_icons/woman_in_lotus_position.png';
       });
     }
-    if (widget.selectedColor != selectedColor) {
+    if (widget.selectedColor != _selectedColor) {
       setState(() {
-        selectedColor = widget.selectedColor ?? 'FFC6D1FE';
+        _selectedColor = widget.selectedColor ?? 'FFC6D1FE';
       });
     }
   }
@@ -228,7 +241,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                                 color: const Color(0xFFE4E2EC),
                                 borderRadius: BorderRadius.circular(100),
                               ),
-                              child: Image.asset(selectedIcon,
+                              child: Image.asset(_selectedIcon,
                                   width: 20.w, height: 20.w),
                             ),
                             SizedBox(width: 12.w),
@@ -265,7 +278,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                               height: 32.w,
                               decoration: BoxDecoration(
                                 color:
-                                    Color(int.parse(selectedColor, radix: 16)),
+                                    Color(int.parse(_selectedColor, radix: 16)),
                                 borderRadius: BorderRadius.circular(100),
                               ),
                             ),
@@ -366,7 +379,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add, size: 12.w, color: AppColors.gray01),
+                          Icon(Icons.add, size: 12.w, color: AppColors.black02),
                         ],
                       ),
                     ),
@@ -379,8 +392,9 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               ),
               SizedBox(height: 16.h),
               Wrap(
+                spacing: 8.w,
                 children: () {
-                  final sortedTimes = List<String>.from(selectedTimes)
+                  final sortedTimes = List<String>.from(_selectedTimes)
                     ..sort(_compareTimes);
                   return sortedTimes
                       .map((time) => _buildTimeButton(time))
@@ -431,15 +445,15 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
 
       setState(() {
         if (existingTime != null) {
-          selectedTimes[selectedTimes.indexOf(existingTime)] = formattedTime;
-        } else if (!selectedTimes.contains(formattedTime)) {
-          selectedTimes.add(formattedTime);
+          _selectedTimes[_selectedTimes.indexOf(existingTime)] = formattedTime;
+        } else if (!_selectedTimes.contains(formattedTime)) {
+          _selectedTimes.add(formattedTime);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Это время уже добавлено.')),
           );
         }
-        _isTimeValid.value = selectedTimes.isNotEmpty;
+        _isTimeValid.value = _selectedTimes.isNotEmpty;
       });
     }
   }
@@ -450,7 +464,6 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
         _selectTime(context, existingTime: time);
       }),
       child: Container(
-        margin: EdgeInsets.only(right: 8.w, bottom: 8.h),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: AppColors.gray04,
@@ -458,19 +471,21 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               time,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppColors.black02,
+                    height: 1,
                   ),
             ),
             SizedBox(width: 8.w),
             GestureDetector(
                 onTap: () {
                   setState(() {
-                    selectedTimes.remove(time);
-                    _isTimeValid.value = selectedTimes.isNotEmpty;
+                    _selectedTimes.remove(time);
+                    _isTimeValid.value = _selectedTimes.isNotEmpty;
                   });
                 },
                 child: SvgPicture.asset('assets/icons/trash-outline.svg',
@@ -568,7 +583,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
           CustomElevatedButton(
             onPressed: () {},
             text: 'Сохранить',
-            isEnabled: selectedTimes.isNotEmpty &&
+            isEnabled: _selectedTimes.isNotEmpty &&
                 _repeatType != RepeatType.none &&
                 _descriptionController.text.isNotEmpty &&
                 _nameController.text.isNotEmpty,

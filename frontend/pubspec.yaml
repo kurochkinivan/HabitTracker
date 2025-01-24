@@ -26,6 +26,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   jwt_decoder: ^2.0.1
   fuzzy: ^0.5.1
+  provider: ^6.1.2
 
 
   flutter_localizations:
