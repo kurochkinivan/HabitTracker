@@ -307,6 +307,7 @@ class AddHabitPageState extends State<AddHabitPage> {
                   width: 32.w,
                   fit: BoxFit.contain,
                 ),
+
                 // context.router.back();
                 onPressed: () {
                   context.router.navigate(StartRoute());
