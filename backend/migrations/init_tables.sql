@@ -1,8 +1,12 @@
 -- Active: 1731585563391@@127.0.0.1@30000@habit_tracker
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS verification_data;
 DROP TABLE IF EXISTS refresh_sessions;
+DROP TABLE IF EXISTS habit_notifications;
+DROP TABLE IF EXISTS habit_schedules;
+DROP TABLE IF EXISTS habit_days;
 DROP TABLE IF EXISTS habits;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS days_of_week;
 
 CREATE TABLE IF NOT EXISTS users (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -36,41 +40,56 @@ CREATE TABLE IF NOT EXISTS refresh_sessions (
         ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- Icons у Игоря хранятся, а у меня текстовое имя файла
+-- поле active - привычка активная/неактивная
 -- TODO: popularity index, icon, color (HEX - добавить ff перед кодом цвета и убрать #);
 -- TODO: category table ??
 -- TODO: think about default habits, categories (maybe field custom/default)
+CREATE TABLE IF NOT EXISTS categories (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    name TEXT NOT NULL,
+    PRIMARY KEY(id)
+);
+
 CREATE TABLE IF NOT EXISTS habits (
     id INT GENERATED ALWAYS AS IDENTITY,
     user_id UUID NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    category TEXT,
+    category_id INT NOT NULL,
     interval TEXT NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (id),
     CONSTRAINT check_interval CHECK (interval IN ('daily', 'weekly', 'custom')),
+    CONSTRAINT fk_category_id FOREIGN KEY (category_id) REFERENCES categories(id),
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)
         ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS days_of_week (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    name TEXT,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE IF NOT EXISTS habit_schedules (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    habit_id INT NOT NULL,
+    day_id INT NOT NULL,
+    PRIMARY KEY(id),
+    CONSTRAINT fk_habit_id FOREIGN KEY (habit_id) REFERENCES habits(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_day_id FOREIGN KEY (day_id) REFERENCES days_of_week(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(habit_id, day_id)
 );
 
 CREATE TABLE IF NOT EXISTS habit_notifications (
     id INT GENERATED ALWAYS AS IDENTITY,
     habit_id INT NOT NULL,
     notification_time TIME NOT NULL, 
+    is_active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY(id),
     CONSTRAINT fk_habit_id FOREIGN KEY (habit_id) REFERENCES habits(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS habit_days (
-    id INT GENERATED ALWAYS AS IDENTITY,
-    Monday boolean NOT NULL DEFAULT FALSE,
-    Tuesday boolean NOT NULL DEFAULT FALSE,
-    Wednesday boolean NOT NULL DEFAULT FALSE,
-    Thursday boolean NOT NULL DEFAULT FALSE,
-    Friday boolean NOT NULL DEFAULT FALSE,
-    Saturday boolean NOT NULL DEFAULT FALSE,
-    Sunday boolean NOT NULL DEFAULT FALSE,
-    PRIMARY KEY(id),
-    CONSTRAINT fk_habit_id FOREIGN KEY (id) REFERENCES habits(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
-)
