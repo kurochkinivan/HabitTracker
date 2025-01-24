@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"html/template"
+
 	"github.com/kurochkinivan/HabitTracker/config"
 )
 
@@ -14,12 +16,13 @@ type UseCasesDependencies struct {
 	VerifRepo   VerificationDataRepository
 	RefreshRepo RefreshSessionsRepository
 	HabitRepo   HabitRepository
+	TMPLS       map[string]*template.Template
 	*config.Config
 }
 
 func NewUseCases(d UseCasesDependencies) *UseCases {
 	return &UseCases{
-		Auth:  NewAuthUseCase(d.UserRepo, d.VerifRepo, d.RefreshRepo, d.Config.Auth),
+		Auth:  NewAuthUseCase(d.UserRepo, d.VerifRepo, d.RefreshRepo, d.TMPLS, d.Config.Auth),
 		Habit: NewHabitUseCase(d.HabitRepo),
 	}
 }

@@ -12,8 +12,8 @@ auth:
 
   email:
     email_from: 'ivan.kurochkin.084@gmail.com'
-    email_password: 'hiqecckzffwewzqc'
-    verif_code_ttl: 15m
+    email_password: 'hehq pjkw zvev hzcq'
+    verif_code_ttl: 5m
 
 http:
   host: '0.0.0.0'

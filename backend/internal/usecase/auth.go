@@ -17,45 +17,27 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var (
-	tmplConfirm, tmplEmailExists *template.Template
-	sender                       gomail.SendCloser
-)
-
 const (
 	ConfirmationMessage = iota
 	EmailExistsMessage
 )
 
-// TODO: change this logic, it should not be here and it should depend on config prod/local
-func init() {
-	tmplConfirm = template.Must(template.ParseFiles("../../static/html/confirmation_email.html"))
-	tmplEmailExists = template.Must(template.ParseFiles("../../static/html/email_already_exists.html"))
-	// tmplConfirm = template.Must(template.ParseFiles("confirmation_email.html"))
-	// tmplEmailExists = template.Must(template.ParseFiles("email_already_exists.html"))
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, "ivan.kurochkin.084@gmail.com", "vwapfrlhzqpglpec")
-	var err error
-	sender, err = dialer.Dial()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-}
-
 type AuthUseCase struct {
-	userRepo        UserRepository
-	verifRepo       VerificationDataRepository
-	refreshRepo     RefreshSessionsRepository
-	signingKey      string
-	accessTokenTTL  time.Duration
-	refreshTokenTTL time.Duration
-	verifCodeTTL    time.Duration
-	maxUserSessions int
-	salt            string
-	emailFrom       string
-	emailPassword   string
+	userRepo                     UserRepository
+	verifRepo                    VerificationDataRepository
+	refreshRepo                  RefreshSessionsRepository
+	signingKey                   string
+	accessTokenTTL               time.Duration
+	refreshTokenTTL              time.Duration
+	verifCodeTTL                 time.Duration
+	maxUserSessions              int
+	salt                         string
+	emailFrom                    string
+	dialer                       *gomail.Dialer
+	confirmTMPL, emailExistsTMPL *template.Template
 }
 
-func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepository, refreshRepo RefreshSessionsRepository, auth config.Auth) *AuthUseCase {
+func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepository, refreshRepo RefreshSessionsRepository, tmpls map[string]*template.Template, auth config.Auth) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:        userRepo,
 		verifRepo:       verifRepo,
@@ -65,9 +47,11 @@ func NewAuthUseCase(userRepo UserRepository, verifRepo VerificationDataRepositor
 		refreshTokenTTL: auth.JWT.RefreshTokenTTL,
 		maxUserSessions: auth.JWT.MaxUserSessions,
 		verifCodeTTL:    auth.Email.VerifCodeTTL,
-		emailFrom:       auth.Email.EmailFrom,
-		emailPassword:   auth.Email.EmailPassword,
 		salt:            auth.Hasher.HasherSalt,
+		emailFrom:       auth.Email.EmailFrom,
+		dialer:          gomail.NewDialer("smtp.gmail.com", 587, auth.Email.EmailFrom, auth.Email.EmailPassword),
+		confirmTMPL:     tmpls["confirm"],
+		emailExistsTMPL: tmpls["email_exists"],
 	}
 }
 
@@ -236,13 +220,13 @@ func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) er
 func (a *AuthUseCase) LogoutUser(ctx context.Context, refreshToken string) error {
 	logrus.WithField("refresh_token", refreshToken).Debug("logging user out")
 	const op string = "authUseCase.LogoutUser"
-	
+
 	err := a.refreshRepo.DeleteRefreshSessionByToken(ctx, refreshToken)
 	if err != nil {
 		return apperr.SystemError(err, op, "failed to delete refresh session")
 	}
 
-	return nil 
+	return nil
 }
 
 func (a *AuthUseCase) RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error) {
@@ -372,10 +356,10 @@ func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
 	switch emailType {
 	case ConfirmationMessage:
 		m.SetHeader("Subject", "Код подтверждения")
-		err = tmplConfirm.Execute(&body, struct{ Code string }{Code: code})
+		err = a.confirmTMPL.Execute(&body, struct{ Code string }{Code: code})
 	case EmailExistsMessage:
 		m.SetHeader("Subject", "Попытка регистрации с вашей почтой в Habit Tracker")
-		err = tmplEmailExists.Execute(&body, struct{ Code string }{Code: code})
+		err = a.emailExistsTMPL.Execute(&body, struct{ Code string }{Code: code})
 	}
 	if err != nil {
 		return apperr.SystemError(err, op, "failed to execute html-template")
@@ -383,7 +367,7 @@ func (a *AuthUseCase) sendEmail(email, code string, emailType int) error {
 
 	m.SetBody("text/html", body.String())
 
-	err = sender.Send(a.emailFrom, []string{email}, m)
+	err = a.dialer.DialAndSend(m)
 	if err != nil {
 		return apperr.ErrSendingEmail.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
