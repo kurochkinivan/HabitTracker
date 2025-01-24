@@ -5,7 +5,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:fuzzy/fuzzy.dart';
 import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/widgets/custom_search_bar.dart';
-
 import '../models/habits.dart';
 import '../router/app_router.dart';
 import '../widgets/category_section.dart';

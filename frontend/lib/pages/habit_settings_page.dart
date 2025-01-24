@@ -52,7 +52,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
 
   final ValueNotifier<bool> _isMon = ValueNotifier(false);
   final ValueNotifier<bool> _isTue = ValueNotifier(false);
-  final ValueNotifier<bool> _isWed = ValueNotifier(true);
+  final ValueNotifier<bool> _isWed = ValueNotifier(false);
   final ValueNotifier<bool> _isThu = ValueNotifier(false);
   final ValueNotifier<bool> _isFri = ValueNotifier(false);
   final ValueNotifier<bool> _isSat = ValueNotifier(false);

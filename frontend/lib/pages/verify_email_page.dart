@@ -11,8 +11,6 @@ import '../app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../models/get_verification_code_request.dart';
-import '../router/app_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
