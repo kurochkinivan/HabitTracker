@@ -27,7 +27,8 @@ class HabitSettingsPage extends StatefulWidget {
       this.popularityIndex,
       this.name,
       this.description,
-      this.category, this.isActive});
+      this.category,
+      this.isActive});
 
   @override
   HabitSettingsPageState createState() => HabitSettingsPageState();
@@ -607,7 +608,6 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               print('Selected Times: $_selectedTimes');
               print('Selected Icon: $_selectedIcon');
               print('Selected Color: $_selectedColor');
-
             },
             text: 'Сохранить',
             isEnabled: _selectedTimes.isNotEmpty &&
