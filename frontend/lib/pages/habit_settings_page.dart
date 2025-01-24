@@ -388,7 +388,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add, size: 12.w, color: AppColors.black02),
+                          Icon(Icons.add, size: 12.w, color: AppColors.purple),
                         ],
                       ),
                     ),
