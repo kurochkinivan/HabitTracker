@@ -19,7 +19,7 @@ func NewHabitUseCase(habitRepo HabitRepository) *HabitUseCase {
 }
 
 func (h *HabitUseCase) CreateHabit(ctx context.Context, habit entity.Habit) error {
-	logrus.WithField("user_id", habit.UserID).Debug("creating new habit")
+	logrus.WithField("user_id", habit.UserID).Debug("creating habit")
 	const op string = "HabitUseCase.CreateHabit"
 
 	err := h.habitRepo.CreateHabit(ctx, habit)
@@ -31,12 +31,12 @@ func (h *HabitUseCase) CreateHabit(ctx context.Context, habit entity.Habit) erro
 }
 
 func (h *HabitUseCase) GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error) {
-	logrus.WithField("user_id", userID).Debug("getting all habits")
+	logrus.WithField("user_id", userID).Debug("getting habits")
 	const op string = "HabitUseCase.GetHabits"
 
 	habits, err := h.habitRepo.GetUserHabits(ctx, userID)
 	if err != nil {
-		return nil, apperr.SystemError(err, op, "failed to get all habits")
+		return nil, apperr.SystemError(err, op, "failed to get habits")
 	}
 
 	return habits, nil

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -38,7 +39,7 @@ func (h *habitHandler) getHabits(w http.ResponseWriter, r *http.Request, p httpr
 
 	habits, err := h.h.GetUserHabits(r.Context(), paramsID)
 	if err != nil {
-		return apperr.SystemError(err, op, "failed to get all habits")
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	resp, err := json.Marshal(habits)
