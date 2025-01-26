@@ -23,7 +23,60 @@ func NewHabitRepository(client *pgxpool.Pool) *HabitRepository {
 	}
 }
 
-func (r *HabitRepository) CreateHabit(habit entity.Habit) error {
+func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error) {
+	logrus.WithField("user_id", userID).Trace("getting habits")
+	const op string = "HabitRepository.GetAllHabits"
+
+	sql, args, err := r.qb.Select(
+		habitsField("id"),
+		habitsField("user_id"),
+		habitsField("name"),
+		habitsField("description"),
+		categoriesField("name"),
+		habitsField("interval"),
+		habitsField("active"),
+		habitsField("popularity_index"),
+	).
+		From(TableHabits).
+		InnerJoin(fmt.Sprintf("categories ON %s = %s", habitsField("category_id"), categoriesField("id"))).
+		Where(sq.Eq{"user_id": userID}).
+		ToSql()
+	if err != nil {
+		return nil, psql.ErrCreateQuery(op, err)
+	}
+
+	rows, err := r.client.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, psql.ErrDoQuery(op, err)
+	}
+	defer rows.Close()
+
+	habits := []entity.Habit{}
+	for rows.Next() {
+		var habit entity.Habit
+		err := rows.Scan(
+			&habit.ID,
+			&habit.UserID,
+			&habit.Name,
+			&habit.Desc,
+			&habit.Category,
+			&habit.Interval,
+			&habit.Active,
+			&habit.PopularityIndex,
+		)
+		if err != nil {
+			return nil, psql.ErrScan(op, err)
+		}
+		habits = append(habits, habit)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, psql.ErrScan(op, err)
+	}
+
+	return habits, nil
+}
+
+func (r *HabitRepository) CreateHabit(ctx context.Context, habit entity.Habit) error {
 	logrus.WithField("user_id", habit.UserID).Trace("creating new habit")
 	const op string = "HabitRepository.CreateHabit"
 
@@ -32,30 +85,24 @@ func (r *HabitRepository) CreateHabit(habit entity.Habit) error {
 		"name",
 		"description",
 		"category",
-		"days",
 		"interval",
-		"notifications",
 	).Values(
 		habit.UserID,
 		habit.Name,
 		habit.Desc,
 		habit.Category,
-		habit.Days,
 		habit.Interval,
-		habit.Notifications,
 	).ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(op, err)
 	}
-	fmt.Println(sql)
-	fmt.Println(args...)
 
 	commTag, err := r.client.Exec(context.TODO(), sql, args...)
 	if err != nil {
 		return psql.ErrExec(op, err)
 	}
 
-	if commTag.RowsAffected() == 0{
+	if commTag.RowsAffected() == 0 {
 		return psql.NoRowsAffected
 	}
 

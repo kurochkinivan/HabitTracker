@@ -1,5 +1,7 @@
 package postgresql
 
+import "fmt"
+
 // The database schema to be used.
 const scheme = "public."
 
@@ -9,4 +11,12 @@ const (
 	TableVerificationData = scheme + "verification_data"
 	TableRefreshSessions  = scheme + "refresh_sessions"
 	TableHabits           = scheme + "habits"
+	TableCategories       = scheme + "categories"
 )
+
+func habitsField(field string) string {
+	return fmt.Sprintf("%s.%s", TableHabits, field)
+}
+func categoriesField(field string) string {
+	return fmt.Sprintf("%s.%s", TableCategories, field)
+}

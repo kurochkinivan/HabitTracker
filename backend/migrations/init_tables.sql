@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS habits (
     description TEXT,
     category_id INT NOT NULL,
     interval TEXT NOT NULL,
+    popularity_index NUMERIC(5, 2) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (id),
     CONSTRAINT check_interval CHECK (interval IN ('daily', 'weekly', 'custom')),

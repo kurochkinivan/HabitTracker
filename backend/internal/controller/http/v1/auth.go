@@ -7,34 +7,33 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/julienschmidt/httprouter"
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/kurochkinivan/HabitTracker/internal/usecase"
 )
 
 type authHandler struct {
-	auth       usecase.Auth
+	a          usecase.Auth
 	bytesLimit int64
 	signingKey string
 }
 
 func NewAuthHandler(a usecase.Auth, bytesLimit int64, signingKey string) Handler {
 	return &authHandler{
-		auth:       a,
+		a:          a,
 		bytesLimit: bytesLimit,
 		signingKey: signingKey,
 	}
 }
 
-const baseAuthPath = "/v1/auth"
-
-func (h *authHandler) Register(mux *http.ServeMux) {
-	mux.HandleFunc(fmt.Sprintf("%s %s/register", http.MethodPost, baseAuthPath), errMdw(logMdw(h.registerUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/verify-email", http.MethodPost, baseAuthPath), errMdw(logMdw(h.verifyEmail)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/login", http.MethodPost, baseAuthPath), errMdw(logMdw(h.loginUser)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/logout", http.MethodPost, baseAuthPath), errMdw(logMdw(h.logout)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/get-verification-code", http.MethodPost, baseAuthPath), errMdw(logMdw(h.getVerificationCode)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/refresh-tokens", http.MethodPost, baseAuthPath), errMdw(logMdw(h.refreshTokens)))
-	mux.HandleFunc(fmt.Sprintf("%s %s/check-auth", http.MethodGet, baseAuthPath), errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
+func (h *authHandler) Register(r *httprouter.Router) {
+	r.GET(authPath+"/check-auth", errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
+	r.POST(authPath+"/register", errMdw(logMdw(h.registerUser)))
+	r.POST(authPath+"/verify-email", errMdw(logMdw(h.verifyEmail)))
+	r.POST(authPath+"/login", errMdw(logMdw(h.loginUser)))
+	r.POST(authPath+"/logout", errMdw(logMdw(h.logout)))
+	r.POST(authPath+"/get-verification-code", errMdw(logMdw(h.getVerificationCode)))
+	r.POST(authPath+"/refresh-tokens", errMdw(logMdw(h.refreshTokens)))
 }
 
 type (
@@ -45,18 +44,18 @@ type (
 	}
 )
 
-//	@Summary		Register user
-//	@Description	register new user
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.registerRequest	true	"register request parameters"
-//	@Produce		json
-//	@Success		200	"OK. Message was sent to user"
-//	@Failure		400	{object}	apperr.AppError	"Bad Request"
-//	@Failure		409	{object}	apperr.AppError	"Conflict. User with provided email already exists"
-//	@Failure		500	{object}	apperr.AppError	"Internal Server Error"
-//	@Router			/auth/register [post]
-func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Register user
+// @Description	register new user
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.registerRequest	true	"register request parameters"
+// @Produce		json
+// @Success		200	"OK. Message was sent to user"
+// @Failure		400	{object}	apperr.AppError	"Bad Request"
+// @Failure		409	{object}	apperr.AppError	"Conflict. User with provided email already exists"
+// @Failure		500	{object}	apperr.AppError	"Internal Server Error"
+// @Router			/auth/register [post]
+func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.registerUser"
 
@@ -76,7 +75,7 @@ func (h *authHandler) registerUser(w http.ResponseWriter, r *http.Request) error
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	err = h.auth.RegisterUser(r.Context(), req.Name, req.Email, req.Password)
+	err = h.a.RegisterUser(r.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -97,18 +96,18 @@ type (
 	}
 )
 
-//	@Summary		Verify user's email
-//	@Description	verify user's email by confirmation code
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.verifyCodeRequest	true	"verify code request parameters"
-//	@Produce		json
-//	@Success		200	{object}	v1.verifyCodeResponse	"OK. User was verified"
-//	@Failure		400	{object}	apperr.AppError			"Bad Request"
-//	@Failure		401	{object}	apperr.AppError			"Unauthorized. User provided invalid verification code"
-//	@Failure		500	{object}	apperr.AppError			"Internal Server Error"
-//	@Router			/auth/verify-email [post]
-func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Verify user's email
+// @Description	verify user's email by confirmation code
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.verifyCodeRequest	true	"verify code request parameters"
+// @Produce		json
+// @Success		200	{object}	v1.verifyCodeResponse	"OK. User was verified"
+// @Failure		400	{object}	apperr.AppError			"Bad Request"
+// @Failure		401	{object}	apperr.AppError			"Unauthorized. User provided invalid verification code"
+// @Failure		500	{object}	apperr.AppError			"Internal Server Error"
+// @Router			/auth/verify-email [post]
+func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.verifyEmail"
 
@@ -128,7 +127,7 @@ func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request) error 
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	accessToken, refreshToken, err := h.auth.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
+	accessToken, refreshToken, err := h.a.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -161,18 +160,18 @@ type (
 	}
 )
 
-//	@Summary		Log user in
-//	@Description	log user in
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.loginRequest	true	"login request parameters"
-//	@Produce		json
-//	@Success		200	{object}	v1.loginResponse	"OK. User was logged in"
-//	@Failure		400	{object}	apperr.AppError		"Bad Request"
-//	@Failure		401	{object}	apperr.AppError		"Unauthorized. Email or password is incorrect"
-//	@Failure		500	{object}	apperr.AppError		"Internal Server Error"
-//	@Router			/auth/login [post]
-func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Log user in
+// @Description	log user in
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.loginRequest	true	"login request parameters"
+// @Produce		json
+// @Success		200	{object}	v1.loginResponse	"OK. User was logged in"
+// @Failure		400	{object}	apperr.AppError		"Bad Request"
+// @Failure		401	{object}	apperr.AppError		"Unauthorized. Email or password is incorrect"
+// @Failure		500	{object}	apperr.AppError		"Internal Server Error"
+// @Router			/auth/login [post]
+func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.loginUser"
 
@@ -192,7 +191,7 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request) error {
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	accessToken, refreshToken, err := h.auth.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
+	accessToken, refreshToken, err := h.a.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -218,18 +217,18 @@ type (
 	}
 )
 
-//	@Summary		Get verification code
-//	@Description	send verification code to user's email
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.getVerifCodeRequest	true	"getVerifCode request parameters"
-//	@Produce		json
-//	@Success		200	"OK. Email with verification code was sent to user"
-//	@Failure		400	{object}	apperr.AppError	"Bad Request"
-//	@Failure		404	{object}	apperr.AppError	"Not Found. User with provided email is not signing up"
-//	@Failure		500	{object}	apperr.AppError	"Internal Server Error"
-//	@Router			/auth/get-verification-code [post]
-func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Get verification code
+// @Description	send verification code to user's email
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.getVerifCodeRequest	true	"getVerifCode request parameters"
+// @Produce		json
+// @Success		200	"OK. Email with verification code was sent to user"
+// @Failure		400	{object}	apperr.AppError	"Bad Request"
+// @Failure		404	{object}	apperr.AppError	"Not Found. User with provided email is not signing up"
+// @Failure		500	{object}	apperr.AppError	"Internal Server Error"
+// @Router			/auth/get-verification-code [post]
+func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.getVerificationCode"
 
@@ -249,7 +248,7 @@ func (h *authHandler) getVerificationCode(w http.ResponseWriter, r *http.Request
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	err = h.auth.SendConfirmationCode(r.Context(), req.Email)
+	err = h.a.SendConfirmationCode(r.Context(), req.Email)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -270,18 +269,18 @@ type (
 	}
 )
 
-//	@Summary		Refresh tokens
-//	@Description	get new access and refresh tokens
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.refreshTokensRequest	true	"refreshTokens request parameters"
-//	@Produce		json
-//	@Success		200	{object}	v1.refreshTokensResponse	"OK. Tokens were refreshed"
-//	@Failure		400	{object}	apperr.AppError				"Bad Request"
-//	@Failure		401	{object}	apperr.AppError				"Unauthorized. Request cannot be processed with provided credentials"
-//	@Failure		500	{object}	apperr.AppError				"Internal Server Error"
-//	@Router			/auth/refresh-tokens [post]
-func (h *authHandler) refreshTokens(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Refresh tokens
+// @Description	get new access and refresh tokens
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.refreshTokensRequest	true	"refreshTokens request parameters"
+// @Produce		json
+// @Success		200	{object}	v1.refreshTokensResponse	"OK. Tokens were refreshed"
+// @Failure		400	{object}	apperr.AppError				"Bad Request"
+// @Failure		401	{object}	apperr.AppError				"Unauthorized. Request cannot be processed with provided credentials"
+// @Failure		500	{object}	apperr.AppError				"Internal Server Error"
+// @Router			/auth/refresh-tokens [post]
+func (h *authHandler) refreshTokens(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.refreshTokens"
 
@@ -308,7 +307,7 @@ func (h *authHandler) refreshTokens(w http.ResponseWriter, r *http.Request) erro
 		return apperr.ErrInvalidUUID
 	}
 
-	accessToken, refreshToken, err := h.auth.RefreshTokens(r.Context(), req.UserID, req.RefreshToken, req.Fingerprint)
+	accessToken, refreshToken, err := h.a.RefreshTokens(r.Context(), req.UserID, req.RefreshToken, req.Fingerprint)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -334,17 +333,17 @@ type (
 	}
 )
 
-//	@Summary		Log user out
-//	@Description	log user out using refresh-token
-//	@Tags			auth
-//	@Accept			json
-//	@Param			request	body	v1.logoutRequest	true	"logout request parameters"
-//	@Produce		json
-//	@Success		200	{object}	v1.refreshTokensResponse	"OK. User was logged out"
-//	@Failure		400	{object}	apperr.AppError				"Bad Request"
-//	@Failure		500	{object}	apperr.AppError				"Internal Server Error"
-//	@Router			/auth/logout [post]
-func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Log user out
+// @Description	log user out using refresh-token
+// @Tags			auth
+// @Accept			json
+// @Param			request	body	v1.logoutRequest	true	"logout request parameters"
+// @Produce		json
+// @Success		200	{object}	v1.refreshTokensResponse	"OK. User was logged out"
+// @Failure		400	{object}	apperr.AppError				"Bad Request"
+// @Failure		500	{object}	apperr.AppError				"Internal Server Error"
+// @Router			/auth/logout [post]
+func (h *authHandler) logout(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "authHandler.logout"
 
@@ -367,25 +366,24 @@ func (h *authHandler) logout(w http.ResponseWriter, r *http.Request) error {
 		return apperr.ErrInvalidUUID
 	}
 
-	err = h.auth.LogoutUser(r.Context(), req.RefreshToken)
+	err = h.a.LogoutUser(r.Context(), req.RefreshToken)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	return nil 
+	return nil
 }
 
-
-//	@Summary		Check auth header
-//	@Description	check access token 
-//	@Tags			auth
-//	@Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
-//	@Success		200				"OK. Access token is valid"
-//	@Failure		400				{object}	apperr.AppError	"Bad Request"
-//	@Failure		401				"Unauthorized"
-//	@Failure		500				{object}	apperr.AppError	"Internal Server Error"
-//	@Router			/auth/check-auth [get]
-func (h *authHandler) checkAuthHeader(w http.ResponseWriter, r *http.Request) error {
+// @Summary		Check auth header
+// @Description	check access token
+// @Tags			auth
+// @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
+// @Success		200				"OK. Access token is valid"
+// @Failure		400				{object}	apperr.AppError	"Bad Request"
+// @Failure		401				"Unauthorized"
+// @Failure		500				{object}	apperr.AppError	"Internal Server Error"
+// @Router			/auth/check-auth [get]
+func (h *authHandler) checkAuthHeader(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 
 	return nil

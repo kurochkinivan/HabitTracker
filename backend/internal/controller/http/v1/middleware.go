@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/julienschmidt/httprouter"
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/sirupsen/logrus"
 )
@@ -17,10 +18,10 @@ const (
 	RequestIDKey = 0
 )
 
-type appHandler func(w http.ResponseWriter, r *http.Request) error
+type appHandler func(w http.ResponseWriter, r *http.Request, p httprouter.Params) error
 
 func logMdw(next appHandler) appHandler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 		entry := logrus.WithFields(logrus.Fields{
 			"method":      r.Method,
 			"path":        r.URL.Path,
@@ -40,12 +41,12 @@ func logMdw(next appHandler) appHandler {
 			}).Info("request completed")
 		}()
 
-		return next(ww, r)
+		return next(ww, r, p)
 	}
 }
 
 func authMdw(next appHandler, signingKey string) appHandler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 		header := r.Header.Get("Authorization")
 		if header == "" {
 			return apperr.ErrEmptyAuthHeader
@@ -68,14 +69,14 @@ func authMdw(next appHandler, signingKey string) appHandler {
 
 		r.Header.Set("user_id", payload["ueid"].(string))
 
-		return next(w, r)
+		return next(w, r, p)
 	}
 }
 
-func errMdw(h appHandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func errMdw(h appHandler) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var appErr *apperr.AppError
-		err := h(w, r)
+		err := h(w, r, p)
 
 		if err != nil {
 			if errors.As(err, &appErr) {

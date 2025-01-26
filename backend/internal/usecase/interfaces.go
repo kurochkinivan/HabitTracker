@@ -50,10 +50,12 @@ type (
 
 type (
 	Habit interface {
-		CreateNewHabit(habit entity.Habit) error
+		CreateHabit(ctx context.Context, habit entity.Habit) error
+		GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
 	}
 
 	HabitRepository interface {
-		CreateHabit(habit entity.Habit) error
+		GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
+		CreateHabit(ctx context.Context, habit entity.Habit) error
 	}
 )
