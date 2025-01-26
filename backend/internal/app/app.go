@@ -37,8 +37,8 @@ func Run(cfg *config.Config, tmpls map[string]*template.Template) error {
 		TMPLS:       tmpls,
 		Config:      cfg,
 	}
-	authUseCase := usecase.NewUseCases(dependencies)
+	useCases := usecase.NewUseCases(dependencies)
 
 	logrus.Info("starting server...")
-	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, cfg.JWT.JWTSignKey, authUseCase)
+	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, cfg.JWT.JWTSignKey, useCases.Auth, useCases.Habit)
 }

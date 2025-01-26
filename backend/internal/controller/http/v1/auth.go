@@ -27,13 +27,13 @@ func NewAuthHandler(a usecase.Auth, bytesLimit int64, signingKey string) Handler
 }
 
 func (h *authHandler) Register(r *httprouter.Router) {
-	r.GET(authPath+"/check-auth", errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
-	r.POST(authPath+"/register", errMdw(logMdw(h.registerUser)))
-	r.POST(authPath+"/verify-email", errMdw(logMdw(h.verifyEmail)))
-	r.POST(authPath+"/login", errMdw(logMdw(h.loginUser)))
-	r.POST(authPath+"/logout", errMdw(logMdw(h.logout)))
-	r.POST(authPath+"/get-verification-code", errMdw(logMdw(h.getVerificationCode)))
-	r.POST(authPath+"/refresh-tokens", errMdw(logMdw(h.refreshTokens)))
+	r.GET("/v1/auth/check-auth", errMdw(authMdw(logMdw(h.checkAuthHeader), h.signingKey)))
+	r.POST("/v1/auth/register", errMdw(logMdw(h.registerUser)))
+	r.POST("/v1/auth/verify-email", errMdw(logMdw(h.verifyEmail)))
+	r.POST("/v1/auth/login", errMdw(logMdw(h.loginUser)))
+	r.POST("/v1/auth/logout", errMdw(logMdw(h.logout)))
+	r.POST("/v1/auth/get-verification-code", errMdw(logMdw(h.getVerificationCode)))
+	r.POST("/v1/auth/refresh-tokens", errMdw(logMdw(h.refreshTokens)))
 }
 
 type (

@@ -28,4 +28,5 @@ var (
 	ErrVerifCodeExpired    = NewAppErr(nil, "verification code is expired", "verification code is expired", "AS-008", http.StatusUnauthorized)
 	ErrInvalidRefreshToken = NewAppErr(nil, "invalid token", "provided token is invalid", "AS-009", http.StatusUnauthorized)
 	ErrInvalidFingerprint  = NewAppErr(nil, "invalid fingerprint", "attempt to retrieve token pair from an unrecognized device", "AS-010", http.StatusUnauthorized)
+	ErrUnauthorized        = NewAppErr(nil, "unauthorized", "user is not authorized", "AS-011", http.StatusUnauthorized)
 )

@@ -18,9 +18,10 @@ type Handlers struct {
 	Habit habitHandler
 }
 
-func NewHandlers(auth authHandler) *Handlers {
+func NewHandlers(auth authHandler, habit habitHandler) *Handlers {
 	return &Handlers{
-		Auth: auth,
+		Auth:  auth,
+		Habit: habit,
 	}
 }
 
@@ -29,11 +30,14 @@ func NewHandlers(auth authHandler) *Handlers {
 // @version		1.0
 // @host			localhost:8080
 // @BasePath		/v1
-func NewRouter(host, port string, bytesLimit int64, sigingKey string, a usecase.Auth) error {
+func NewRouter(host, port string, bytesLimit int64, sigingKey string, a usecase.Auth, h usecase.Habit) error {
 	r := httprouter.New()
 
 	authHandler := NewAuthHandler(a, bytesLimit, sigingKey)
 	authHandler.Register(r)
+
+	habitHandler := NewHabitHandler(h, sigingKey)
+	habitHandler.Register(r)
 
 	httpSwagger.Handler()
 	r.Handler(http.MethodGet, "/swagger/", httpSwagger.WrapHandler)
