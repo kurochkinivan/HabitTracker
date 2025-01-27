@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_svg: ^2.0.14
+  flutter_svg: ^2.0.16
   auto_route: ^9.2.2
   pin_code_fields: ^8.0.1
   dio: ^5.7.0
@@ -25,6 +25,8 @@ dependencies:
   android_id: ^0.4.0
   flutter_secure_storage: ^9.2.2
   jwt_decoder: ^2.0.1
+  fuzzy: ^0.5.1
+  provider: ^6.1.2
 
 
   flutter_localizations:
@@ -37,7 +39,7 @@ dev_dependencies:
   auto_route_generator: ^9.0.0
   build_runner: ^2.4.13
   retrofit_generator: ^9.1.5
-  json_serializable: ^6.8.0
+  json_serializable: ^6.9.0
   freezed: ^2.5.7
   flutter_lints: ^5.0.0
 

@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
-
 
 @RoutePage()
 class PasswordRecoveryPage extends StatefulWidget {
@@ -40,13 +40,19 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 64.h, left: 20),
-              child: IconButton(
+      appBar: AppBar(
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
                 icon: SvgPicture.asset(
                   "assets/icons/arrow_left.svg",
                   height: 32.w,
@@ -54,45 +60,48 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.navigate(SignInRoute());
+                  context.router.back();
                 },
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  Text(
-                    "Восстановление пароля",
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(fontSize: 26.sp),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    "Введите свой email, и мы отправим "
-                    "вам код для восстановления пароля.",
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  SizedBox(height: 24.h),
-                  CustomTextFormField(
-                    controller: _emailController,
-                    hintText: 'E-mail',
-                    obscureText: false,
-                    validateController: _isEmailValid,
-                    onChanged: _validateEmail,
-                  ),
-                  TextFieldErrorMessage(
-                    validator: _isEmailValid,
-                    message: "Некорректный формат почты",
-                  ),
-                ],
+              Spacer(),
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                "Восстановление пароля",
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 26.sp),
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Text(
+                "Введите свой email, и мы отправим "
+                "вам код для восстановления пароля.",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              SizedBox(height: 24.h),
+              CustomTextFormField(
+                controller: _emailController,
+                hintText: 'E-mail',
+                obscureText: false,
+                validateController: _isEmailValid,
+                onChanged: _validateEmail,
+              ),
+              TextFieldErrorMessage(
+                validator: _isEmailValid,
+                message: "Некорректный формат почты",
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildActionButtons(context),

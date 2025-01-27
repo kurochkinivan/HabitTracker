@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../router/app_router.dart';
+import '../app_colors.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
@@ -49,13 +49,19 @@ class NewPasswordPageState extends State<NewPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 64.h, left: 20),
-              child: IconButton(
+      appBar: AppBar(
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
                 icon: SvgPicture.asset(
                   "assets/icons/arrow_left.svg",
                   height: 32.w,
@@ -63,54 +69,56 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.navigate(PasswordRecoveryRoute());
+                  context.router.back();
                 },
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  Text(
-                    "Введите новый пароль",
-                    style: Theme.of(context)
-                        .textTheme
-                        .displayLarge
-                        ?.copyWith(fontSize: 26.sp),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                      "Введите свой email, и мы отправим вам код для восстановления пароля.",
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  SizedBox(height: 24.h),
-                  CustomTextFormField(
-                    controller: _passwordController1,
-                    hintText: 'Новый пароль',
-                    obscureText: true,
-                    validateController: _isPassword1Valid,
-                    onChanged: _validatePasswords,
-                  ),
-                  TextFieldErrorMessage(
-                      validator: _isPassword1Correct,
-                      message: "Слишком короткий пароль"),
-                  SizedBox(height: 10.h),
-                  CustomTextFormField(
-                    controller: _passwordController2,
-                    hintText: 'Повторите пароль',
-                    obscureText: true,
-                    validateController: _isPassword2Valid,
-                    onChanged: _validatePasswords,
-                  ),
-                  TextFieldErrorMessage(
-                      validator: _isPassword2Valid,
-                      message:
-                          "Слишком короткий пароль или пароли не совпадают"),
-                ],
+              Spacer(),
+            ],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                "Введите новый пароль",
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 26.sp),
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Text(
+                  "Введите свой email, и мы отправим вам код для восстановления пароля.",
+                  style: Theme.of(context).textTheme.bodyLarge),
+              SizedBox(height: 24.h),
+              CustomTextFormField(
+                controller: _passwordController1,
+                hintText: 'Новый пароль',
+                obscureText: true,
+                validateController: _isPassword1Valid,
+                onChanged: _validatePasswords,
+              ),
+              TextFieldErrorMessage(
+                  validator: _isPassword1Correct,
+                  message: "Слишком короткий пароль"),
+              SizedBox(height: 10.h),
+              CustomTextFormField(
+                controller: _passwordController2,
+                hintText: 'Повторите пароль',
+                obscureText: true,
+                validateController: _isPassword2Valid,
+                onChanged: _validatePasswords,
+              ),
+              TextFieldErrorMessage(
+                  validator: _isPassword2Valid,
+                  message: "Слишком короткий пароль или пароли не совпадают"),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildActionButtons(context),

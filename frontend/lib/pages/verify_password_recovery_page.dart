@@ -41,24 +41,36 @@ class VerifyPasswordRecoveryPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: EdgeInsets.only(top: 64.h, left: 20),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              "assets/icons/arrow_left.svg",
-              height: 32.w,
-              width: 32.w,
-              fit: BoxFit.contain,
-            ),
-            onPressed: () {
-              context.router.navigate(SignUpRoute());
-            },
+      appBar: AppBar(
+        toolbarHeight: 88.h,
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(
+            left: 8.w,
+            right: 32.w,
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: SvgPicture.asset(
+                  "assets/icons/arrow_left.svg",
+                  height: 32.w,
+                  width: 32.w,
+                  fit: BoxFit.contain,
+                ),
+                onPressed: () {
+                  context.router.back();
+                },
+              ),
+              Spacer(),
+            ],
           ),
         ),
-        Padding(
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
           padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +134,7 @@ class VerifyPasswordRecoveryPageState
             ],
           ),
         ),
-      ])),
+      ),
       bottomNavigationBar: _buildActionButtons(context),
     );
   }

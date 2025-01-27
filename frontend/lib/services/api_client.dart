@@ -35,7 +35,8 @@ abstract class ApiClient {
   Future<GetJwtResponse> refreshTokens(@Body() RefreshTokensRequest request);
 
   @GET("/auth/check-auth")
-  Future<CheckAuthResponse> checkAuth(@Header("Authorization") String authorization);
+  Future<CheckAuthResponse> checkAuth(
+      @Header("Authorization") String authorization);
 
   @POST("/auth/logout")
   Future<GetJwtResponse> logout(@Body() LogoutRequest request);

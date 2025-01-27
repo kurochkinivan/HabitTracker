@@ -29,6 +29,97 @@ class AddHabitRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ColorChoicePage]
+class ColorChoiceRoute extends PageRouteInfo<void> {
+  const ColorChoiceRoute({List<PageRouteInfo>? children})
+      : super(
+          ColorChoiceRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ColorChoiceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ColorChoicePage();
+    },
+  );
+}
+
+/// generated route for
+/// [HabitSettingsPage]
+class HabitSettingsRoute extends PageRouteInfo<HabitSettingsRouteArgs> {
+  HabitSettingsRoute({
+    Key? key,
+    String? selectedIcon,
+    String? selectedColor,
+    List<PageRouteInfo>? children,
+  }) : super(
+          HabitSettingsRoute.name,
+          args: HabitSettingsRouteArgs(
+            key: key,
+            selectedIcon: selectedIcon,
+            selectedColor: selectedColor,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'HabitSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<HabitSettingsRouteArgs>(
+          orElse: () => const HabitSettingsRouteArgs());
+      return HabitSettingsPage(
+        key: args.key,
+        selectedIcon: args.selectedIcon,
+        selectedColor: args.selectedColor,
+      );
+    },
+  );
+}
+
+class HabitSettingsRouteArgs {
+  const HabitSettingsRouteArgs({
+    this.key,
+    this.selectedIcon,
+    this.selectedColor,
+  });
+
+  final Key? key;
+
+  final String? selectedIcon;
+
+  final String? selectedColor;
+
+  @override
+  String toString() {
+    return 'HabitSettingsRouteArgs{key: $key, selectedIcon: $selectedIcon, selectedColor: $selectedColor}';
+  }
+}
+
+/// generated route for
+/// [IconChoicePage]
+class IconChoiceRoute extends PageRouteInfo<void> {
+  const IconChoiceRoute({List<PageRouteInfo>? children})
+      : super(
+          IconChoiceRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'IconChoiceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const IconChoicePage();
+    },
+  );
+}
+
+/// generated route for
 /// [NewPasswordPage]
 class NewPasswordRoute extends PageRouteInfo<void> {
   const NewPasswordRoute({List<PageRouteInfo>? children})
