@@ -16,6 +16,7 @@ import (
 const (
 	envLocal               = "local"
 	envProd                = "prod"
+	envDocker             = "docker"
 	pathToConfirmLocal     = "../../static/html/confirmation_email.html"
 	pathToEmailExistsLocal = "../../static/html/email_already_exists.html"
 	pathToConfirmProd      = "confirmation_email.html"
@@ -52,7 +53,7 @@ func setupLogger(env string) {
 	logrus.SetOutput(os.Stdout)
 
 	switch env {
-	case envLocal:
+	case envLocal, envDocker:
 		logrus.SetFormatter(&logrus.TextFormatter{
 			ForceColors:      true,
 			TimestampFormat:  "2006-01-02 15:04:05",
@@ -84,8 +85,8 @@ func getTemplatesPaths(env string) (confirm string, emailExists string) {
 	switch env {
 	case envLocal:
 		return pathToConfirmLocal, pathToEmailExistsLocal
-	case envProd:
-		return pathToEmailExistsLocal, pathToEmailExistsProd
+	case envProd, envDocker:
+		return pathToEmailExistsProd, pathToEmailExistsProd
 	default:
 		logrus.Fatal("unknown environment")
 		return "", ""
