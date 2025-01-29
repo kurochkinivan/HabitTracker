@@ -39,8 +39,7 @@ func NewRouter(host, port string, bytesLimit int64, sigingKey string, a usecase.
 	habitHandler := NewHabitHandler(h, sigingKey)
 	habitHandler.Register(r)
 
-	httpSwagger.Handler()
-	r.Handler(http.MethodGet, "/swagger/", httpSwagger.WrapHandler)
+	r.Handler(http.MethodGet, "/swagger/*filepath", httpSwagger.WrapHandler)
 
 	return http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), r)
 }
