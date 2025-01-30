@@ -1,6 +1,7 @@
 import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,63 +11,71 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../router/app_router.dart';
+import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
-class SignInPage extends StatefulWidget {
+class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
 
   @override
-  SignInPageState createState() => SignInPageState();
+  Widget build(BuildContext context) {
+    final dio = Dio();
+    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+
+    return BlocProvider(
+      create: (_) => AuthBloc(apiClient),
+      child: const SignInPageContent(),
+    );
+  }
 }
 
-class SignInPageState extends State<SignInPage> {
+class SignInPageContent extends StatefulWidget {
+  const SignInPageContent({super.key});
+
+  @override
+  SignInPageContentState createState() => SignInPageContentState();
+}
+
+class SignInPageContentState extends State<SignInPageContent> {
   static final RegExp emailRegex =
-      RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
+      RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+$');
 
   String _serverErrorText = '';
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isPasswordValid = ValueNotifier(true);
+  bool _isEmailValid = true;
+  bool _isPasswordValid = true;
+  bool _isLoginCorrect = true;
+  bool _isLoading = false;
 
-  final ValueNotifier<bool> _isEmailCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isPasswordCorrect = ValueNotifier(true);
-
-  final ValueNotifier<bool> _isLoginCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isLoadingController = ValueNotifier(false);
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _validateInputs() {
-    final bool isEmailValid = emailRegex.hasMatch(_emailController.text) ||
-        _emailController.text.isEmpty;
-    final bool isPasswordValid = _passwordController.text.length >= 6 ||
-        _passwordController.text.isEmpty;
-
-    _isEmailValid.value = isEmailValid;
-    _isPasswordValid.value = isPasswordValid;
-    _isEmailCorrect.value = isEmailValid;
-    _isPasswordCorrect.value = isPasswordValid;
-    _isLoginCorrect.value = true;
-
-    setState(() {});
+    setState(() {
+      _isEmailValid = emailRegex.hasMatch(_emailController.text) ||
+          _emailController.text.isEmpty;
+      _isPasswordValid = _passwordController.text.length >= 6 ||
+          _passwordController.text.isEmpty;
+      _isLoginCorrect = true;
+    });
   }
 
   void _login() async {
-    final List<ConnectivityResult> connectivityResult =
-        await (Connectivity().checkConnectivity());
-
-    if (connectivityResult.contains(ConnectivityResult.none)) {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoadingController.value = false;
-        _isEmailCorrect.value = false;
-        _isPasswordCorrect.value = false;
-        _isLoginCorrect.value = false;
+        _isLoading = false;
+        _isLoginCorrect = false;
       });
       return;
     }
@@ -82,12 +91,6 @@ class SignInPageState extends State<SignInPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _isEmailValid.dispose();
-    _isPasswordValid.dispose();
-    _isEmailCorrect.dispose();
-    _isPasswordCorrect.dispose();
-    _isLoginCorrect.dispose();
-    _isLoadingController.dispose();
     super.dispose();
   }
 
@@ -117,7 +120,7 @@ class SignInPageState extends State<SignInPage> {
                   context.router.back();
                 },
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),
@@ -147,11 +150,11 @@ class SignInPageState extends State<SignInPage> {
                 controller: _emailController,
                 hintText: 'E-mail',
                 obscureText: false,
-                validateController: _isEmailCorrect,
+                isValid: _isEmailValid && _isLoginCorrect,
                 onChanged: _validateInputs,
               ),
               TextFieldErrorMessage(
-                validator: _isEmailValid,
+                isValid: _isEmailValid,
                 message: "Некорректный формат почты",
               ),
               SizedBox(height: 10.h),
@@ -159,11 +162,11 @@ class SignInPageState extends State<SignInPage> {
                 controller: _passwordController,
                 hintText: 'Пароль',
                 obscureText: true,
-                validateController: _isPasswordCorrect,
+                isValid: _isPasswordValid && _isLoginCorrect,
                 onChanged: _validateInputs,
               ),
               TextFieldErrorMessage(
-                validator: _isPasswordValid,
+                isValid: _isPasswordValid,
                 message: "Слишком короткий пароль",
               ),
               SizedBox(height: 16.h),
@@ -176,7 +179,7 @@ class SignInPageState extends State<SignInPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextFieldErrorMessage(
-                          validator: _isLoginCorrect,
+                          isValid: _isLoginCorrect,
                           message: _serverErrorText,
                         ),
                       ],
@@ -226,30 +229,44 @@ class SignInPageState extends State<SignInPage> {
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {
-                _isLoadingController.value = false;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                });
               } else if (state is AuthFailure) {
-                setState(() {
-                  _serverErrorText = state.errorMessage;
-                  _isLoadingController.value = false;
-                  _isEmailCorrect.value = false;
-                  _isPasswordCorrect.value = false;
-                  _isLoginCorrect.value = false;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _serverErrorText = state.errorMessage;
+                      _isLoading = false;
+                      _isLoginCorrect = false;
+                    });
+                  }
                 });
               }
             },
             builder: (context, state) {
               if (state is AuthLoading) {
-                _isLoadingController.value = true;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                  }
+                });
               }
               return CustomElevatedButton(
                 text: 'Войти',
-                isEnabled: _isEmailValid.value &&
-                    _isPasswordValid.value &&
+                isEnabled: _isEmailValid &&
+                    _isPasswordValid &&
                     _emailController.text.isNotEmpty &&
                     _passwordController.text.isNotEmpty &&
-                    _isLoginCorrect.value,
+                    _isLoginCorrect,
                 onPressed: _login,
-                isLoadingController: _isLoadingController,
+                isLoading: _isLoading,
               );
             },
           ),

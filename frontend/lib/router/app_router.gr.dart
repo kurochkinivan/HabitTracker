@@ -30,10 +30,17 @@ class AddHabitRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [ColorChoicePage]
-class ColorChoiceRoute extends PageRouteInfo<void> {
-  const ColorChoiceRoute({List<PageRouteInfo>? children})
-      : super(
+class ColorChoiceRoute extends PageRouteInfo<ColorChoiceRouteArgs> {
+  ColorChoiceRoute({
+    Key? key,
+    String? initialColor,
+    List<PageRouteInfo>? children,
+  }) : super(
           ColorChoiceRoute.name,
+          args: ColorChoiceRouteArgs(
+            key: key,
+            initialColor: initialColor,
+          ),
           initialChildren: children,
         );
 
@@ -42,9 +49,30 @@ class ColorChoiceRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const ColorChoicePage();
+      final args = data.argsAs<ColorChoiceRouteArgs>(
+          orElse: () => const ColorChoiceRouteArgs());
+      return ColorChoicePage(
+        key: args.key,
+        initialColor: args.initialColor,
+      );
     },
   );
+}
+
+class ColorChoiceRouteArgs {
+  const ColorChoiceRouteArgs({
+    this.key,
+    this.initialColor,
+  });
+
+  final Key? key;
+
+  final String? initialColor;
+
+  @override
+  String toString() {
+    return 'ColorChoiceRouteArgs{key: $key, initialColor: $initialColor}';
+  }
 }
 
 /// generated route for
@@ -54,6 +82,11 @@ class HabitSettingsRoute extends PageRouteInfo<HabitSettingsRouteArgs> {
     Key? key,
     String? selectedIcon,
     String? selectedColor,
+    int? popularityIndex,
+    String? name,
+    String? description,
+    String? category,
+    bool? isActive,
     List<PageRouteInfo>? children,
   }) : super(
           HabitSettingsRoute.name,
@@ -61,6 +94,11 @@ class HabitSettingsRoute extends PageRouteInfo<HabitSettingsRouteArgs> {
             key: key,
             selectedIcon: selectedIcon,
             selectedColor: selectedColor,
+            popularityIndex: popularityIndex,
+            name: name,
+            description: description,
+            category: category,
+            isActive: isActive,
           ),
           initialChildren: children,
         );
@@ -76,6 +114,11 @@ class HabitSettingsRoute extends PageRouteInfo<HabitSettingsRouteArgs> {
         key: args.key,
         selectedIcon: args.selectedIcon,
         selectedColor: args.selectedColor,
+        popularityIndex: args.popularityIndex,
+        name: args.name,
+        description: args.description,
+        category: args.category,
+        isActive: args.isActive,
       );
     },
   );
@@ -86,6 +129,11 @@ class HabitSettingsRouteArgs {
     this.key,
     this.selectedIcon,
     this.selectedColor,
+    this.popularityIndex,
+    this.name,
+    this.description,
+    this.category,
+    this.isActive,
   });
 
   final Key? key;
@@ -94,18 +142,35 @@ class HabitSettingsRouteArgs {
 
   final String? selectedColor;
 
+  final int? popularityIndex;
+
+  final String? name;
+
+  final String? description;
+
+  final String? category;
+
+  final bool? isActive;
+
   @override
   String toString() {
-    return 'HabitSettingsRouteArgs{key: $key, selectedIcon: $selectedIcon, selectedColor: $selectedColor}';
+    return 'HabitSettingsRouteArgs{key: $key, selectedIcon: $selectedIcon, selectedColor: $selectedColor, popularityIndex: $popularityIndex, name: $name, description: $description, category: $category, isActive: $isActive}';
   }
 }
 
 /// generated route for
 /// [IconChoicePage]
-class IconChoiceRoute extends PageRouteInfo<void> {
-  const IconChoiceRoute({List<PageRouteInfo>? children})
-      : super(
+class IconChoiceRoute extends PageRouteInfo<IconChoiceRouteArgs> {
+  IconChoiceRoute({
+    Key? key,
+    String? initialIconName,
+    List<PageRouteInfo>? children,
+  }) : super(
           IconChoiceRoute.name,
+          args: IconChoiceRouteArgs(
+            key: key,
+            initialIconName: initialIconName,
+          ),
           initialChildren: children,
         );
 
@@ -114,9 +179,30 @@ class IconChoiceRoute extends PageRouteInfo<void> {
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const IconChoicePage();
+      final args = data.argsAs<IconChoiceRouteArgs>(
+          orElse: () => const IconChoiceRouteArgs());
+      return IconChoicePage(
+        key: args.key,
+        initialIconName: args.initialIconName,
+      );
     },
   );
+}
+
+class IconChoiceRouteArgs {
+  const IconChoiceRouteArgs({
+    this.key,
+    this.initialIconName,
+  });
+
+  final Key? key;
+
+  final String? initialIconName;
+
+  @override
+  String toString() {
+    return 'IconChoiceRouteArgs{key: $key, initialIconName: $initialIconName}';
+  }
 }
 
 /// generated route for

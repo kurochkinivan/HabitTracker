@@ -5,8 +5,10 @@ import '../app_colors.dart';
 
 class ResendCodeButton extends StatefulWidget {
   final TextEditingController textEditingController;
+  final VoidCallback? onPressed;
 
-  const ResendCodeButton({super.key, required this.textEditingController});
+  const ResendCodeButton(
+      {super.key, required this.textEditingController, this.onPressed});
 
   @override
   ResendCodeButtonState createState() => ResendCodeButtonState();
@@ -48,11 +50,12 @@ class ResendCodeButtonState extends State<ResendCodeButton> {
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
-  void _resendCode() {
+  void _sendCodeAgain() {
     if (_canResend) {
+      widget.onPressed!();
       setState(() {
         _canResend = false;
-        _start = 5;
+        _start = 100;
       });
       _startTimer();
       widget.textEditingController.clear();
@@ -62,7 +65,7 @@ class ResendCodeButtonState extends State<ResendCodeButton> {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: _canResend ? _resendCode : null,
+      onPressed: _canResend ? _sendCodeAgain : null,
       child: Text(
         _canResend
             ? 'Отправить код повторно'

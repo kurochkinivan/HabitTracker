@@ -8,7 +8,9 @@ import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
 class ColorChoicePage extends StatefulWidget {
-  const ColorChoicePage({super.key});
+  final String? initialColor;
+
+  const ColorChoicePage({super.key, this.initialColor});
 
   @override
   ColorChoicePageState createState() => ColorChoicePageState();
@@ -26,6 +28,14 @@ class ColorChoicePageState extends State<ColorChoicePage> {
   ];
 
   int? selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialColor != null) {
+      selectedIndex = habitColors.indexOf(widget.initialColor!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +60,7 @@ class ColorChoicePageState extends State<ColorChoicePage> {
               ),
               Spacer(),
               Text(
-                'Выбор иконки',
+                'Выбор цвета',
                 style: Theme.of(context)
                     .textTheme
                     .displayLarge

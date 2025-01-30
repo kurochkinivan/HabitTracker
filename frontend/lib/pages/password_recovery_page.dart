@@ -18,22 +18,21 @@ class PasswordRecoveryPage extends StatefulWidget {
 
 class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   static final RegExp emailRegex =
-      RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
+      RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+$');
 
   final TextEditingController _emailController = TextEditingController();
-  final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
+  bool _isEmailValid = true;
 
   void _validateEmail() {
-    final bool isValid = emailRegex.hasMatch(_emailController.text) ||
-        _emailController.text.isEmpty;
-    _isEmailValid.value = isValid;
-    setState(() {});
+    setState(() {
+      _isEmailValid = emailRegex.hasMatch(_emailController.text) ||
+          _emailController.text.isEmpty;
+    });
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    _isEmailValid.dispose();
     super.dispose();
   }
 
@@ -93,11 +92,11 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
                 controller: _emailController,
                 hintText: 'E-mail',
                 obscureText: false,
-                validateController: _isEmailValid,
+                isValid: _isEmailValid,
                 onChanged: _validateEmail,
               ),
               TextFieldErrorMessage(
-                validator: _isEmailValid,
+                isValid: _isEmailValid,
                 message: "Некорректный формат почты",
               ),
             ],
@@ -117,7 +116,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
         children: [
           CustomElevatedButton(
             text: 'Отправить код',
-            isEnabled: _isEmailValid.value && _emailController.text.isNotEmpty,
+            isEnabled: _isEmailValid && _emailController.text.isNotEmpty,
             onPressed: () {
               context.router.navigate(VerifyPasswordRecoveryRoute());
             },

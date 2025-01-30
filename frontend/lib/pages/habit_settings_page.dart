@@ -20,15 +20,16 @@ class HabitSettingsPage extends StatefulWidget {
   final String? category;
   final bool? isActive;
 
-  const HabitSettingsPage(
-      {super.key,
-      this.selectedIcon,
-      this.selectedColor,
-      this.popularityIndex,
-      this.name,
-      this.description,
-      this.category,
-      this.isActive});
+  const HabitSettingsPage({
+    super.key,
+    this.selectedIcon,
+    this.selectedColor,
+    this.popularityIndex,
+    this.name,
+    this.description,
+    this.category,
+    this.isActive,
+  });
 
   @override
   HabitSettingsPageState createState() => HabitSettingsPageState();
@@ -44,40 +45,42 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
 
-  final ValueNotifier<bool> _isNameValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isDescriptionValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isCategoryValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isRepeatTypeValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isTimeValid = ValueNotifier(true);
-
-  final ValueNotifier<bool> _isMon = ValueNotifier(false);
-  final ValueNotifier<bool> _isTue = ValueNotifier(false);
-  final ValueNotifier<bool> _isWed = ValueNotifier(false);
-  final ValueNotifier<bool> _isThu = ValueNotifier(false);
-  final ValueNotifier<bool> _isFri = ValueNotifier(false);
-  final ValueNotifier<bool> _isSat = ValueNotifier(false);
-  final ValueNotifier<bool> _isSun = ValueNotifier(false);
-
-  RepeatType _repeatType = RepeatType.none;
+  bool _isNameValid = true;
+  bool _isDescriptionValid = true;
+  bool _isCategoryValid = true;
+  bool _isRepeatTypeValid = true;
+  bool _isTimeValid = true;
 
   final String _pathToIcon = 'assets/icons/habit_icons/';
 
-  Map<String, ValueNotifier<bool>> get _days => {
-        'ПН': _isMon,
-        'ВТ': _isTue,
-        'СР': _isWed,
-        'ЧТ': _isThu,
-        'ПТ': _isFri,
-        'СБ': _isSat,
-        'ВС': _isSun,
-      };
+  RepeatType _repeatType = RepeatType.none;
 
+  final Map<String, bool> _days = {
+    'ПН': false,
+    'ВТ': false,
+    'СР': false,
+    'ЧТ': false,
+    'ПТ': false,
+    'СБ': false,
+    'ВС': false,
+  };
+
+  RepeatType get repeatType => _repeatType;
+  bool get isValid => _repeatType != RepeatType.none;
+  bool isDaySelected(String day) => _days[day] ?? false;
   @override
   void initState() {
     super.initState();
     _selectedIcon = widget.selectedIcon ?? 'woman_in_lotus_position.png';
-
     _selectedColor = widget.selectedColor ?? 'FFC6D1FE';
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _categoryController.dispose();
+    super.dispose();
   }
 
   int _compareTimes(String a, String b) {
@@ -116,43 +119,41 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
       _repeatType = _repeatType == type ? RepeatType.none : type;
 
       if (_repeatType == RepeatType.daily) {
-        _days.forEach((_, value) => value.value = true);
+        _days.updateAll((_, __) => true);
       } else if (_repeatType == RepeatType.weekly) {
-        _days.forEach((_, value) => value.value = false);
+        _days.updateAll((_, __) => false);
       } else if (type == RepeatType.daily && _repeatType == RepeatType.none) {
-        _days.forEach((_, value) => value.value = false);
+        _days.updateAll((_, __) => false);
       }
 
-      if (_repeatType != RepeatType.weekly &&
-          _days.values.every((n) => !n.value)) {
+      if (_repeatType != RepeatType.weekly && _days.values.every((v) => !v)) {
         _repeatType = RepeatType.none;
       }
 
-      _isRepeatTypeValid.value = _repeatType != RepeatType.none;
+      _isRepeatTypeValid = _repeatType != RepeatType.none;
     });
   }
 
   void _updateDayState(String day) {
     setState(() {
-      _days[day]?.value = !_days[day]!.value;
+      _days[day] = !_days[day]!;
 
       if (_repeatType != RepeatType.custom) {
         _repeatType = RepeatType.custom;
       }
 
-      if (_days.values.every((n) => n.value)) {
+      if (_days.values.every((v) => v)) {
         _repeatType = RepeatType.daily;
       } else if (_repeatType == RepeatType.daily) {
         _repeatType = RepeatType.none;
-        _days.forEach((_, value) => value.value = false);
+        _days.updateAll((_, __) => false);
       }
 
-      if (_days.values.every((n) => !n.value) &&
-          _repeatType != RepeatType.weekly) {
+      if (_days.values.every((v) => !v) && _repeatType != RepeatType.weekly) {
         _repeatType = RepeatType.none;
       }
 
-      _isRepeatTypeValid.value = _repeatType != RepeatType.none;
+      _isRepeatTypeValid = _repeatType != RepeatType.none;
     });
   }
 
@@ -213,16 +214,17 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               ),
               SizedBox(height: 16.h),
               CustomTextFormField(
-                  hintText: "Название привычки",
-                  controller: _nameController,
-                  validateController: _isNameValid,
-                  onChanged: () {
-                    setState(() {
-                      _isNameValid.value = _nameController.text.isNotEmpty;
-                    });
-                  }),
+                hintText: "Название привычки",
+                controller: _nameController,
+                isValid: _isNameValid,
+                onChanged: () {
+                  setState(() {
+                    _isNameValid = _nameController.text.isNotEmpty;
+                  });
+                },
+              ),
               TextFieldErrorMessage(
-                validator: _isNameValid,
+                isValid: _isNameValid,
                 message: "Поле не должно быть пустым",
               ),
               SizedBox(height: 16.h),
@@ -231,7 +233,8 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        context.router.navigate(IconChoiceRoute());
+                        context.router.navigate(
+                            IconChoiceRoute(initialIconName: _selectedIcon));
                       },
                       child: Container(
                         padding: EdgeInsets.symmetric(
@@ -271,7 +274,8 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => context.router.navigate(ColorChoiceRoute()),
+                      onTap: () => context.router.navigate(
+                          ColorChoiceRoute(initialColor: _selectedColor)),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                             vertical: 12.h, horizontal: 10.w),
@@ -317,15 +321,15 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               CustomTextFormField(
                   hintText: "Введите описание",
                   controller: _descriptionController,
-                  validateController: _isDescriptionValid,
+                  isValid: _isDescriptionValid,
                   onChanged: () {
                     setState(() {
-                      _isDescriptionValid.value =
+                      _isDescriptionValid =
                           _descriptionController.text.isNotEmpty;
                     });
                   }),
               TextFieldErrorMessage(
-                validator: _isDescriptionValid,
+                isValid: _isDescriptionValid,
                 message: "Поле не должно быть пустым",
               ),
               SizedBox(height: 32.h),
@@ -337,9 +341,9 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               CustomTextFormField(
                   hintText: "Выберите категорию (необязательно)",
                   controller: _categoryController,
-                  validateController: _isCategoryValid,
+                  isValid: _isCategoryValid,
                   onChanged: () {
-                    _isCategoryValid.value = true;
+                    _isCategoryValid = true;
                   }),
               SizedBox(height: 32.h),
               Text(
@@ -349,10 +353,9 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  for (final day in _days.keys)
-                    _buildDayButton(day, _days[day]!),
-                ],
+                children: _days.keys
+                    .map((day) => _buildDayButton(day, _days[day]!))
+                    .toList(),
               ),
               SizedBox(height: 16.h),
               _buildRepeatOption(
@@ -367,7 +370,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 currentType: _repeatType,
               ),
               TextFieldErrorMessage(
-                validator: _isRepeatTypeValid,
+                isValid: _isRepeatTypeValid,
                 message: "Должен быть выбран тип повторения",
               ),
               SizedBox(height: 32.h),
@@ -396,7 +399,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 ],
               ),
               TextFieldErrorMessage(
-                validator: _isTimeValid,
+                isValid: _isTimeValid,
                 message: "Должено быть добавлено время напоминания",
               ),
               SizedBox(height: 16.h),
@@ -462,16 +465,14 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
             SnackBar(content: Text('Это время уже добавлено.')),
           );
         }
-        _isTimeValid.value = _selectedTimes.isNotEmpty;
+        _isTimeValid = _selectedTimes.isNotEmpty;
       });
     }
   }
 
   Widget _buildTimeButton(String time) {
     return GestureDetector(
-      onTap: () => setState(() {
-        _selectTime(context, existingTime: time);
-      }),
+      onTap: () => _selectTime(context, existingTime: time),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
@@ -494,7 +495,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 onTap: () {
                   setState(() {
                     _selectedTimes.remove(time);
-                    _isTimeValid.value = _selectedTimes.isNotEmpty;
+                    _isTimeValid = _selectedTimes.isNotEmpty;
                   });
                 },
                 child: SvgPicture.asset('assets/icons/trash-outline.svg',
@@ -505,36 +506,31 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
     );
   }
 
-  Widget _buildDayButton(String day, ValueNotifier<bool> isSelected) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isSelected,
-      builder: (context, value, _) {
-        return GestureDetector(
-          onTap: () => _updateDayState(day),
-          child: Container(
-            width: 40.w,
-            height: 60.h,
-            decoration: BoxDecoration(
-              color: value ? AppColors.purple : AppColors.gray03,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(day,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: value ? AppColors.white : AppColors.gray01,
-                        )),
-                SizedBox(height: 14.h),
-                value
-                    ? SvgPicture.asset('assets/icons/done_light.svg',
-                        width: 20.w, height: 20.w)
-                    : SizedBox(width: 20.w, height: 20.h),
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _buildDayButton(String day, bool isSelected) {
+    return GestureDetector(
+      onTap: () => _updateDayState(day),
+      child: Container(
+        width: 40.w,
+        height: 60.h,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.purple : AppColors.gray03,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(day,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: isSelected ? AppColors.white : AppColors.gray01,
+                    )),
+            SizedBox(height: 14.h),
+            isSelected
+                ? SvgPicture.asset('assets/icons/done_light.svg',
+                    width: 20.w, height: 20.w)
+                : SizedBox(width: 20.w, height: 20.h),
+          ],
+        ),
+      ),
     );
   }
 
@@ -592,13 +588,13 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
           CustomElevatedButton(
             onPressed: () {
               Map<String, bool> days = {
-                'Mon': _isMon.value,
-                'Tue': _isTue.value,
-                'Wed': _isWed.value,
-                'Thu': _isThu.value,
-                'Fri': _isFri.value,
-                'Sat': _isSat.value,
-                'Sun': _isSun.value,
+                'Mon': _days['ПН'] ?? false,
+                'Tue': _days['ВТ'] ?? false,
+                'Wed': _days['СР'] ?? false,
+                'Thu': _days['ЧТ'] ?? false,
+                'Fri': _days['ПТ'] ?? false,
+                'Sat': _days['СБ'] ?? false,
+                'Sun': _days['ВС'] ?? false,
               };
               print('Name: ${_nameController.text}');
               print('Description: ${_descriptionController.text}');

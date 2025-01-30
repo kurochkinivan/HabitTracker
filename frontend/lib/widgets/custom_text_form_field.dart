@@ -7,14 +7,14 @@ class CustomTextFormField extends StatefulWidget {
   final String hintText;
   final bool obscureText;
   final TextEditingController controller;
-  final ValueNotifier<bool> validateController;
+  final bool isValid;
   final VoidCallback onChanged;
 
   const CustomTextFormField({
     super.key,
     required this.hintText,
     required this.controller,
-    required this.validateController,
+    required this.isValid,
     required this.onChanged,
     this.obscureText = false,
   });
@@ -31,18 +31,6 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
   void initState() {
     super.initState();
     _isObscured = widget.obscureText;
-
-    widget.validateController.addListener(_updateState);
-  }
-
-  void _updateState() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    widget.validateController.removeListener(_updateState);
-    super.dispose();
   }
 
   @override
@@ -71,8 +59,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: _getTextStyle(),
-          contentPadding:
-              EdgeInsets.symmetric(vertical: 16, horizontal: 16.w),
+          contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16.w),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -99,7 +86,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   Color _getFillColor() {
-    if (!widget.validateController.value) {
+    if (!widget.isValid) {
       return AppColors.red02;
     } else if (_isActive) {
       return AppColors.gray03;
@@ -108,7 +95,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   Color _getBorderColor() {
-    if (!widget.validateController.value) {
+    if (!widget.isValid) {
       return AppColors.redError;
     } else if (_isActive) {
       return AppColors.purple;
@@ -118,7 +105,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
 
   TextStyle _getTextStyle() {
     return TextStyle(
-      color: !widget.validateController.value
+      color: !widget.isValid
           ? AppColors.redError
           : (_isActive ? AppColors.black01 : AppColors.gray02),
       fontSize: 12.sp,

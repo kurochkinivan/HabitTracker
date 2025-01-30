@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,21 +10,37 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../router/app_router.dart';
+import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
-class SignUpPage extends StatefulWidget {
+class SignUpPage extends StatelessWidget {
   const SignUpPage({super.key});
 
   @override
-  SignUpPageState createState() => SignUpPageState();
+  Widget build(BuildContext context) {
+    final dio = Dio();
+    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+
+    return BlocProvider(
+      create: (_) => AuthBloc(apiClient),
+      child: const SignUpPageContent(),
+    );
+  }
 }
 
-class SignUpPageState extends State<SignUpPage> {
+class SignUpPageContent extends StatefulWidget {
+  const SignUpPageContent({super.key});
+
+  @override
+  SignUpPageContentState createState() => SignUpPageContentState();
+}
+
+class SignUpPageContentState extends State<SignUpPageContent> {
   static final RegExp emailRegex =
-      RegExp(r'^[a-zA-Z0-9._]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$');
+      RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+$');
 
   String _serverErrorText = '';
   String _sendEmail = '';
@@ -32,49 +49,38 @@ class SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final ValueNotifier<bool> _isNameValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isEmailValid = ValueNotifier(true);
-  final ValueNotifier<bool> _isPasswordValid = ValueNotifier(true);
+  bool _isNameValid = true;
+  bool _isEmailValid = true;
+  bool _isPasswordValid = true;
+  bool _isRegisterCorrect = true;
+  bool _isLoading = false;
 
-  final ValueNotifier<bool> _isNameCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isEmailCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isPasswordCorrect = ValueNotifier(true);
-
-  final ValueNotifier<bool> _isRegisterCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isLoadingController = ValueNotifier(false);
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _validateInputs() {
-    final bool isNameValid =
-        _nameController.text.length > 1 || _nameController.text.isEmpty;
-    final bool isEmailValid = emailRegex.hasMatch(_emailController.text) ||
-        _emailController.text.isEmpty;
-    final bool isPasswordValid = _passwordController.text.length >= 6 ||
-        _passwordController.text.isEmpty;
-
-    _isNameValid.value = isNameValid;
-    _isEmailValid.value = isEmailValid;
-    _isPasswordValid.value = isPasswordValid;
-    _isNameCorrect.value = isNameValid;
-    _isEmailCorrect.value = isEmailValid;
-    _isPasswordCorrect.value = isPasswordValid;
-    _isRegisterCorrect.value = true;
-
-    setState(() {});
+    setState(() {
+      _isNameValid =
+          _nameController.text.length > 1 || _nameController.text.isEmpty;
+      _isEmailValid = emailRegex.hasMatch(_emailController.text) ||
+          _emailController.text.isEmpty;
+      _isPasswordValid = _passwordController.text.length >= 6 ||
+          _passwordController.text.isEmpty;
+      _isRegisterCorrect = true;
+    });
   }
 
   void _register() async {
     _sendEmail = _emailController.text;
-    final List<ConnectivityResult> connectivityResult =
-        await (Connectivity().checkConnectivity());
-
-    if (connectivityResult.contains(ConnectivityResult.none)) {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoadingController.value = false;
-        _isEmailCorrect.value = false;
-        _isPasswordCorrect.value = false;
-        _isRegisterCorrect.value = false;
+        _isLoading = false;
+        _isRegisterCorrect = false;
       });
       return;
     }
@@ -87,14 +93,6 @@ class SignUpPageState extends State<SignUpPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _isNameValid.dispose();
-    _isEmailValid.dispose();
-    _isPasswordValid.dispose();
-    _isNameCorrect.dispose();
-    _isEmailCorrect.dispose();
-    _isPasswordCorrect.dispose();
-    _isRegisterCorrect.dispose();
-    _isLoadingController.dispose();
     super.dispose();
   }
 
@@ -124,7 +122,7 @@ class SignUpPageState extends State<SignUpPage> {
                   context.router.back();
                 },
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),
@@ -153,11 +151,11 @@ class SignUpPageState extends State<SignUpPage> {
                 controller: _nameController,
                 hintText: 'Имя',
                 obscureText: false,
-                validateController: _isNameCorrect,
+                isValid: _isNameValid && _isRegisterCorrect,
                 onChanged: _validateInputs,
               ),
               TextFieldErrorMessage(
-                validator: _isNameValid,
+                isValid: _isNameValid,
                 message: "Слишком короткое имя",
               ),
               SizedBox(height: 10.h),
@@ -165,11 +163,11 @@ class SignUpPageState extends State<SignUpPage> {
                 controller: _emailController,
                 hintText: 'E-mail',
                 obscureText: false,
-                validateController: _isEmailCorrect,
+                isValid: _isEmailValid && _isRegisterCorrect,
                 onChanged: _validateInputs,
               ),
               TextFieldErrorMessage(
-                validator: _isEmailValid,
+                isValid: _isEmailValid,
                 message: "Некорректный формат почты",
               ),
               SizedBox(height: 10.h),
@@ -177,15 +175,15 @@ class SignUpPageState extends State<SignUpPage> {
                 controller: _passwordController,
                 hintText: 'Пароль',
                 obscureText: true,
-                validateController: _isPasswordCorrect,
+                isValid: _isPasswordValid && _isRegisterCorrect,
                 onChanged: _validateInputs,
               ),
               TextFieldErrorMessage(
-                validator: _isPasswordValid,
+                isValid: _isPasswordValid,
                 message: "Слишком короткий пароль",
               ),
               TextFieldErrorMessage(
-                validator: _isRegisterCorrect,
+                isValid: _isRegisterCorrect,
                 message: _serverErrorText,
               ),
             ],
@@ -206,36 +204,50 @@ class SignUpPageState extends State<SignUpPage> {
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {
-                _isLoadingController.value = false;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                });
                 context.router.push(
                   VerifyEmailRoute(email: _sendEmail),
                 );
               } else if (state is AuthFailure) {
-                setState(() {
-                  _serverErrorText = state.errorMessage;
-                  _isLoadingController.value = false;
-                  _isNameCorrect.value = false;
-                  _isEmailCorrect.value = false;
-                  _isPasswordCorrect.value = false;
-                  _isRegisterCorrect.value = false;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _serverErrorText = state.errorMessage;
+
+                      _isLoading = false;
+                      _isRegisterCorrect = false;
+                    });
+                  }
                 });
               }
             },
             builder: (context, state) {
               if (state is AuthLoading) {
-                _isLoadingController.value = true;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                  }
+                });
               }
               return CustomElevatedButton(
                 onPressed: _register,
-                text: 'Зарегистрироваться',
-                isEnabled: _isNameValid.value &&
-                    _isEmailValid.value &&
-                    _isPasswordValid.value &&
+                text: 'Заре��истрироваться',
+                isEnabled: _isNameValid &&
+                    _isEmailValid &&
+                    _isPasswordValid &&
                     _nameController.text.isNotEmpty &&
                     _emailController.text.isNotEmpty &&
                     _passwordController.text.isNotEmpty &&
-                    _isRegisterCorrect.value,
-                isLoadingController: _isLoadingController,
+                    _isRegisterCorrect,
+                isLoading: _isLoading,
               );
             },
           ),

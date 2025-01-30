@@ -209,6 +209,8 @@ class AddHabitPageState extends State<AddHabitPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchController.removeListener(_filterHabits);
+    _listKey.currentState?.dispose();
     super.dispose();
   }
 

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:habit_tracker/models/logout_request.dart';
 import 'package:habit_tracker/models/refresh_tokens_request.dart';
 import 'package:habit_tracker/models/verify_email_request.dart';
@@ -9,13 +10,30 @@ import '../models/get_verification_code_request.dart';
 import '../models/login_request.dart';
 import '../models/register_request.dart';
 import 'app_error_interceptor.dart';
+import 'app_logger_interceptor.dart';
 
 part 'api_client.g.dart';
 
 @RestApi(baseUrl: "http://10.0.2.2:8080/v1")
 abstract class ApiClient {
-  factory ApiClient(Dio dio, {String? baseUrl}) {
-    dio.interceptors.add(AppErrorInterceptor());
+  factory ApiClient(Dio dio, {required String baseUrl}) {
+    dio.options = BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    dio.interceptors.addAll([
+      if (kDebugMode) AppLoggerInterceptor(),
+      AppErrorInterceptor(),
+    ]);
+
     return _ApiClient(dio, baseUrl: baseUrl);
   }
 

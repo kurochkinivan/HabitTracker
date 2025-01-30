@@ -2,33 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../app_colors.dart';
 
-class CustomElevatedButton extends StatelessWidget {
+class CustomElevatedButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isEnabled;
-  final ValueNotifier<bool>? isLoadingController;
+  final bool isLoading;
 
   const CustomElevatedButton({
     super.key,
     required this.text,
     required this.onPressed,
     required this.isEnabled,
-    this.isLoadingController,
+    this.isLoading = false,
   });
 
+  @override
+  _CustomElevatedButtonState createState() => _CustomElevatedButtonState();
+}
+
+class _CustomElevatedButtonState extends State<CustomElevatedButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: isEnabled ? onPressed : null,
+        onPressed: widget.isEnabled ? widget.onPressed : null,
         style: ButtonStyle(
           padding: WidgetStateProperty.all(
             EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
           ),
           backgroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
-              return states.contains(WidgetState.disabled)
+              return states.contains(MaterialState.disabled)
                   ? AppColors.gray04
                   : AppColors.black01;
             },
@@ -53,30 +58,25 @@ class CustomElevatedButton extends StatelessWidget {
             },
           ),
         ),
-        child: ValueListenableBuilder<bool>(
-          valueListenable: isLoadingController ?? ValueNotifier(false),
-          builder: (context, isLoading, _) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isLoading)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        color: AppColors.white,
-                        strokeWidth: 2,
-                      ),
-                    ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.isLoading)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(
+                    color: AppColors.white,
+                    strokeWidth: 2,
                   ),
-                Text(text),
-                if (isLoading) const SizedBox(width: 26),
-              ],
-            );
-          },
+                ),
+              ),
+            Text(widget.text),
+            if (widget.isLoading) const SizedBox(width: 26),
+          ],
         ),
       ),
     );

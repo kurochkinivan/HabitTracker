@@ -19,9 +19,10 @@ class NewPasswordPageState extends State<NewPasswordPage> {
   final TextEditingController _passwordController1 = TextEditingController();
   final TextEditingController _passwordController2 = TextEditingController();
 
-  final ValueNotifier<bool> _isPassword1Valid = ValueNotifier(true);
-  final ValueNotifier<bool> _isPassword2Valid = ValueNotifier(true);
-  final ValueNotifier<bool> _isPassword1Correct = ValueNotifier(true);
+  bool _isPassword1Valid = true;
+  bool _isPassword2Valid = true;
+  bool _isPassword1Correct = true;
+  bool _isLoading = false;
 
   void _validatePasswords() {
     final password1 = _passwordController1.text;
@@ -31,18 +32,17 @@ class NewPasswordPageState extends State<NewPasswordPage> {
     final bool isPassword2Valid = password2.length >= 6 || password2.isEmpty;
     final bool isPasswordsMatch = password1 == password2 || password2.isEmpty;
 
-    _isPassword1Correct.value = isPassword1Valid;
-    _isPassword1Valid.value = isPassword1Valid && isPasswordsMatch;
-    _isPassword2Valid.value = isPassword2Valid && isPasswordsMatch;
-    setState(() {});
+    setState(() {
+      _isPassword1Correct = isPassword1Valid;
+      _isPassword1Valid = isPassword1Valid && isPasswordsMatch;
+      _isPassword2Valid = isPassword2Valid && isPasswordsMatch;
+    });
   }
 
   @override
   void dispose() {
     _passwordController1.dispose();
     _passwordController2.dispose();
-    _isPassword1Valid.dispose();
-    _isPassword2Valid.dispose();
     super.dispose();
   }
 
@@ -100,22 +100,22 @@ class NewPasswordPageState extends State<NewPasswordPage> {
                 controller: _passwordController1,
                 hintText: 'Новый пароль',
                 obscureText: true,
-                validateController: _isPassword1Valid,
+                isValid: _isPassword1Valid,
                 onChanged: _validatePasswords,
               ),
               TextFieldErrorMessage(
-                  validator: _isPassword1Correct,
+                  isValid: _isPassword1Correct,
                   message: "Слишком короткий пароль"),
               SizedBox(height: 10.h),
               CustomTextFormField(
                 controller: _passwordController2,
                 hintText: 'Повторите пароль',
                 obscureText: true,
-                validateController: _isPassword2Valid,
+                isValid: _isPassword2Valid,
                 onChanged: _validatePasswords,
               ),
               TextFieldErrorMessage(
-                  validator: _isPassword2Valid,
+                  isValid: _isPassword2Valid,
                   message: "Слишком короткий пароль или пароли не совпадают"),
             ],
           ),
@@ -134,7 +134,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
         children: [
           CustomElevatedButton(
             text: 'Продолжить',
-            isEnabled: _isPassword2Valid.value &&
+            isEnabled: _isPassword2Valid &&
                 _passwordController1.text.isNotEmpty &&
                 _passwordController2.text.isNotEmpty,
             onPressed: () {},

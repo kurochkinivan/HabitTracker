@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dio = Dio();
-    final apiClient = ApiClient(dio);
+    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
 
     return ScreenUtilInit(
       designSize: const Size(375, 812),

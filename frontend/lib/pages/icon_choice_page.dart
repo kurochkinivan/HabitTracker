@@ -8,7 +8,9 @@ import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
 class IconChoicePage extends StatefulWidget {
-  const IconChoicePage({super.key});
+  final String? initialIconName;
+
+  const IconChoicePage({super.key, this.initialIconName});
 
   @override
   IconChoicePageState createState() => IconChoicePageState();
@@ -20,12 +22,21 @@ class IconChoicePageState extends State<IconChoicePage> {
     'books.png',
     'books.png',
     'books.png',
+    'woman_in_lotus_position.png',
     'running.png',
     'books.png',
     'books.png',
   ];
 
   int? selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialIconName != null) {
+      selectedIndex = imageUrls.indexOf(widget.initialIconName!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

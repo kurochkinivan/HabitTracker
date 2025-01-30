@@ -1,40 +1,57 @@
 import 'dart:async';
 import 'package:auto_route/auto_route.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
+import '../bloc/auth_bloc.dart';
 import '../router/app_router.dart';
+import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
 
 @RoutePage()
-class VerifyPasswordRecoveryPage extends StatefulWidget {
+class VerifyPasswordRecoveryPage extends StatelessWidget {
   const VerifyPasswordRecoveryPage({super.key});
 
   @override
-  VerifyPasswordRecoveryPageState createState() =>
-      VerifyPasswordRecoveryPageState();
+  Widget build(BuildContext context) {
+    final dio = Dio();
+    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+
+    return BlocProvider(
+      create: (_) => AuthBloc(apiClient),
+      child: const VerifyPasswordRecoveryPageContent(),
+    );
+  }
+}
+class VerifyPasswordRecoveryPageContent extends StatefulWidget {
+  const VerifyPasswordRecoveryPageContent({super.key});
+
+  @override
+  VerifyPasswordRecoveryPageContentState createState() => VerifyPasswordRecoveryPageContentState();
 }
 
-class VerifyPasswordRecoveryPageState
-    extends State<VerifyPasswordRecoveryPage> {
-  TextEditingController textEditingController = TextEditingController();
-  StreamController<ErrorAnimationType>? errorController;
+class VerifyPasswordRecoveryPageContentState extends State<VerifyPasswordRecoveryPageContent> {
+  final TextEditingController _textEditingController = TextEditingController();
+  StreamController<ErrorAnimationType>? _errorController;
 
   bool hasError = false;
 
   @override
   void initState() {
-    errorController = StreamController<ErrorAnimationType>();
+    _errorController = StreamController<ErrorAnimationType>();
     super.initState();
   }
 
   @override
   void dispose() {
-    errorController!.close();
+    _errorController?.close();
+    _textEditingController.dispose();
     super.dispose();
   }
 
@@ -95,8 +112,8 @@ class VerifyPasswordRecoveryPageState
                 keyboardType: TextInputType.number,
                 autoDismissKeyboard: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                controller: textEditingController,
-                errorAnimationController: errorController,
+                controller: _textEditingController,
+                errorAnimationController: _errorController,
                 onChanged: (value) {
                   setState(() {
                     hasError = false;
@@ -148,10 +165,10 @@ class VerifyPasswordRecoveryPageState
         children: [
           CustomElevatedButton(
             text: 'Продолжить',
-            isEnabled: textEditingController.text.isNotEmpty,
+            isEnabled: _textEditingController.text.isNotEmpty,
             onPressed: () {
-              if (textEditingController.text != "1111") {
-                errorController?.add(ErrorAnimationType.shake);
+              if (_textEditingController.text != "1111") {
+                _errorController?.add(ErrorAnimationType.shake);
                 setState(() {
                   hasError = true;
                 });
@@ -164,7 +181,7 @@ class VerifyPasswordRecoveryPageState
               }
             },
           ),
-          ResendCodeButton(textEditingController: textEditingController),
+          ResendCodeButton(textEditingController: _textEditingController),
           SizedBox(height: 16.h),
         ],
       ),

@@ -27,7 +27,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   fuzzy: ^0.5.1
   provider: ^6.1.2
-
+  logger: ^2.5.0
 
   flutter_localizations:
     sdk: flutter

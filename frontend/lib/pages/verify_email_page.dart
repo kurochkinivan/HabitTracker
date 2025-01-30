@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,63 +13,45 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
 import '../widgets/text_field_error_message.dart';
 
 @RoutePage()
-class VerifyEmailPage extends StatefulWidget {
+class VerifyEmailPage extends StatelessWidget {
   final String email;
 
   const VerifyEmailPage({super.key, required this.email});
 
   @override
-  VerifyEmailPageState createState() => VerifyEmailPageState();
+  Widget build(BuildContext context) {
+    final dio = Dio();
+    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+
+    return BlocProvider(
+      create: (_) => AuthBloc(apiClient),
+      child: VerifyEmailPageContent(email: email),
+    );
+  }
 }
 
-class VerifyEmailPageState extends State<VerifyEmailPage> {
+class VerifyEmailPageContent extends StatefulWidget {
+  final String email;
+
+  const VerifyEmailPageContent({super.key, required this.email});
+
+  @override
+  VerifyEmailPageContentState createState() => VerifyEmailPageContentState();
+}
+
+class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
   String _serverErrorText = '';
+  bool _isSendCodeCorrect = true;
+  bool _isLoading = false;
 
   StreamController<ErrorAnimationType>? _errorController;
-
   final TextEditingController _textEditingController = TextEditingController();
-
-  final ValueNotifier<bool> _isSendCodeCorrect = ValueNotifier(true);
-  final ValueNotifier<bool> _isLoadingController = ValueNotifier(false);
-
-  void verifyEmail() async {
-    final List<ConnectivityResult> connectivityResult =
-        await (Connectivity().checkConnectivity());
-
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      setState(() {
-        _serverErrorText =
-            'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoadingController.value = false;
-      });
-      return;
-    }
-    const androidIdPlugin = AndroidId();
-    final String? androidId = await androidIdPlugin.getId();
-    context.read<AuthBloc>().add(AuthEvent.verifyEmail(
-        _textEditingController.text, widget.email, androidId!));
-  }
-
-  void resendCode() async {
-    final List<ConnectivityResult> connectivityResult =
-        await (Connectivity().checkConnectivity());
-
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      setState(() {
-        _serverErrorText =
-            'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoadingController.value = false;
-      });
-      return;
-    }
-
-    context.read<AuthBloc>().add(AuthEvent.getVerificationCode(widget.email));
-  }
 
   @override
   void initState() {
@@ -78,8 +61,39 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
 
   @override
   void dispose() {
-    _errorController!.close();
+    _errorController?.close();
+    _textEditingController.dispose();
     super.dispose();
+  }
+
+  void _verifyEmail() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _serverErrorText =
+            'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    const androidIdPlugin = AndroidId();
+    final String? androidId = await androidIdPlugin.getId();
+    context.read<AuthBloc>().add(AuthEvent.verifyEmail(
+        _textEditingController.text, widget.email, androidId!));
+  }
+
+  void _resendCode() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _serverErrorText =
+            'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
+        return;
+      });
+    }
+
+    context.read<AuthBloc>().add(AuthEvent.getVerificationCode(widget.email));
   }
 
   @override
@@ -91,10 +105,7 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
+          padding: EdgeInsets.only(left: 8.w, right: 32.w),
           child: Row(
             children: [
               IconButton(
@@ -108,7 +119,7 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
                   context.router.back();
                 },
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),
@@ -120,23 +131,24 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h),
-              Text("Подтвердите почту",
-                  style: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.copyWith(fontSize: 26.sp)),
+              Text(
+                "Код отправлен на почту",
+                style: Theme.of(context)
+                    .textTheme
+                    .displayLarge
+                    ?.copyWith(fontSize: 26.sp),
+              ),
               SizedBox(height: 8.h),
               Text(
-                  "Почти готово! Тебе выслан код на твой email,"
-                  " активируй аккаунт и начинай строить новые привычки.",
-                  style: Theme.of(context).textTheme.bodyLarge),
+                "Если код не пришел, проверьте папку “Спам” или нажмите “Отправить код повторно”.",
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
               SizedBox(height: 80.h),
               PinCodeTextField(
                 appContext: context,
                 length: 4,
-                cursorColor: !_isSendCodeCorrect.value
-                    ? AppColors.redError
-                    : AppColors.black01,
+                cursorColor:
+                    _isSendCodeCorrect ? AppColors.black01 : AppColors.redError,
                 cursorHeight: 64,
                 keyboardType: TextInputType.number,
                 autoDismissKeyboard: true,
@@ -144,13 +156,14 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
                 controller: _textEditingController,
                 errorAnimationController: _errorController,
                 onChanged: (value) {
-                  _isSendCodeCorrect.value = true;
-                  setState(() {});
+                  setState(() {
+                    _isSendCodeCorrect = true;
+                  });
                 },
                 textStyle: TextStyle(
-                  color: !_isSendCodeCorrect.value
-                      ? AppColors.redError
-                      : AppColors.black01,
+                  color: _isSendCodeCorrect
+                      ? AppColors.black01
+                      : AppColors.redError,
                   fontSize: 64,
                   fontFamily: 'Gilroy',
                   fontWeight: FontWeight.w500,
@@ -160,9 +173,8 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
                   fieldHeight: 80,
                   shape: PinCodeFieldShape.underline,
                   selectedFillColor: AppColors.black01,
-                  selectedColor: !_isSendCodeCorrect.value
-                      ? AppColors.red02
-                      : AppColors.gray02,
+                  selectedColor:
+                      _isSendCodeCorrect ? AppColors.gray02 : AppColors.red02,
                   activeFillColor: AppColors.black01,
                   activeColor: AppColors.black01,
                   errorBorderColor: AppColors.redError,
@@ -174,7 +186,7 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
                 child: Padding(
                     padding: EdgeInsets.only(top: 14.h),
                     child: TextFieldErrorMessage(
-                      validator: _isSendCodeCorrect,
+                      isValid: _isSendCodeCorrect,
                       message: _serverErrorText,
                     )),
               ),
@@ -186,62 +198,83 @@ class VerifyEmailPageState extends State<VerifyEmailPage> {
     );
   }
 
+  // переделать блок
   Widget _buildActionButtons(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      padding: EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {
-                _isSendCodeCorrect.value = true;
-                _isLoadingController.value = false;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = false;
+                      _isSendCodeCorrect = true;
+                    });
+                  }
+                });
               } else if (state is AuthFailure) {
-                _errorController?.add(ErrorAnimationType.shake);
-                setState(() {
-                  _isSendCodeCorrect.value = false;
-                  _serverErrorText = state.errorMessage;
-                  _isLoadingController.value = false;
+                Future.microtask(() {
+                  if (mounted) {
+                    _errorController?.add(ErrorAnimationType.shake);
+                    setState(() {
+                      _serverErrorText = state.errorMessage;
+                      _isLoading = false;
+                      _isSendCodeCorrect = false;
+                    });
+                  }
                 });
               }
             },
             builder: (context, state) {
               if (state is AuthLoading) {
-                _isLoadingController.value = true;
+                Future.microtask(() {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                  }
+                });
               }
               return CustomElevatedButton(
                 text: 'Продолжить',
                 isEnabled: _textEditingController.text.length == 4 &&
-                    _isSendCodeCorrect.value,
-                onPressed: verifyEmail,
-                isLoadingController: _isLoadingController,
+                    _isSendCodeCorrect,
+                onPressed: _verifyEmail,
+                isLoading: _isLoading,
               );
             },
           ),
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccess) {
-                _isSendCodeCorrect.value = true;
-                _isLoadingController.value = false;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                if (mounted) {
+                  setState(() {
+                    _isSendCodeCorrect = true;
+                    _isLoading = false;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
               } else if (state is AuthFailure) {
-                _errorController?.add(ErrorAnimationType.shake);
-                setState(() {
-                  _isSendCodeCorrect.value = false;
-                  _serverErrorText = state.errorMessage;
-                  _isLoadingController.value = false;
-                });
+                if (mounted) {
+                  setState(() {
+                    _isSendCodeCorrect = false;
+                    _serverErrorText = state.errorMessage;
+                    _isLoading = false;
+                  });
+                  _errorController?.add(ErrorAnimationType.shake);
+                }
               }
             },
             builder: (context, state) {
               return ResendCodeButton(
+                  onPressed: _resendCode,
                   textEditingController: _textEditingController);
             },
           ),

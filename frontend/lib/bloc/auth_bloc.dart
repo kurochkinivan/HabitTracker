@@ -15,7 +15,7 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ApiClient apiClient;
-  final FlutterSecureStorage storage = FlutterSecureStorage();
+  final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
   AuthBloc(this.apiClient) : super(const AuthState.initial()) {
     on<RegisterUser>(_onRegisterUser);
@@ -46,7 +46,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при регистрации."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -64,8 +64,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       final response =
           await apiClient.loginUser(request).timeout(Duration(seconds: 15));
-      await storage.write(key: 'access_token', value: response.accessToken);
-      await storage.write(key: 'refresh_token', value: response.refreshToken);
+      await secureStorage.write(
+          key: 'access_token', value: response.accessToken);
+      await secureStorage.write(
+          key: 'refresh_token', value: response.refreshToken);
       emit(AuthState.success('Login successful.'));
     } on TimeoutException {
       emit(const AuthState.failure(
@@ -75,7 +77,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при входе в систему."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -100,7 +102,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при отправке кода проверки."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -116,8 +118,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           code: event.code, email: event.email, fingerprint: event.fingerprint);
       final response =
           await apiClient.verifyEmail(request).timeout(Duration(seconds: 15));
-      await storage.write(key: 'access_token', value: response.accessToken);
-      await storage.write(key: 'refresh_token', value: response.refreshToken);
+      await secureStorage.write(
+          key: 'access_token', value: response.accessToken);
+      await secureStorage.write(
+          key: 'refresh_token', value: response.refreshToken);
       emit(AuthState.success('Email verified successfully.'));
     } on TimeoutException {
       emit(const AuthState.failure(
@@ -127,7 +131,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при проверке кода."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -145,8 +149,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           userId: event.userId);
       final response =
           await apiClient.refreshTokens(request).timeout(Duration(seconds: 15));
-      await storage.write(key: 'access_token', value: response.accessToken);
-      await storage.write(key: 'refresh_token', value: response.refreshToken);
+      await secureStorage.write(
+          key: 'access_token', value: response.accessToken);
+      await secureStorage.write(
+          key: 'refresh_token', value: response.refreshToken);
       emit(AuthState.success('New tokens get successfully.'));
     } on TimeoutException {
       emit(const AuthState.failure(
@@ -156,7 +162,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при отправке токенов."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -180,7 +186,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else if (e.error is AppError) {
         emit(AuthState.failure((e.error as AppError).userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при проверке токена."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
@@ -194,8 +200,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final request = LogoutRequest(refreshToken: event.refreshToken);
       final response =
           await apiClient.logout(request).timeout(const Duration(seconds: 15));
-      await storage.write(key: 'access_token', value: response.accessToken);
-      await storage.write(key: 'refresh_token', value: response.refreshToken);
+      await secureStorage.write(
+          key: 'access_token', value: response.accessToken);
+      await secureStorage.write(
+          key: 'refresh_token', value: response.refreshToken);
     } on TimeoutException {
       emit(const AuthState.failure(
           "Сервер не ответил. Пожалуйста, попробуйте еще раз."));
@@ -204,7 +212,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (error is AppError) {
         emit(AuthState.failure(error.userMessage));
       } else {
-        emit(const AuthState.failure("Ошибка при выходе. Попробуйте снова."));
+        emit(const AuthState.failure("Ошибка доступа к серверу."));
       }
     } catch (e) {
       emit(const AuthState.failure(
