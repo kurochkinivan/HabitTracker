@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:habit_tracker/bloc/registration/registration_bloc.dart';
+import 'package:habit_tracker/bloc/registration/registration_event.dart';
 import '../app_colors.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
+import '../bloc/registration/registration_state.dart';
+import '../models/registration_action_type.dart';
 import '../router/app_router.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
@@ -25,7 +26,7 @@ class SignUpPage extends StatelessWidget {
     final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
 
     return BlocProvider(
-      create: (_) => AuthBloc(apiClient),
+      create: (_) => RegistrationBloc(apiClient: apiClient),
       child: const SignUpPageContent(),
     );
   }
@@ -53,7 +54,6 @@ class SignUpPageContentState extends State<SignUpPageContent> {
   bool _isEmailValid = true;
   bool _isPasswordValid = true;
   bool _isRegisterCorrect = true;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -75,17 +75,21 @@ class SignUpPageContentState extends State<SignUpPageContent> {
   void _register() async {
     _sendEmail = _emailController.text;
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (!mounted) return;
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoading = false;
         _isRegisterCorrect = false;
       });
       return;
     }
-    context.read<AuthBloc>().add(AuthEvent.register(
-        _sendEmail, _nameController.text, _passwordController.text));
+
+    if (!mounted) return;
+    context.read<RegistrationBloc>().add(RegistrationEvent.register(
+        email: _sendEmail,
+        name: _nameController.text,
+        password: _passwordController.text));
   }
 
   @override
@@ -201,45 +205,55 @@ class SignUpPageContentState extends State<SignUpPageContent> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          BlocConsumer<AuthBloc, AuthState>(
+          BlocConsumer<RegistrationBloc, RegistrationState>(
+            listenWhen: (previous, current) {
+              return current.when(
+                initial: () => false,
+                loading: (action) => action == RegistrationActionType.register,
+                success: (message, action) =>
+                    action == RegistrationActionType.register,
+                failure: (errorMessage, action) =>
+                    action == RegistrationActionType.register,
+              );
+            },
+            buildWhen: (previous, current) {
+              return current.when(
+                initial: () => true,
+                loading: (action) => action == RegistrationActionType.register,
+                success: (message, action) =>
+                    action == RegistrationActionType.register,
+                failure: (errorMessage, action) =>
+                    action == RegistrationActionType.register,
+              );
+            },
             listener: (context, state) {
-              if (state is AuthSuccess) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                    });
+              state.whenOrNull(
+                loading: (action) {},
+                success: (message, action) {
+                  if (!(ModalRoute.of(context)?.isCurrent ?? false)) {
+                    return;
                   }
-                });
-                context.router.push(
-                  VerifyEmailRoute(email: _sendEmail),
-                );
-              } else if (state is AuthFailure) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _serverErrorText = state.errorMessage;
-
-                      _isLoading = false;
-                      _isRegisterCorrect = false;
-                    });
-                  }
-                });
-              }
+                  context.router.push(VerifyEmailRoute(email: _sendEmail));
+                },
+                failure: (errorMessage, action) {
+                  setState(() {
+                    _serverErrorText = errorMessage;
+                    _isRegisterCorrect = false;
+                  });
+                },
+              );
             },
             builder: (context, state) {
-              if (state is AuthLoading) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  }
-                });
-              }
+              bool isLoading = false;
+              state.maybeWhen(
+                loading: (action) {
+                  isLoading = true;
+                },
+                orElse: () {},
+              );
               return CustomElevatedButton(
                 onPressed: _register,
-                text: 'Заре��истрироваться',
+                text: 'Зарегистрироваться',
                 isEnabled: _isNameValid &&
                     _isEmailValid &&
                     _isPasswordValid &&
@@ -247,7 +261,7 @@ class SignUpPageContentState extends State<SignUpPageContent> {
                     _emailController.text.isNotEmpty &&
                     _passwordController.text.isNotEmpty &&
                     _isRegisterCorrect,
-                isLoading: _isLoading,
+                isLoading: isLoading,
               );
             },
           ),

@@ -9,10 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import '../app_colors.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import '../bloc/registration/registration_bloc.dart';
+import '../bloc/registration/registration_event.dart';
+import '../bloc/registration/registration_state.dart';
+import '../models/registration_action_type.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
@@ -30,7 +31,7 @@ class VerifyEmailPage extends StatelessWidget {
     final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
 
     return BlocProvider(
-      create: (_) => AuthBloc(apiClient),
+      create: (_) => RegistrationBloc(apiClient: apiClient),
       child: VerifyEmailPageContent(email: email),
     );
   }
@@ -48,7 +49,6 @@ class VerifyEmailPageContent extends StatefulWidget {
 class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
   String _serverErrorText = '';
   bool _isSendCodeCorrect = true;
-  bool _isLoading = false;
 
   StreamController<ErrorAnimationType>? _errorController;
   final TextEditingController _textEditingController = TextEditingController();
@@ -68,24 +68,30 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
 
   void _verifyEmail() async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (!mounted) return;
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoading = false;
       });
       return;
     }
 
     const androidIdPlugin = AndroidId();
     final String? androidId = await androidIdPlugin.getId();
-    context.read<AuthBloc>().add(AuthEvent.verifyEmail(
-        _textEditingController.text, widget.email, androidId!));
+
+    if (!mounted) return;
+    context.read<RegistrationBloc>().add(RegistrationEvent.verifyEmail(
+          code: _textEditingController.text,
+          email: widget.email,
+          fingerprint: androidId!,
+        ));
   }
 
   void _resendCode() async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (!mounted) return;
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
@@ -93,7 +99,10 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
       });
     }
 
-    context.read<AuthBloc>().add(AuthEvent.getVerificationCode(widget.email));
+    if (!mounted) return;
+    context.read<RegistrationBloc>().add(RegistrationEvent.getVerificationCode(
+          email: widget.email,
+        ));
   }
 
   @override
@@ -198,7 +207,6 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
     );
   }
 
-  // переделать блок
   Widget _buildActionButtons(BuildContext context) {
     return Container(
       width: double.maxFinite,
@@ -206,76 +214,101 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          BlocConsumer<AuthBloc, AuthState>(
+          BlocConsumer<RegistrationBloc, RegistrationState>(
+            listenWhen: (previous, current) {
+              return current.when(
+                initial: () => false,
+                loading: (action) =>
+                    action == RegistrationActionType.verifyEmail,
+                success: (message, action) =>
+                    action == RegistrationActionType.verifyEmail,
+                failure: (errorMessage, action) =>
+                    action == RegistrationActionType.verifyEmail,
+              );
+            },
+            buildWhen: (previous, current) {
+              return current.when(
+                initial: () => false,
+                loading: (action) =>
+                    action == RegistrationActionType.verifyEmail,
+                success: (message, action) =>
+                    action == RegistrationActionType.verifyEmail,
+                failure: (errorMessage, action) =>
+                    action == RegistrationActionType.verifyEmail,
+              );
+            },
             listener: (context, state) {
-              if (state is AuthSuccess) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                      _isSendCodeCorrect = true;
-                    });
-                  }
-                });
-              } else if (state is AuthFailure) {
-                Future.microtask(() {
-                  if (mounted) {
-                    _errorController?.add(ErrorAnimationType.shake);
-                    setState(() {
-                      _serverErrorText = state.errorMessage;
-                      _isLoading = false;
-                      _isSendCodeCorrect = false;
-                    });
-                  }
-                });
-              }
+              state.whenOrNull(
+                loading: (action) {},
+                success: (message, action) {
+                  setState(() {
+                    _isSendCodeCorrect = true;
+                  });
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                },
+                failure: (errorMessage, action) {
+                  _errorController?.add(ErrorAnimationType.shake);
+                  setState(() {
+                    _serverErrorText = errorMessage;
+                    _isSendCodeCorrect = false;
+                  });
+                },
+              );
             },
             builder: (context, state) {
-              if (state is AuthLoading) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  }
-                });
-              }
+              bool isLoading = false;
+              state.maybeWhen(
+                loading: (action) {
+                  isLoading = true;
+                },
+                orElse: () {},
+              );
               return CustomElevatedButton(
                 text: 'Продолжить',
                 isEnabled: _textEditingController.text.length == 4 &&
                     _isSendCodeCorrect,
                 onPressed: _verifyEmail,
-                isLoading: _isLoading,
+                isLoading: isLoading,
               );
             },
           ),
-          BlocConsumer<AuthBloc, AuthState>(
+          BlocConsumer<RegistrationBloc, RegistrationState>(
+            listenWhen: (previous, current) {
+              return current.when(
+                initial: () => false,
+                loading: (action) =>
+                    action == RegistrationActionType.getVerificationCode,
+                success: (message, action) =>
+                    action == RegistrationActionType.getVerificationCode,
+                failure: (errorMessage, action) =>
+                    action == RegistrationActionType.getVerificationCode,
+              );
+            },
+            buildWhen: (previous, current) {
+              return true;
+            },
             listener: (context, state) {
-              if (state is AuthSuccess) {
-                if (mounted) {
-                  setState(() {
-                    _isSendCodeCorrect = true;
-                    _isLoading = false;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.message)),
-                  );
-                }
-              } else if (state is AuthFailure) {
-                if (mounted) {
-                  setState(() {
-                    _isSendCodeCorrect = false;
-                    _serverErrorText = state.errorMessage;
-                    _isLoading = false;
-                  });
+              state.whenOrNull(
+                success: (message, action) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                },
+                failure: (errorMessage, action) {
                   _errorController?.add(ErrorAnimationType.shake);
-                }
-              }
+                  setState(() {
+                    _serverErrorText = errorMessage;
+                  });
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(errorMessage)));
+                },
+              );
             },
             builder: (context, state) {
               return ResendCodeButton(
-                  onPressed: _resendCode,
-                  textEditingController: _textEditingController);
+                onPressed: _resendCode,
+                textEditingController: _textEditingController,
+              );
             },
           ),
           SizedBox(height: 16.h),

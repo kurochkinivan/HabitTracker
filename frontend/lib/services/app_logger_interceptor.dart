@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
-
 import '../models/app_error.dart';
 
 class AppLoggerInterceptor extends Interceptor {

@@ -7,9 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habit_tracker/app_colors.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
+import 'package:habit_tracker/bloc/authentication/authentication_event.dart';
+import '../bloc/authentication/authentication_bloc.dart';
+import '../bloc/authentication/authentication_state.dart';
 import '../router/app_router.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
@@ -26,7 +26,7 @@ class SignInPage extends StatelessWidget {
     final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
 
     return BlocProvider(
-      create: (_) => AuthBloc(apiClient),
+      create: (_) => AuthenticationBloc(apiClient: apiClient),
       child: const SignInPageContent(),
     );
   }
@@ -51,7 +51,6 @@ class SignInPageContentState extends State<SignInPageContent> {
   bool _isEmailValid = true;
   bool _isPasswordValid = true;
   bool _isLoginCorrect = true;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -70,11 +69,11 @@ class SignInPageContentState extends State<SignInPageContent> {
 
   void _login() async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (!mounted) return;
       setState(() {
         _serverErrorText =
             'Нет подключения к интернету. Пожалуйста, проверьте ваше соединение.';
-        _isLoading = false;
         _isLoginCorrect = false;
       });
       return;
@@ -83,8 +82,11 @@ class SignInPageContentState extends State<SignInPageContent> {
     const androidIdPlugin = AndroidId();
     final String? androidId = await androidIdPlugin.getId();
 
-    context.read<AuthBloc>().add(AuthEvent.login(
-        _emailController.text, androidId!, _passwordController.text));
+    if (!mounted) return;
+    context.read<AuthenticationBloc>().add(AuthenticationEvent.login(
+        email: _emailController.text,
+        fingerprint: androidId!,
+        password: _passwordController.text));
   }
 
   @override
@@ -226,38 +228,36 @@ class SignInPageContentState extends State<SignInPageContent> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          BlocConsumer<AuthBloc, AuthState>(
+          BlocConsumer<AuthenticationBloc, AuthenticationState>(
             listener: (context, state) {
-              if (state is AuthSuccess) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                    });
+              state.when(
+                initial: () {},
+                loading: () {},
+                authenticated: (message) {
+                  if (!(ModalRoute.of(context)?.isCurrent ?? false)) {
+                    return;
                   }
-                });
-              } else if (state is AuthFailure) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _serverErrorText = state.errorMessage;
-                      _isLoading = false;
-                      _isLoginCorrect = false;
-                    });
-                  }
-                });
-              }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(message)),
+                  );
+                },
+                failure: (errorMessage) {
+                  setState(() {
+                    _serverErrorText = errorMessage;
+                    _isLoginCorrect = false;
+                  });
+                },
+                authChecked: (_) {},
+              );
             },
             builder: (context, state) {
-              if (state is AuthLoading) {
-                Future.microtask(() {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  }
-                });
-              }
+              bool isLoading = false;
+              state.maybeWhen(
+                loading: () {
+                  isLoading = true;
+                },
+                orElse: () {},
+              );
               return CustomElevatedButton(
                 text: 'Войти',
                 isEnabled: _isEmailValid &&
@@ -266,15 +266,13 @@ class SignInPageContentState extends State<SignInPageContent> {
                     _passwordController.text.isNotEmpty &&
                     _isLoginCorrect,
                 onPressed: _login,
-                isLoading: _isLoading,
+                isLoading: isLoading,
               );
             },
           ),
           SizedBox(height: 12.h),
           OutlinedButton(
-            onPressed: () {
-              // Handle Google sign-in
-            },
+            onPressed: () {},
             child: Center(
               child: Text(
                 'Войти с помощью Google',
@@ -294,9 +292,7 @@ class SignInPageContentState extends State<SignInPageContent> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          SizedBox(
-            height: 16.h,
-          ),
+          SizedBox(height: 16.h),
         ],
       ),
     );

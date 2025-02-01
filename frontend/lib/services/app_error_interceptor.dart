@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-
 import '../models/app_error.dart';
 
 class AppErrorInterceptor extends Interceptor {

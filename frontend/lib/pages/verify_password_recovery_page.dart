@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
-import '../bloc/auth_bloc.dart';
+import '../bloc/authentication/authentication_bloc.dart';
 import '../router/app_router.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
@@ -24,19 +24,22 @@ class VerifyPasswordRecoveryPage extends StatelessWidget {
     final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
 
     return BlocProvider(
-      create: (_) => AuthBloc(apiClient),
+      create: (_) => AuthenticationBloc(apiClient: apiClient),
       child: const VerifyPasswordRecoveryPageContent(),
     );
   }
 }
+
 class VerifyPasswordRecoveryPageContent extends StatefulWidget {
   const VerifyPasswordRecoveryPageContent({super.key});
 
   @override
-  VerifyPasswordRecoveryPageContentState createState() => VerifyPasswordRecoveryPageContentState();
+  VerifyPasswordRecoveryPageContentState createState() =>
+      VerifyPasswordRecoveryPageContentState();
 }
 
-class VerifyPasswordRecoveryPageContentState extends State<VerifyPasswordRecoveryPageContent> {
+class VerifyPasswordRecoveryPageContentState
+    extends State<VerifyPasswordRecoveryPageContent> {
   final TextEditingController _textEditingController = TextEditingController();
   StreamController<ErrorAnimationType>? _errorController;
 
