@@ -83,8 +83,8 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
               ),
               SizedBox(height: 8.h),
               Text(
-                "Введите свой email, и мы отправим "
-                "вам код для восстановления пароля.",
+                "Введите свой email, и мы отправим "
+                "вам код для восстановления пароля.",
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               SizedBox(height: 24.h),

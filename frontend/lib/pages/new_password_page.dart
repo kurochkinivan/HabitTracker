@@ -22,7 +22,6 @@ class NewPasswordPageState extends State<NewPasswordPage> {
   bool _isPassword1Valid = true;
   bool _isPassword2Valid = true;
   bool _isPassword1Correct = true;
-  bool _isLoading = false;
 
   void _validatePasswords() {
     final password1 = _passwordController1.text;
@@ -93,7 +92,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
               ),
               SizedBox(height: 8.h),
               Text(
-                  "Введите свой email, и мы отправим вам код для восстановления пароля.",
+                  "Введите свой email, и мы отправим вам код для восстановления пароля.",
                   style: Theme.of(context).textTheme.bodyLarge),
               SizedBox(height: 24.h),
               CustomTextFormField(
@@ -116,7 +115,7 @@ class NewPasswordPageState extends State<NewPasswordPage> {
               ),
               TextFieldErrorMessage(
                   isValid: _isPassword2Valid,
-                  message: "Слишком короткий пароль или пароли не совпадают"),
+                  message: "Слишком короткий пароль или пароли не совпадают"),
             ],
           ),
         ),

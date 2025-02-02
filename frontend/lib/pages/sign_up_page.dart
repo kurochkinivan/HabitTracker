@@ -147,8 +147,8 @@ class SignUpPageContentState extends State<SignUpPageContent> {
               ),
               SizedBox(height: 8.h),
               Text(
-                  "Присоединяйся к сообществу, где каждый шаг "
-                  "приближает тебя к лучшей цели!",
+                  "Присоединяйся к сообществу, где каждый шаг "
+                  "приближает тебя к лучшей цели!",
                   style: Theme.of(context).textTheme.bodyLarge),
               SizedBox(height: 24.h),
               CustomTextFormField(

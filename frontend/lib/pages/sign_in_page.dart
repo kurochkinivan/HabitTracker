@@ -143,8 +143,8 @@ class SignInPageContentState extends State<SignInPageContent> {
               ),
               SizedBox(height: 8.h),
               Text(
-                "С возвращением! Продолжай улучшать свои "
-                "привычки — каждый шаг важен на пути к успеху.",
+                "С возвращением! Продолжай улучшать свои привычки "
+                "— каждый шаг важен на пути к успеху.",
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               SizedBox(height: 24.h),

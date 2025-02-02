@@ -149,7 +149,9 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
               ),
               SizedBox(height: 8.h),
               Text(
-                "Если код не пришел, проверьте папку “Спам” или нажмите “Отправить код повторно”.",
+                "Почти готово! Тебе выслан код "
+                "на ${widget.email.replaceAllMapped(RegExp(r'^(.{2}).*?(?=@)'), (match) => '${match[1]}***')}, "
+                "активируй аккаунт и начинай строить новые привычки.",
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               SizedBox(height: 80.h),

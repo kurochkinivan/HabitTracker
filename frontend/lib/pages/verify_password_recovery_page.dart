@@ -103,8 +103,7 @@ class VerifyPasswordRecoveryPageContentState
                       ?.copyWith(fontSize: 26.sp)),
               SizedBox(height: 8.h),
               Text(
-                  "Если код не пришел, проверьте папку “Спам” "
-                  "или нажмите “Отправить код повторно”.",
+                  "Если код не пришел, проверьте папку “Спам” или нажмите “Отправить код повторно”.",
                   style: Theme.of(context).textTheme.bodyLarge),
               SizedBox(height: 80.h),
               PinCodeTextField(
