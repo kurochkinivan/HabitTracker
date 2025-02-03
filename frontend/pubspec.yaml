@@ -70,11 +70,9 @@ flutter:
           weight: 500
 
 flutter_native_splash:
-  color: "#000000"
-  image: assets/images/logo (2) (3).png
+  color: "#FCFCFF"
   android_12:
-    image: assets/images/14415.png
-    icon_background_color: "#000000"
+    icon_background_color: "#FCFCFF"
   android: true
   ios: true
 
