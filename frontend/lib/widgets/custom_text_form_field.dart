@@ -80,7 +80,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
               : null,
         ),
         style: _getTextStyle(),
-        textAlignVertical: TextAlignVertical.center,
+        cursorColor: widget.isValid ? AppColors.black01 : AppColors.redError,
       ),
     );
   }
