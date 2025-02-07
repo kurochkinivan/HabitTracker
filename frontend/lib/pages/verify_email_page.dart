@@ -14,6 +14,7 @@ import '../bloc/registration/registration_bloc.dart';
 import '../bloc/registration/registration_event.dart';
 import '../bloc/registration/registration_state.dart';
 import '../models/registration_action_type.dart';
+import '../router/navigation_service.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
@@ -125,7 +126,7 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.back();
+                  NavigationService().back(context);
                 },
               ),
               const Spacer(),

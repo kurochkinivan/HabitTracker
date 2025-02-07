@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../app_colors.dart';
 import '../router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
@@ -59,7 +60,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.back();
+                  NavigationService().back(context);
                 },
               ),
               Spacer(),
@@ -118,7 +119,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
             text: 'Отправить код',
             isEnabled: _isEmailValid && _emailController.text.isNotEmpty,
             onPressed: () {
-              context.router.navigate(VerifyPasswordRecoveryRoute());
+              NavigationService().navigate(context, VerifyPasswordRecoveryRoute());
             },
           ),
           SizedBox(

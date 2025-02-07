@@ -10,6 +10,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
 import '../bloc/authentication/authentication_bloc.dart';
 import '../router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
@@ -81,7 +82,7 @@ class VerifyPasswordRecoveryPageContentState
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.back();
+                  NavigationService().back(context);
                 },
               ),
               Spacer(),
@@ -178,8 +179,7 @@ class VerifyPasswordRecoveryPageContentState
                 setState(() {
                   hasError = false;
                 });
-                context.router.navigate(NewPasswordRoute());
-                // Логика успешной проверки кода
+                NavigationService().navigate(context, NewPasswordRoute());
               }
             },
           ),

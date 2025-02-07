@@ -7,6 +7,7 @@ import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/widgets/custom_search_bar.dart';
 import '../models/habits.dart';
 import '../router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../widgets/category_section.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/habit_item.dart';
@@ -475,7 +476,7 @@ Widget _buildActionButtons(BuildContext context) {
       children: [
         OutlinedButton(
             onPressed: () {
-              context.router.navigate(HabitSettingsRoute());
+              NavigationService().navigate(context,HabitSettingsRoute());
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

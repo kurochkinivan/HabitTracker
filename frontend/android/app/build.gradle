@@ -34,6 +34,7 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig = signingConfigs.debug
         }
     }
@@ -42,3 +43,10 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Другие зависимости…
+    implementation 'com.google.errorprone:error_prone_annotations:2.36.0'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.8.6'
+}
+

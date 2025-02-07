@@ -11,26 +11,31 @@ import '../pages/verify_password_recovery_page.dart';
 import '../pages/new_password_page.dart';
 import '../pages/icon_choice_page.dart';
 import '../pages/color_choice_page.dart';
+import 'my_custom_transition.dart';
 
 part 'app_router.gr.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Page,Route')
 class AppRouter extends RootStackRouter {
   @override
-  RouteType get defaultRouteType => RouteType.material();
+  RouteType get defaultRouteType => RouteType.custom(
+        transitionsBuilder: myCustomTransition,
+        durationInMilliseconds: 300,
+        reverseDurationInMilliseconds: 300,
+      );
 
   @override
   List<AutoRoute> get routes => [
-        AutoRoute(page: StartRoute.page,),
-        AutoRoute(page: SignInRoute.page,),
-        AutoRoute(page: SignUpRoute.page,),
-        AutoRoute(page: VerifyEmailRoute.page),
-        AutoRoute(page: VerifyPasswordRecoveryRoute.page),
-        AutoRoute(page: PasswordRecoveryRoute.page),
-        AutoRoute(page: NewPasswordRoute.page, ),
-        AutoRoute(page: AddHabitRoute.page, path: '/', initial: true),
-        AutoRoute(page: HabitSettingsRoute.page, ),
-        AutoRoute(page: IconChoiceRoute.page, ),
-        AutoRoute(page: ColorChoiceRoute.page, ),
+        AutoRoute(page: StartRoute.page, path: '/', initial: true),
+        AutoRoute(page: SignInRoute.page, path: '/sign-in'),
+        AutoRoute(page: SignUpRoute.page, path: '/sign-up'),
+        AutoRoute(page: VerifyEmailRoute.page, path: '/verify-email'),
+        AutoRoute(page: VerifyPasswordRecoveryRoute.page, path: '/verify-password-recovery'),
+        AutoRoute(page: PasswordRecoveryRoute.page, path: '/password-recovery'),
+        AutoRoute(page: NewPasswordRoute.page, path: '/new-password'),
+        AutoRoute(page: AddHabitRoute.page, path: '/add-habit'),
+        AutoRoute(page: HabitSettingsRoute.page, path: '/habit-settings'),
+        AutoRoute(page: IconChoiceRoute.page, path: '/icon-choice'),
+        AutoRoute(page: ColorChoiceRoute.page, path: '/color-choice'),
       ];
 }

@@ -1,7 +1,6 @@
 import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,6 +10,7 @@ import 'package:habit_tracker/bloc/authentication/authentication_event.dart';
 import '../bloc/authentication/authentication_bloc.dart';
 import '../bloc/authentication/authentication_state.dart';
 import '../router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
@@ -22,9 +22,7 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
-    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
-
+    final apiClient = RepositoryProvider.of<ApiClient>(context);
     return BlocProvider(
       create: (_) => AuthenticationBloc(apiClient: apiClient),
       child: const SignInPageContent(),
@@ -91,8 +89,6 @@ class SignInPageContentState extends State<SignInPageContent> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -119,7 +115,7 @@ class SignInPageContentState extends State<SignInPageContent> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.back();
+                  NavigationService().back(context);
                 },
               ),
               const Spacer(),
@@ -275,7 +271,7 @@ class SignInPageContentState extends State<SignInPageContent> {
             onPressed: () {},
             child: Center(
               child: Text(
-                'Войти с помощью Google',
+                'Войти через Google',
                 style: Theme.of(context)
                     .textTheme
                     .labelLarge
@@ -285,7 +281,7 @@ class SignInPageContentState extends State<SignInPageContent> {
           ),
           TextButton(
             onPressed: () {
-              context.router.navigate(SignUpRoute());
+              NavigationService().navigate(context, SignUpRoute());
             },
             child: Text(
               'У меня еще нет аккаунта',

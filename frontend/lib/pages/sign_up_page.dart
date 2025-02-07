@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,6 +10,7 @@ import '../app_colors.dart';
 import '../bloc/registration/registration_state.dart';
 import '../models/registration_action_type.dart';
 import '../router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../services/api_client.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
@@ -22,8 +22,7 @@ class SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
-    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+    final apiClient = RepositoryProvider.of<ApiClient>(context);
 
     return BlocProvider(
       create: (_) => RegistrationBloc(apiClient: apiClient),
@@ -123,7 +122,7 @@ class SignUpPageContentState extends State<SignUpPageContent> {
                   fit: BoxFit.contain,
                 ),
                 onPressed: () {
-                  context.router.back();
+                  NavigationService().back(context);
                 },
               ),
               const Spacer(),
@@ -270,7 +269,7 @@ class SignUpPageContentState extends State<SignUpPageContent> {
             onPressed: () {},
             child: Center(
               child: Text(
-                'Зарегистрироваться с помощью Google',
+                'Зарегистрироваться через Google',
                 style: Theme.of(context)
                     .textTheme
                     .labelLarge
@@ -280,7 +279,7 @@ class SignUpPageContentState extends State<SignUpPageContent> {
           ),
           TextButton(
             onPressed: () {
-              context.router.navigate(SignInRoute());
+              NavigationService().navigate(context, SignInRoute());
             },
             child: Text(
               'У меня уже есть аккаунт',

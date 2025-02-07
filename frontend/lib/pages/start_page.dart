@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:habit_tracker/router/app_router.dart';
+import '../router/navigation_service.dart';
 import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
@@ -49,12 +50,12 @@ class StartPage extends StatelessWidget {
                       text: 'лучшей',
                       style: Theme.of(context).textTheme.displayMedium,
                     ),
+                    TextSpan(
+                      text: ' версией себя',
+                      style: Theme.of(context).textTheme.displayLarge,
+                    ),
                   ],
                 ),
-              ),
-              Text(
-                'версией себя',
-                style: Theme.of(context).textTheme.displayLarge,
               ),
               SizedBox(height: 16.h),
               Text(
@@ -82,7 +83,7 @@ class StartPage extends StatelessWidget {
             text: 'Начать',
             isEnabled: true,
             onPressed: () {
-              context.router.navigate(SignUpRoute());
+              NavigationService().navigate(context, SignUpRoute());
             },
           ),
           TextButton(
