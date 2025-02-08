@@ -17,7 +17,7 @@ class CustomElevatedButton extends StatefulWidget {
   });
 
   @override
-  _CustomElevatedButtonState createState() => _CustomElevatedButtonState();
+  State<CustomElevatedButton> createState() => _CustomElevatedButtonState();
 }
 
 class _CustomElevatedButtonState extends State<CustomElevatedButton> {
@@ -33,7 +33,7 @@ class _CustomElevatedButtonState extends State<CustomElevatedButton> {
           ),
           backgroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
-              return states.contains(MaterialState.disabled)
+              return states.contains(WidgetState.disabled)
                   ? AppColors.gray04
                   : AppColors.black01;
             },

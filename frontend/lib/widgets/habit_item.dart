@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-
 import '../app_colors.dart';
 
 class HabitItem extends StatelessWidget {
@@ -32,8 +30,8 @@ class HabitItem extends StatelessWidget {
           spans.add(TextSpan(
             text: title.substring(start),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.black02,
-            ),
+                  color: AppColors.black02,
+                ),
           ));
           break;
         }
@@ -41,24 +39,23 @@ class HabitItem extends StatelessWidget {
           spans.add(TextSpan(
             text: title.substring(start, index),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.black02,
-            ),
+                  color: AppColors.black02,
+                ),
           ));
         }
 
-        // Оборачиваем совпадающий текст в контейнер с фиолетовым фоном и закругленными углами
         spans.add(WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Container(
             decoration: BoxDecoration(
               color: AppColors.purple,
-              borderRadius: BorderRadius.circular(2), // Закругляем углы
+              borderRadius: BorderRadius.circular(2),
             ),
             child: Text(
               title.substring(index, index + queryLower.length),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.white,
-              ),
+                    color: AppColors.white,
+                  ),
             ),
           ),
         ));
@@ -66,12 +63,11 @@ class HabitItem extends StatelessWidget {
         start = index + queryLower.length;
       }
     } else {
-      // Если совпадений нет
       spans.add(TextSpan(
         text: title,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: AppColors.black02,
-        ),
+              color: AppColors.black02,
+            ),
       ));
     }
 
@@ -92,18 +88,18 @@ class HabitItem extends StatelessWidget {
             ),
             child: Center(
                 child: Image.asset(
-                  icon ?? "assets/icons/habit_icons/woman_in_lotus_position.png",
+              icon ?? "assets/icons/habit_icons/woman_in_lotus_position.png",
+              width: 20.w,
+              height: 20.w,
+              errorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) {
+                return Image.asset(
+                  "assets/icons/habit_icons/woman_in_lotus_position.png",
                   width: 20.w,
                   height: 20.w,
-                  errorBuilder:
-                      (BuildContext context, Object error, StackTrace? stackTrace) {
-                    return Image.asset(
-                      "assets/icons/habit_icons/woman_in_lotus_position.png",
-                      width: 20.w,
-                      height: 20.w,
-                    );
-                  },
-                )),
+                );
+              },
+            )),
           ),
           SizedBox(width: 24.w),
           Expanded(

@@ -1,10 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../app_colors.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
@@ -14,10 +13,10 @@ class PasswordRecoveryPage extends StatefulWidget {
   const PasswordRecoveryPage({super.key});
 
   @override
-  PasswordRecoveryPageState createState() => PasswordRecoveryPageState();
+  State<PasswordRecoveryPage> createState() => _PasswordRecoveryPageState();
 }
 
-class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
+class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   static final RegExp emailRegex =
       RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+$');
 
@@ -40,34 +39,7 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  NavigationService().back(context);
-                },
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      ),
+      appBar: CustomAppBar(onPressed: () => NavigationService().back(context)),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
@@ -119,7 +91,8 @@ class PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
             text: 'Отправить код',
             isEnabled: _isEmailValid && _emailController.text.isNotEmpty,
             onPressed: () {
-              NavigationService().navigate(context, VerifyPasswordRecoveryRoute());
+              NavigationService()
+                  .navigate(context, VerifyPasswordRecoveryRoute());
             },
           ),
           SizedBox(

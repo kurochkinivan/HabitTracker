@@ -20,10 +20,10 @@ class CustomTextFormField extends StatefulWidget {
   });
 
   @override
-  CustomTextFormFieldState createState() => CustomTextFormFieldState();
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
 }
 
-class CustomTextFormFieldState extends State<CustomTextFormField> {
+class _CustomTextFormFieldState extends State<CustomTextFormField> {
   bool _isActive = false;
   late bool _isObscured;
 

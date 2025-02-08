@@ -2,12 +2,10 @@ import 'dart:async';
 import 'package:android_id/android_id.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import '../app_colors.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../bloc/registration/registration_bloc.dart';
@@ -16,6 +14,7 @@ import '../bloc/registration/registration_state.dart';
 import '../models/registration_action_type.dart';
 import '../router/navigation_service.dart';
 import '../services/api_client.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
 import '../widgets/text_field_error_message.dart';
@@ -28,8 +27,7 @@ class VerifyEmailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
-    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+    final apiClient = RepositoryProvider.of<ApiClient>(context);
 
     return BlocProvider(
       create: (_) => RegistrationBloc(apiClient: apiClient),
@@ -44,10 +42,10 @@ class VerifyEmailPageContent extends StatefulWidget {
   const VerifyEmailPageContent({super.key, required this.email});
 
   @override
-  VerifyEmailPageContentState createState() => VerifyEmailPageContentState();
+  State<VerifyEmailPageContent> createState() => _VerifyEmailPageContentState();
 }
 
-class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
+class _VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
   String _serverErrorText = '';
   bool _isSendCodeCorrect = true;
 
@@ -109,31 +107,7 @@ class VerifyEmailPageContentState extends State<VerifyEmailPageContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(left: 8.w, right: 32.w),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  NavigationService().back(context);
-                },
-              ),
-              const Spacer(),
-            ],
-          ),
-        ),
-      ),
+      appBar: CustomAppBar(onPressed: () => NavigationService().back(context)),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),

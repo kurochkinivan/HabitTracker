@@ -1,5 +1,5 @@
-import 'package:auto_route/annotations.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,6 +7,7 @@ import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/widgets/custom_text_form_field.dart';
 import '../models/repeat_type.dart';
 import '../router/app_router.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/text_field_error_message.dart';
 
@@ -32,10 +33,10 @@ class HabitSettingsPage extends StatefulWidget {
   });
 
   @override
-  HabitSettingsPageState createState() => HabitSettingsPageState();
+  State<HabitSettingsPage> createState() => _HabitSettingsPageState();
 }
 
-class HabitSettingsPageState extends State<HabitSettingsPage> {
+class _HabitSettingsPageState extends State<HabitSettingsPage> {
   late String _selectedIcon;
   late String _selectedColor;
 
@@ -161,44 +162,9 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: _buildActionButtons(context),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  context.router.back();
-                },
-              ),
-              Spacer(),
-              Text(
-                'Настройки привычки',
-                style: Theme.of(context)
-                    .textTheme
-                    .displayLarge
-                    ?.copyWith(fontSize: 20.sp),
-              ),
-              Spacer(),
-              SizedBox(
-                width: 20.w,
-              )
-            ],
-          ),
-        ),
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
+      appBar: CustomAppBar(
+        onPressed: () => context.router.back(),
+        label: 'Настройки привычки',
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -405,12 +371,23 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
               SizedBox(height: 16.h),
               Wrap(
                 spacing: 8.w,
+                runSpacing: 8.h,
                 children: () {
                   final sortedTimes = List<String>.from(_selectedTimes)
                     ..sort(_compareTimes);
-                  return sortedTimes
-                      .map((time) => _buildTimeButton(time))
-                      .toList();
+                  return sortedTimes.map((time) {
+                    return AnimatedTimeButton(
+                      key: ValueKey(time),
+                      time: time,
+                      onTap: () => _selectTime(context, existingTime: time),
+                      onDelete: () {
+                        setState(() {
+                          _selectedTimes.remove(time);
+                          _isTimeValid = _selectedTimes.isNotEmpty;
+                        });
+                      },
+                    );
+                  }).toList();
                 }(),
               ),
               SizedBox(height: 16.h)
@@ -470,48 +447,12 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
     }
   }
 
-  Widget _buildTimeButton(String time) {
-    return GestureDetector(
-      onTap: () => _selectTime(context, existingTime: time),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: AppColors.gray04,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              time,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.black02,
-                    height: 1,
-                  ),
-            ),
-            SizedBox(width: 8.w),
-            GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedTimes.remove(time);
-                    _isTimeValid = _selectedTimes.isNotEmpty;
-                  });
-                },
-                child: SvgPicture.asset('assets/icons/trash-outline.svg',
-                    width: 12.w, height: 12.w)),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildDayButton(String day, bool isSelected) {
     return GestureDetector(
       onTap: () => _updateDayState(day),
-      child: Container(
-        width: 40.w,
-        height: 60.h,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.purple : AppColors.gray03,
           borderRadius: BorderRadius.circular(4),
@@ -523,11 +464,15 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: isSelected ? AppColors.white : AppColors.gray01,
                     )),
-            SizedBox(height: 14.h),
-            isSelected
-                ? SvgPicture.asset('assets/icons/done_light.svg',
-                    width: 20.w, height: 20.w)
-                : SizedBox(width: 20.w, height: 20.h),
+            SizedBox(height: 10.h),
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              child: isSelected
+                  ? SvgPicture.asset('assets/icons/done_light.svg',
+                      width: 20.w, height: 20.w, key: ValueKey('selected'))
+                  : SizedBox(
+                      width: 20.w, height: 20.w, key: ValueKey('unselected')),
+            ),
           ],
         ),
       ),
@@ -552,7 +497,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
             decoration: BoxDecoration(
               color: Colors.transparent,
               border: Border.all(
-                color: isSelected ? AppColors.black02 : AppColors.gray02,
+                color: isSelected ? AppColors.purple : AppColors.gray02,
                 width: 1.w,
               ),
               borderRadius: BorderRadius.circular(10),
@@ -560,7 +505,7 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
             child: isSelected
                 ? Container(
                     decoration: BoxDecoration(
-                      color: AppColors.black02,
+                      color: AppColors.purple,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   )
@@ -596,14 +541,16 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
                 'Sat': _days['СБ'] ?? false,
                 'Sun': _days['ВС'] ?? false,
               };
-              print('Name: ${_nameController.text}');
-              print('Description: ${_descriptionController.text}');
-              print('Category: ${_categoryController.text}');
-              print('Repeat Type: ${_repeatType.name}');
-              print('Days: $days');
-              print('Selected Times: $_selectedTimes');
-              print('Selected Icon: $_selectedIcon');
-              print('Selected Color: $_selectedColor');
+              if (kDebugMode) {
+                print('Name: ${_nameController.text}');
+                print('Description: ${_descriptionController.text}');
+                print('Category: ${_categoryController.text}');
+                print('Repeat Type: ${_repeatType.name}');
+                print('Days: $days');
+                print('Selected Times: $_selectedTimes');
+                print('Selected Icon: $_selectedIcon');
+                print('Selected Color: $_selectedColor');
+              }
             },
             text: 'Сохранить',
             isEnabled: _selectedTimes.isNotEmpty &&
@@ -613,6 +560,111 @@ class HabitSettingsPageState extends State<HabitSettingsPage> {
           ),
           SizedBox(height: 24.h),
         ],
+      ),
+    );
+  }
+}
+
+class AnimatedTimeButton extends StatefulWidget {
+  final String time;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  const AnimatedTimeButton({
+    super.key,
+    required this.time,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  @override
+  State<AnimatedTimeButton> createState() => _AnimatedTimeButtonState();
+}
+
+class _AnimatedTimeButtonState extends State<AnimatedTimeButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    final curvedAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _fadeAnimation = curvedAnimation;
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.2),
+      end: Offset.zero,
+    ).animate(curvedAnimation);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDelete() {
+    _controller.reverse().then((_) {
+      widget.onDelete();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            width: 71.5.w,
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: AppColors.gray04,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.time,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.black02,
+                          height: 1,
+                        ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: _handleDelete,
+                    child: SvgPicture.asset(
+                      'assets/icons/trash-outline.svg',
+                      width: 12.w,
+                      height: 12.w,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

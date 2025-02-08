@@ -9,6 +9,7 @@ import '../models/habits.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
 import '../widgets/category_section.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/habit_item.dart';
 
@@ -17,10 +18,10 @@ class AddHabitPage extends StatefulWidget {
   const AddHabitPage({super.key});
 
   @override
-  AddHabitPageState createState() => AddHabitPageState();
+  State<AddHabitPage> createState() => _AddHabitPageState();
 }
 
-class AddHabitPageState extends State<AddHabitPage> {
+class _AddHabitPageState extends State<AddHabitPage> {
   final TextEditingController _searchController = TextEditingController();
   Map<String, List<Habit>> habitsByCategory = {
     'Fitness': [
@@ -293,47 +294,9 @@ class AddHabitPageState extends State<AddHabitPage> {
       _selectedSort = 'по поиску';
     }
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-
-                // context.router.back();
-                onPressed: () {
-                  context.router.navigate(StartRoute());
-                },
-              ),
-              Spacer(),
-              Text(
-                'Добавить привычку',
-                style: Theme.of(context)
-                    .textTheme
-                    .displayLarge
-                    ?.copyWith(fontSize: 20.sp),
-              ),
-              Spacer(),
-              SizedBox(
-                width: 20.w,
-              )
-            ],
-          ),
-        ),
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-      ),
+      appBar: CustomAppBar(
+          onPressed: () => context.router.navigate(StartRoute()),
+          label: "Добавить привычку"),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -476,9 +439,10 @@ Widget _buildActionButtons(BuildContext context) {
       children: [
         OutlinedButton(
             onPressed: () {
-              NavigationService().navigate(context,HabitSettingsRoute());
+              NavigationService().navigate(context, HabitSettingsRoute());
             },
-            child: Row(
+            child:
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SvgPicture.asset(

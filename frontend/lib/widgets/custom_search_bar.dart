@@ -14,10 +14,10 @@ class CustomSearchBar extends StatefulWidget {
   });
 
   @override
-  CustomSearchBarState createState() => CustomSearchBarState();
+  State<CustomSearchBar> createState() => _CustomSearchBarState();
 }
 
-class CustomSearchBarState extends State<CustomSearchBar> {
+class _CustomSearchBarState extends State<CustomSearchBar> {
   bool _isActive = false;
 
   @override
@@ -66,6 +66,7 @@ class CustomSearchBarState extends State<CustomSearchBar> {
         ),
         style: _getTextStyle(),
         textAlignVertical: TextAlignVertical.center,
+        cursorColor: AppColors.black01,
       ),
     );
   }

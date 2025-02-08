@@ -16,10 +16,10 @@ class CategorySection extends StatefulWidget {
   });
 
   @override
-  CategorySectionState createState() => CategorySectionState();
+  State<CategorySection> createState() => _CategorySectionState();
 }
 
-class CategorySectionState extends State<CategorySection>
+class _CategorySectionState extends State<CategorySection>
     with SingleTickerProviderStateMixin {
   bool isExpanded = false;
   late AnimationController _controller;

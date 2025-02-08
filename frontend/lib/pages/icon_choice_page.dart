@@ -1,9 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-import '../app_colors.dart';
 import '../router/app_router.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 
 @RoutePage()
@@ -13,10 +12,10 @@ class IconChoicePage extends StatefulWidget {
   const IconChoicePage({super.key, this.initialIconName});
 
   @override
-  IconChoicePageState createState() => IconChoicePageState();
+  State<IconChoicePage> createState() => _IconChoicePageState();
 }
 
-class IconChoicePageState extends State<IconChoicePage> {
+class _IconChoicePageState extends State<IconChoicePage> {
   final List<String> imageUrls = [
     'books.png',
     'books.png',
@@ -42,39 +41,9 @@ class IconChoicePageState extends State<IconChoicePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: _buildActionButtons(context),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(left: 8.w, right: 32.w),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  context.router.back();
-                },
-              ),
-              Spacer(),
-              Text(
-                'Выбор иконки',
-                style: Theme.of(context)
-                    .textTheme
-                    .displayLarge
-                    ?.copyWith(fontSize: 20.sp),
-              ),
-              Spacer(),
-              SizedBox(width: 20.w)
-            ],
-          ),
-        ),
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
+      appBar: CustomAppBar(
+        onPressed: () => context.router.back(),
+        label: 'Выбор иконки',
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 32.w),

@@ -11,10 +11,10 @@ class ResendCodeButton extends StatefulWidget {
       {super.key, required this.textEditingController, this.onPressed});
 
   @override
-  ResendCodeButtonState createState() => ResendCodeButtonState();
+  State<ResendCodeButton> createState() => _ResendCodeButtonState();
 }
 
-class ResendCodeButtonState extends State<ResendCodeButton> {
+class _ResendCodeButtonState extends State<ResendCodeButton> {
   Timer? _timer;
   int _start = 5;
   bool _canResend = false;

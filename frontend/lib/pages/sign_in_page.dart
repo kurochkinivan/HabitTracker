@@ -4,7 +4,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/bloc/authentication/authentication_event.dart';
 import '../bloc/authentication/authentication_bloc.dart';
@@ -12,6 +11,7 @@ import '../bloc/authentication/authentication_state.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
 import '../services/api_client.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/text_field_error_message.dart';
@@ -34,10 +34,10 @@ class SignInPageContent extends StatefulWidget {
   const SignInPageContent({super.key});
 
   @override
-  SignInPageContentState createState() => SignInPageContentState();
+  State<SignInPageContent> createState() => _SignInPageContentState();
 }
 
-class SignInPageContentState extends State<SignInPageContent> {
+class _SignInPageContentState extends State<SignInPageContent> {
   static final RegExp emailRegex =
       RegExp(r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+$');
 
@@ -95,34 +95,7 @@ class SignInPageContentState extends State<SignInPageContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  NavigationService().back(context);
-                },
-              ),
-              const Spacer(),
-            ],
-          ),
-        ),
-      ),
+      appBar: CustomAppBar(onPressed: () => NavigationService().back(context)),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),

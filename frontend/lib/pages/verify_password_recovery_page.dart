@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'package:auto_route/auto_route.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../app_colors.dart';
 import '../bloc/authentication/authentication_bloc.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
 import '../services/api_client.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/resend_code_button.dart';
 
@@ -21,8 +20,7 @@ class VerifyPasswordRecoveryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dio = Dio();
-    final apiClient = ApiClient(dio, baseUrl: "http://10.0.2.2:8080/v1");
+    final apiClient = RepositoryProvider.of<ApiClient>(context);
 
     return BlocProvider(
       create: (_) => AuthenticationBloc(apiClient: apiClient),
@@ -35,11 +33,11 @@ class VerifyPasswordRecoveryPageContent extends StatefulWidget {
   const VerifyPasswordRecoveryPageContent({super.key});
 
   @override
-  VerifyPasswordRecoveryPageContentState createState() =>
-      VerifyPasswordRecoveryPageContentState();
+  State<VerifyPasswordRecoveryPageContent> createState() =>
+      _VerifyPasswordRecoveryPageContentState();
 }
 
-class VerifyPasswordRecoveryPageContentState
+class _VerifyPasswordRecoveryPageContentState
     extends State<VerifyPasswordRecoveryPageContent> {
   final TextEditingController _textEditingController = TextEditingController();
   StreamController<ErrorAnimationType>? _errorController;
@@ -62,34 +60,7 @@ class VerifyPasswordRecoveryPageContentState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 88.h,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: EdgeInsets.only(
-            left: 8.w,
-            right: 32.w,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: SvgPicture.asset(
-                  "assets/icons/arrow_left.svg",
-                  height: 32.w,
-                  width: 32.w,
-                  fit: BoxFit.contain,
-                ),
-                onPressed: () {
-                  NavigationService().back(context);
-                },
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      ),
+      appBar: CustomAppBar(onPressed: () => NavigationService().back(context)),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 32.w),
