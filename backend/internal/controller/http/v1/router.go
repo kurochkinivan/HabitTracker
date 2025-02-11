@@ -36,7 +36,7 @@ func NewRouter(host, port string, bytesLimit int64, sigingKey string, a usecase.
 	authHandler := NewAuthHandler(a, bytesLimit, sigingKey)
 	authHandler.Register(r)
 
-	habitHandler := NewHabitHandler(h, sigingKey)
+	habitHandler := NewHabitHandler(h, bytesLimit, sigingKey)
 	habitHandler.Register(r)
 
 	r.Handler(http.MethodGet, "/swagger/*filepath", httpSwagger.WrapHandler)

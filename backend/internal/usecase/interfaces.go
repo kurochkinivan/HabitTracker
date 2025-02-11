@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 )
@@ -50,12 +51,19 @@ type (
 
 type (
 	Habit interface {
-		CreateHabit(ctx context.Context, habit entity.Habit) error
+		CreateHabit(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
 		GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
+		GetCategories(ctx context.Context) ([]entity.Category, error)
+		GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
 	}
 
 	HabitRepository interface {
+		// CreateHabit(ctx context.Context, habit entity.Habit) error
+		// CreateNotifications(ctx context.Context, habitID int, notificationTimes []time.Time) error
+		// CreateSchedules(ctx context.Context, habitID int, scheduleDays []int) error
+		CreateHabitTx(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
 		GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
-		CreateHabit(ctx context.Context, habit entity.Habit) error
+		GetCategories(ctx context.Context) ([]entity.Category, error)
+		GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
 	}
 )

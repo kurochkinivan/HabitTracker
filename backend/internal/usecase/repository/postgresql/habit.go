@@ -3,8 +3,10 @@ package postgresql
 import (
 	"context"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	psql "github.com/kurochkinivan/HabitTracker/pkg/postgresql"
@@ -12,7 +14,7 @@ import (
 )
 
 type HabitRepository struct {
-	client psql.PosgreSQLClient
+	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
@@ -32,8 +34,8 @@ func (r *HabitRepository) GetHabitSchedules(ctx context.Context, habitID int) ([
 			habitSchedulesField("id"),
 			daysOfWeekField("name"),
 		).
-		From(TableHabitSchedules).
-		LeftJoin(fmt.Sprintf("%s ON %s = %s", TableDaysOfWeek, habitSchedulesField("day_id"), daysOfWeekField("id"))).
+		From(TableHabitSchedulesSc).
+		LeftJoin(fmt.Sprintf("%s ON %s = %s", TableDaysOfWeekSc, habitSchedulesField("day_id"), daysOfWeekField("id"))).
 		Where(sq.Eq{"habit_id": habitID}).
 		ToSql()
 	if err != nil {
@@ -74,7 +76,7 @@ func (r *HabitRepository) GetHabitNotifications(ctx context.Context, habitID int
 			"notification_time",
 			"is_active",
 		).
-		From(TableHabitNotifications).
+		From(TableHabitNotificationsSc).
 		Where(sq.Eq{"habit_id": habitID}).
 		ToSql()
 	if err != nil {
@@ -108,7 +110,7 @@ func (r *HabitRepository) GetHabitNotifications(ctx context.Context, habitID int
 
 func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error) {
 	logrus.WithField("user_id", userID).Trace("getting habits")
-	const op string = "HabitRepository.GetAllHabits"
+	const op string = "HabitRepository.GetUserHabits"
 
 	sql, args, err := r.qb.
 		Select(
@@ -121,8 +123,8 @@ func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]e
 			habitsField("is_active"),
 			habitsField("popularity_index"),
 		).
-		From(TableHabits).
-		LeftJoin(fmt.Sprintf("%s ON %s = %s", TableCategories, habitsField("category_id"), categoriesField("id"))).
+		From(TableHabitsSc).
+		LeftJoin(fmt.Sprintf("%s ON %s = %s", TableCategoriesSc, habitsField("category_id"), categoriesField("id"))).
 		Where(sq.Eq{"user_id": userID}).
 		ToSql()
 	if err != nil {
@@ -143,7 +145,7 @@ func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]e
 			&habit.UserID,
 			&habit.Name,
 			&habit.Desc,
-			&habit.Category,
+			&habit.Category.Name,
 			&habit.Interval,
 			&habit.IsActive,
 			&habit.PopularityIndex,
@@ -173,39 +175,155 @@ func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]e
 	return habits, nil
 }
 
-func (r *HabitRepository) CreateHabit(ctx context.Context, habit entity.Habit) error {
-	logrus.WithField("user_id", habit.UserID).Trace("creating new habit")
-	const op string = "HabitRepository.CreateHabit"
+func (r *HabitRepository) CreateHabitTx(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error {
+	logrus.WithField("user_id", habit.UserID).Trace("starting create habit transaction")
+	const op string = "HabitRepository.CreateHabitTx"
+
+	tx, err := r.client.Begin(ctx)
+	if err != nil {
+		return psql.ErrCreateTx(op, err)
+	}
+	defer tx.Rollback(ctx)
 
 	sql, args, err := r.qb.
-		Insert(TableHabits).
+		Insert(TableHabitsSc).
 		Columns(
 			"user_id",
 			"name",
 			"description",
-			"category",
+			"category_id",
 			"interval",
+			"is_active",
 		).
 		Values(
 			habit.UserID,
 			habit.Name,
 			habit.Desc,
-			habit.Category,
+			habit.Category.ID,
 			habit.Interval,
+			habit.IsActive,
 		).
+		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
 		return psql.ErrCreateQuery(op, err)
 	}
 
-	commTag, err := r.client.Exec(context.TODO(), sql, args...)
+	var habitID int
+	err = tx.QueryRow(ctx, sql, args...).Scan(&habitID)
 	if err != nil {
-		return psql.ErrExec(op, err)
+		return psql.ErrScan(op, err)
 	}
 
-	if commTag.RowsAffected() == 0 {
-		return psql.NoRowsAffected
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{TableHabitNotifications},
+		[]string{"habit_id", "notification_time", "is_active"},
+		pgx.CopyFromSlice(len(notificationTimes), func(i int) ([]any, error) {
+			return []any{habitID, notificationTimes[i], true}, nil
+		}),
+	)
+	if err != nil {
+		return psql.ErrInsertMultipleRows(op, err)
+	}
+
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{TableHabitSchedules},
+		[]string{"habit_id", "day_id"},
+		pgx.CopyFromSlice(len(notificationTimes), func(i int) ([]any, error) {
+			return []any{habitID, scheduleDays[i]}, nil
+		}),
+	)
+	if err != nil {
+		return psql.ErrInsertMultipleRows(op, err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return psql.ErrCommit(op, err)
 	}
 
 	return nil
+}
+
+func (r *HabitRepository) GetCategories(ctx context.Context) ([]entity.Category, error) {
+	logrus.Trace("getting categories")
+	const op string = "HabitRepository.GetCategories"
+
+	sql, args, err := r.qb.
+		Select(
+			"id",
+			"name",
+		).
+		From(TableCategoriesSc).
+		ToSql()
+	if err != nil {
+		return nil, psql.ErrCreateQuery(op, err)
+	}
+
+	rows, err := r.client.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, psql.ErrDoQuery(op, err)
+	}
+
+	categories := []entity.Category{}
+	for rows.Next() {
+		var category entity.Category
+		err := rows.Scan(
+			&category.ID,
+			&category.Name,
+		)
+		if err != nil {
+			return nil, psql.ErrScan(op, err)
+		}
+
+		categories = append(categories, category)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, psql.ErrScan(op, err)
+	}
+
+	return categories, nil
+}
+
+func (r *HabitRepository) GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error) {
+	logrus.Trace("getting categories")
+	const op string = "HabitRepository.GetDays"
+
+	sql, args, err := r.qb.
+		Select(
+			"id",
+			"name",
+		).
+		From(TableDaysOfWeekSc).
+		ToSql()
+	if err != nil {
+		return nil, psql.ErrCreateQuery(op, err)
+	}
+
+	rows, err := r.client.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, psql.ErrDoQuery(op, err)
+	}
+
+	days := []entity.DayOfWeek{}
+	for rows.Next() {
+
+		var day entity.DayOfWeek
+		err := rows.Scan(
+			&day.ID,
+			&day.Name,
+		)
+		if err != nil {
+			return nil, psql.ErrScan(op, err)
+		}
+
+		days = append(days, day)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, psql.ErrScan(op, err)
+	}
+
+	return days, nil
 }

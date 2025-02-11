@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
@@ -18,11 +19,11 @@ func NewHabitUseCase(habitRepo HabitRepository) *HabitUseCase {
 	}
 }
 
-func (h *HabitUseCase) CreateHabit(ctx context.Context, habit entity.Habit) error {
+func (h *HabitUseCase) CreateHabit(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error {
 	logrus.WithField("user_id", habit.UserID).Debug("creating habit")
 	const op string = "HabitUseCase.CreateHabit"
 
-	err := h.habitRepo.CreateHabit(ctx, habit)
+	err := h.habitRepo.CreateHabitTx(ctx, habit, notificationTimes, scheduleDays)
 	if err != nil {
 		return apperr.SystemError(err, op, "failed to create habit")
 	}
@@ -40,4 +41,28 @@ func (h *HabitUseCase) GetUserHabits(ctx context.Context, userID string) ([]enti
 	}
 
 	return habits, nil
+}
+
+func (h *HabitUseCase) GetCategories(ctx context.Context) ([]entity.Category, error) {
+	logrus.Debug("getting categories")
+	const op string = "HabitUseCase.GetCategories"
+
+	categories, err := h.habitRepo.GetCategories(ctx)
+	if err != nil {
+		return nil, apperr.SystemError(err, op, "failed to get habits")
+	}
+
+	return categories, nil
+}
+
+func (h *HabitUseCase) GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error) {
+	logrus.Debug("getting days of week")
+	const op string = "HabitUseCase.GetDaysOfWeek"
+
+	days, err := h.habitRepo.GetDaysOfWeek(ctx)
+	if err != nil {
+		return nil, apperr.SystemError(err, op, "failed to get days of week")
+	}
+
+	return days, nil
 }

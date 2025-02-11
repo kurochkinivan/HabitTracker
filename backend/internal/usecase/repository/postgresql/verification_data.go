@@ -12,7 +12,7 @@ import (
 )
 
 type verificationDataRepository struct {
-	client psql.PosgreSQLClient
+	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
@@ -35,7 +35,7 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 			"created_at",
 			"expires_at",
 		).
-		From(TableVerificationData).
+		From(TableVerificationDataSc).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -62,7 +62,7 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 	const op string = "verificationDataRepository.CreateVerificationData"
 
 	sql, args, err := r.qb.
-		Insert(TableVerificationData).
+		Insert(TableVerificationDataSc).
 		Columns(
 			"email",
 			"code",
@@ -99,7 +99,7 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(TableVerificationData).
+		From(TableVerificationDataSc).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
@@ -124,7 +124,7 @@ func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context,
 	const op string = "verificationDataRepository.DeleteVerificationData"
 
 	sql, args, err := r.qb.
-		Delete(TableVerificationData).
+		Delete(TableVerificationDataSc).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -148,7 +148,7 @@ func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Cont
 	const op string = "verificationDataRepository.UpdateVerificationDataCode"
 
 	sql, args, err := r.qb.
-		Update(TableVerificationData).
+		Update(TableVerificationDataSc).
 		SetMap(map[string]interface{}{
 			"code":       verifData.Code,
 			"created_at": verifData.CreatedAt,
@@ -171,5 +171,3 @@ func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Cont
 
 	return nil
 }
-
-

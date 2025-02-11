@@ -1,4 +1,4 @@
--- Active: 1731585563391@@127.0.0.1@30000@habit_tracker
+-- Active: 1739282930250@@127.0.0.1@30000@habit_tracker
 DROP TABLE IF EXISTS verification_data;
 DROP TABLE IF EXISTS refresh_sessions;
 DROP TABLE IF EXISTS habit_notifications;
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS habits (
     description TEXT,
     category_id INT NOT NULL,
     interval TEXT NOT NULL,
-    popularity_index NUMERIC(5, 2) NOT NULL,
+    popularity_index NUMERIC(5, 2),
     is_active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (id),
     CONSTRAINT check_interval CHECK (interval IN ('daily', 'weekly', 'custom')),
@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS habit_schedules (
     UNIQUE(habit_id, day_id)
 );
 
+-- TODO: Сделать первичный ключ составным 
 CREATE TABLE IF NOT EXISTS habit_notifications (
     id INT GENERATED ALWAYS AS IDENTITY,
     habit_id INT NOT NULL,

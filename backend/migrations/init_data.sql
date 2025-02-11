@@ -1,4 +1,4 @@
--- Active: 1731585563391@@127.0.0.1@30000@habit_tracker@public
+-- Active: 1739282930250@@127.0.0.1@30000@habit_tracker
 
 INSERT INTO users (id, name, email, password, is_verified) VALUES 
 ('be954b57-3cfb-4a8e-ac86-aa8cb3d0899d', 'ivan_kurochkin', 'vanya.kurochkin.23@mail.ru', '33363362343230633962643261303439323139343736663236666639633033315994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5', true);

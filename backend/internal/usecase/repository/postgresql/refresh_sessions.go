@@ -13,7 +13,7 @@ import (
 )
 
 type refreshSessionsRepository struct {
-	client psql.PosgreSQLClient
+	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
@@ -31,7 +31,7 @@ func (r *refreshSessionsRepository) CreateRefreshSession(ctx context.Context, re
 	const op string = "refreshSessionsRepository.CreateRefreshSession"
 
 	sql, args, err := r.qb.
-		Insert(TableRefreshSessions).
+		Insert(TableRefreshSessionsSc).
 		Columns(
 			"user_id",
 			"fingerprint",
@@ -62,7 +62,7 @@ func (r *refreshSessionsRepository) CountRefreshSessions(ctx context.Context, us
 	const op string = "refreshSessionsRepository.CountRefreshSessions"
 
 	sql, args, err := r.qb.Select("COUNT (*)").
-		FromSelect(r.qb.Select("user_id").From(TableRefreshSessions).Where(sq.Eq{"user_id": userID}), "session_by_user_id").
+		FromSelect(r.qb.Select("user_id").From(TableRefreshSessionsSc).Where(sq.Eq{"user_id": userID}), "session_by_user_id").
 		ToSql()
 	if err != nil {
 		return 0, psql.ErrCreateQuery(op, err)
@@ -82,7 +82,7 @@ func (r *refreshSessionsRepository) DeleteRefreshSessionsByUserID(ctx context.Co
 	const op string = "refreshSessionsRepository.DeleteRefreshSessions"
 
 	sql, args, err := r.qb.
-		Delete(TableRefreshSessions).
+		Delete(TableRefreshSessionsSc).
 		Where(sq.Eq{"user_id": userID}).
 		ToSql()
 	if err != nil {
@@ -106,7 +106,7 @@ func (r *refreshSessionsRepository) DeleteRefreshSessionByToken(ctx context.Cont
 	const op string = "refreshSessionsRepository.DeleteRefreshSession"
 
 	sql, args, err := r.qb.
-		Delete(TableRefreshSessions).
+		Delete(TableRefreshSessionsSc).
 		Where(sq.Eq{"refresh_token": refreshToken}).
 		ToSql()
 	if err != nil {
@@ -137,7 +137,7 @@ func (r *refreshSessionsRepository) GetRefreshSession(ctx context.Context, refre
 		"issued_at",
 		"expiration",
 	).
-		From(TableRefreshSessions).
+		From(TableRefreshSessionsSc).
 		Where(sq.Eq{"refresh_token": refreshToken}).
 		ToSql()
 	if err != nil {
@@ -170,7 +170,7 @@ func (r *refreshSessionsRepository) RefreshSessionExists(ctx context.Context, fi
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(TableRefreshSessions).
+		From(TableRefreshSessionsSc).
 		Where(sq.Eq{"fingerprint": fingerprint}).
 		Suffix(")").
 		ToSql()
@@ -195,7 +195,7 @@ func (r *refreshSessionsRepository) DeleteRefreshSessionByFingerprint(ctx contex
 	const op string = "refreshSessionsRepository.DeleteRefreshSessionByFingerprint"
 
 	sql, args, err := r.qb.
-		Delete(TableRefreshSessions).
+		Delete(TableRefreshSessionsSc).
 		Where(sq.Eq{"fingerprint": fingerprint}).
 		ToSql()
 	if err != nil {

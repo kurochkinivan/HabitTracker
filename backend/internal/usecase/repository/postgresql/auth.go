@@ -13,9 +13,10 @@ import (
 )
 
 type userRepository struct {
-	client psql.PosgreSQLClient
+	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
+
 
 func NewUserRepository(client *pgxpool.Pool) *userRepository {
 	return &userRepository{
@@ -29,7 +30,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	const op string = "userRepository.CreateUser"
 
 	sql, args, err := r.qb.
-		Insert(TableUsers).
+		Insert(TableUsersSc).
 		Columns(
 			"name",
 			"email",
@@ -69,7 +70,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 			"password",
 			"created_at",
 		).
-		From(TableUsers).
+		From(TableUsersSc).
 		Where(sq.Eq{
 			"email":       email,
 			"is_verified": true,
@@ -101,7 +102,7 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 	sql, args, err := r.qb.
 		Select("1").
 		Prefix("SELECT EXISTS (").
-		From(TableUsers).
+		From(TableUsersSc).
 		Where(sq.Eq{"email": email}).
 		Suffix(")").
 		ToSql()
@@ -127,7 +128,7 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 
 	sql, args, err := r.qb.
 		Select("is_verified").
-		From(TableUsers).
+		From(TableUsersSc).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -151,7 +152,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	const op string = "userRepository.DeleteUser"
 
 	sql, args, err := r.qb.
-		Delete(TableUsers).
+		Delete(TableUsersSc).
 		Where(sq.Eq{"email": email}).
 		ToSql()
 	if err != nil {
@@ -176,7 +177,7 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 
 	sql, args, err := r.qb.
 		Select("id").
-		From(TableUsers).
+		From(TableUsersSc).
 		Where(sq.Eq{
 			"email":       email,
 			"password":    password,
@@ -204,7 +205,7 @@ func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
 	const op string = "userRepository.VerifyEmail"
 
 	sql, args, err := r.qb.
-		Update(TableUsers).
+		Update(TableUsersSc).
 		Set("is_verified", true).
 		Where(sq.Eq{"email": email}).
 		ToSql()
