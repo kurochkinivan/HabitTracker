@@ -34,6 +34,71 @@ func (h *habitHandler) Register(r *httprouter.Router) {
 	r.POST("/v1/users/:id/habits", errMdw(authMdw(logMdw(h.createHabit), h.signingKey)))
 }
 
+type (
+	getHabitsResponse struct {
+		ID               int                `json:"id"`
+		Name             string             `json:"name"`
+		Description      string             `json:"description"`
+		Interval         string             `json:"interval"`
+		IsActive         bool               `json:"is_active"`
+		Popularity_index float64            `json:"popularity_index"`
+		Category         string             `json:"category_name"`
+		Notifications    []notificationTime `json:"notification_times"`
+		Schedules        []string           `json:"schedule_days"`
+	}
+
+	notificationTime struct {
+		Time     time.Time `json:"time"`
+		IsActive bool      `json:"is_active"`
+	}
+)
+
+func (h *habitHandler) mapHabitsToGetHabitsResponse(habits []entity.Habit) []getHabitsResponse {
+	respData := make([]getHabitsResponse, len(habits))
+	for i, habit := range habits {
+		respData[i] = getHabitsResponse{
+			ID:               habit.ID,
+			Name:             habit.Name,
+			Description:      habit.Desc,
+			Interval:         habit.Interval,
+			IsActive:         habit.IsActive,
+			Popularity_index: habit.PopularityIndex,
+			Category:         habit.Category.Name,
+			Notifications: func() []notificationTime {
+				result := make([]notificationTime, len(habit.Notifications))
+				for i, notif := range habit.Notifications {
+					result[i] = notificationTime{
+						Time:     notif.NotificationTime,
+						IsActive: notif.IsActive,
+					}
+				}
+				return result
+			}(),
+			Schedules: func() []string {
+				result := make([]string, len(habit.Schedules))
+				for i, schedule := range habit.Schedules {
+					result[i] = schedule.Day
+				}
+				return result
+			}(),
+		}
+	}
+	return respData
+}
+
+// @Summary		Get list of user's habits
+// @Description	Get list of user's habits
+// @Tags			habits
+//
+// @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
+//
+// @Param			id				path	string	true	"User ID"
+// @Produce		json
+// @Success		200	{array}		v1.getHabitsResponse	"OK."
+// @Failure		400	{object}	apperr.AppError			"Bad Request"
+// @Failure		401	{object}	apperr.AppError			"Unauthorized. User does not have access to the habits"
+// @Failure		500	{object}	apperr.AppError			"Internal Server Error"
+// @Router			/users/{id}/habits [get]
 func (h *habitHandler) getHabits(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.getHabits"
@@ -50,7 +115,7 @@ func (h *habitHandler) getHabits(w http.ResponseWriter, r *http.Request, p httpr
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	resp, err := json.Marshal(habits)
+	resp, err := json.Marshal(h.mapHabitsToGetHabitsResponse(habits))
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(err)
 	}
@@ -64,13 +129,38 @@ type (
 	createRequest struct {
 		Name              string      `json:"name"`
 		Desc              string      `json:"description"`
-		Interval          string      `json:"interval"` // daily, weekly, custom
+		Interval          string      `json:"interval" enums:"daily,weekly,custom"` // daily, weekly, custom
 		CategoryID        int         `json:"category_id"`
 		NotificationTimes []time.Time `json:"notification_times"`
 		ScheduleDays      []int       `json:"schedule_days"`
 	}
 )
 
+func mapCreateHabitRequestToHabit(userID string, req createRequest) entity.Habit {
+	return entity.Habit{
+		UserID:   userID,
+		Name:     req.Name,
+		Desc:     req.Desc,
+		Category: entity.Category{ID: req.CategoryID},
+		Interval: req.Interval,
+		IsActive: true,
+	}
+}
+
+// @Summary		Create habit for user
+// @Description	Create habit for user
+// @Tags			habits
+// @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
+// @Accept			json
+//
+// @Param			request		body	v1.createRequest	true	"create habit request parameters"
+// @Param			interval	body	string				true	"Interval type"	Enums(daily, weekly, custom)
+//
+// @Success		201			"Created"
+// @Failure		400			{object}	apperr.AppError	"Bad Request"
+// @Failure		401			{object}	apperr.AppError	"Unauthorized. User does not have access to the habits"
+// @Failure		500			{object}	apperr.AppError	"Internal Server Error"
+// @Router			/users/{id}/habits [post]
 func (h *habitHandler) createHabit(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.createHabit"
@@ -94,14 +184,7 @@ func (h *habitHandler) createHabit(w http.ResponseWriter, r *http.Request, p htt
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
 
-	err = h.CreateHabit(r.Context(), entity.Habit{
-		UserID:   userID,
-		Name:     req.Name,
-		Desc:     req.Desc,
-		Category: entity.Category{ID: req.CategoryID},
-		Interval: req.Interval,
-		IsActive: true,
-	}, req.NotificationTimes, req.ScheduleDays)
+	err = h.CreateHabit(r.Context(), mapCreateHabitRequestToHabit(userID, req), req.NotificationTimes, req.ScheduleDays)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -111,6 +194,33 @@ func (h *habitHandler) createHabit(w http.ResponseWriter, r *http.Request, p htt
 	return nil
 }
 
+type (
+	getCategoriesResponse struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+)
+
+func mapCategoriesToGetCategoriesResponse(categories []entity.Category) []getCategoriesResponse {
+	respData := make([]getCategoriesResponse, len(categories))
+	for i, category := range categories {
+		respData[i] = getCategoriesResponse{
+			ID:   category.ID,
+			Name: category.Name,
+		}
+	}
+	return respData
+}
+
+// @Summary		Get habits categories
+// @Description	Get habits categories
+// @Tags			habits
+// @Produce		json
+// @Success		200	{array}		v1.getCategoriesResponse	"OK."
+// @Failure		400	{object}	apperr.AppError				"Bad Request"
+// @Failure		401	{object}	apperr.AppError				"Unauthorized. User does not have access to the habits"
+// @Failure		500	{object}	apperr.AppError				"Internal Server Error"
+// @Router			/habits/categories [get]
 func (h *habitHandler) getCategories(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.getCategories"
@@ -120,7 +230,7 @@ func (h *habitHandler) getCategories(w http.ResponseWriter, r *http.Request, p h
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	resp, err := json.Marshal(categories)
+	resp, err := json.Marshal(mapCategoriesToGetCategoriesResponse(categories))
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
@@ -130,6 +240,33 @@ func (h *habitHandler) getCategories(w http.ResponseWriter, r *http.Request, p h
 	return nil
 }
 
+type (
+	getDaysResponse struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+)
+
+func mapDaysToGetDaysResponse(days []entity.DayOfWeek) []getDaysResponse {
+	respData := make([]getDaysResponse, len(days))
+	for i, day := range days {
+		respData[i] = getDaysResponse{
+			ID:   day.ID,
+			Name: day.Name,
+		}
+	}
+	return respData
+}
+
+// @Summary		Get week days
+// @Description	Get week days
+// @Tags			habits
+// @Produce		json
+// @Success		200	{array}		v1.getDaysResponse	"OK."
+// @Failure		400	{object}	apperr.AppError		"Bad Request"
+// @Failure		401	{object}	apperr.AppError		"Unauthorized. User does not have access to the habits"
+// @Failure		500	{object}	apperr.AppError		"Internal Server Error"
+// @Router			/habits/days [get]
 func (h *habitHandler) getDaysOfWeek(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.getDaysOfWeek"
@@ -139,7 +276,7 @@ func (h *habitHandler) getDaysOfWeek(w http.ResponseWriter, r *http.Request, p h
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	resp, err := json.Marshal(days)
+	resp, err := json.Marshal(mapDaysToGetDaysResponse(days))
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}

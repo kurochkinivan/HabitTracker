@@ -346,6 +346,210 @@
                     }
                 }
             }
+        },
+        "/habits/categories": {
+            "get": {
+                "description": "Get habits categories",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Get habits categories",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.getCategoriesResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. User does not have access to the habits",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/habits/days": {
+            "get": {
+                "description": "Get week days",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Get week days",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.getDaysResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. User does not have access to the habits",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/habits": {
+            "get": {
+                "description": "Get list of user's habits",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Get list of user's habits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization header must be set for valid response. It should be in format: Bearer {access_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.getHabitsResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. User does not have access to the habits",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create habit for user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "habits"
+                ],
+                "summary": "Create habit for user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization header must be set for valid response. It should be in format: Bearer {access_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "create habit request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.createRequest"
+                        }
+                    },
+                    {
+                        "description": "Interval type",
+                        "name": "interval",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "daily",
+                                "weekly",
+                                "custom"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. User does not have access to the habits",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -363,6 +567,101 @@
                 },
                 "user_message": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.createRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "interval": {
+                    "description": "daily, weekly, custom",
+                    "type": "string",
+                    "enum": [
+                        "daily",
+                        "weekly",
+                        "custom"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notification_times": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "schedule_days": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "v1.getCategoriesResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.getDaysResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.getHabitsResponse": {
+            "type": "object",
+            "properties": {
+                "category_name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "interval": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notification_times": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.notificationTime"
+                    }
+                },
+                "popularity_index": {
+                    "type": "number"
+                },
+                "schedule_days": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -403,6 +702,17 @@
             "type": "object",
             "properties": {
                 "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.notificationTime": {
+            "type": "object",
+            "properties": {
+                "is_active": {
+                    "type": "boolean"
+                },
+                "time": {
                     "type": "string"
                 }
             }

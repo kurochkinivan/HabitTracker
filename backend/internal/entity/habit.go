@@ -8,7 +8,7 @@ type Habit struct {
 	Desc            string              `json:"desc"`
 	Interval        string              `json:"interval"`
 	IsActive        bool                `json:"is_active"`
-	PopularityIndex string              `json:"popularity_index"`
+	PopularityIndex float64             `json:"popularity_index"`
 	Category        Category            `json:"category"`
 	Notifications   []HabitNotification `json:"notifications"`
 	Schedules       []HabitSchedules    `json:"schedules"`

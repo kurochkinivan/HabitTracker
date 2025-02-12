@@ -17,7 +17,7 @@ type UseCasesDependencies struct {
 	RefreshRepo RefreshSessionsRepository
 	HabitRepo   HabitRepository
 	TMPLS       map[string]*template.Template
-	*config.Config
+	Config      *config.Config
 }
 
 func NewUseCases(d UseCasesDependencies) *UseCases {
