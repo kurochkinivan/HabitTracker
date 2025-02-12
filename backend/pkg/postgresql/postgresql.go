@@ -30,7 +30,7 @@ func NewClient(ctx context.Context, maxAttempts int, cfg *PgConfig) (*pgxpool.Po
 	}
 
 	err = doWithAttempts(func() error {
-		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 		defer cancel()
 		pingErr := pool.Ping(ctx)
 		if pingErr != nil {
@@ -38,7 +38,7 @@ func NewClient(ctx context.Context, maxAttempts int, cfg *PgConfig) (*pgxpool.Po
 			return pingErr
 		}
 		return nil
-	}, 2*time.Second, maxAttempts)
+	}, 5*time.Second, maxAttempts)
 	if err != nil {
 		return nil, fmt.Errorf("all attempts exceeded, failed to connect to postgresql: %w", err)
 	}
