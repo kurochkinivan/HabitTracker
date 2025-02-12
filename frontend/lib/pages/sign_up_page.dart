@@ -54,6 +54,14 @@ class _SignUpPageContentState extends State<SignUpPageContent> {
   bool _isPasswordValid = true;
   bool _isRegisterCorrect = true;
 
+  bool get _isEnabled  => _isNameValid &&
+      _isEmailValid &&
+      _isPasswordValid &&
+      _nameController.text.isNotEmpty &&
+      _emailController.text.isNotEmpty &&
+      _passwordController.text.isNotEmpty &&
+      _isRegisterCorrect;
+
   @override
   void initState() {
     super.initState();
@@ -226,13 +234,7 @@ class _SignUpPageContentState extends State<SignUpPageContent> {
               return CustomElevatedButton(
                 onPressed: _register,
                 text: 'Зарегистрироваться',
-                isEnabled: _isNameValid &&
-                    _isEmailValid &&
-                    _isPasswordValid &&
-                    _nameController.text.isNotEmpty &&
-                    _emailController.text.isNotEmpty &&
-                    _passwordController.text.isNotEmpty &&
-                    _isRegisterCorrect,
+                isEnabled: _isEnabled,
                 isLoading: isLoading,
               );
             },
