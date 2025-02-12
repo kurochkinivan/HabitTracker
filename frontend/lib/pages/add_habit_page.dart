@@ -441,8 +441,7 @@ Widget _buildActionButtons(BuildContext context) {
             onPressed: () {
               NavigationService().navigate(context, HabitSettingsRoute());
             },
-            child:
-            Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SvgPicture.asset(
