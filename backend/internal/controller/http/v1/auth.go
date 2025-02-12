@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
+	"github.com/kurochkinivan/HabitTracker/internal/entity"
 	"github.com/kurochkinivan/HabitTracker/internal/usecase"
 )
 
@@ -89,11 +90,6 @@ type (
 		Code        string `json:"code"`
 		Fingerprint string `json:"fingerprint"`
 	}
-
-	verifyCodeResponse struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-	}
 )
 
 // @Summary		Verify user's email
@@ -127,17 +123,12 @@ func (h *authHandler) verifyEmail(w http.ResponseWriter, r *http.Request, p http
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	accessToken, refreshToken, err := h.a.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
+	user, accessToken, refreshToken, err := h.a.VerifyEmail(r.Context(), req.Email, req.Code, req.Fingerprint)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	resp := &verifyCodeResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}
-
-	respData, err := json.Marshal(resp)
+	respData, err := json.Marshal(mapUserToLoginAndVerifyResponse(user, accessToken, refreshToken))
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
@@ -154,11 +145,30 @@ type (
 		Fingerprint string `json:"fingerprint"`
 	}
 
-	loginResponse struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
+	loginAndVerifyResponse struct {
+		User         userResponse `json:"user"`
+		AccessToken  string       `json:"access_token"`
+		RefreshToken string       `json:"refresh_token"`
+	}
+
+	userResponse struct {
+		ID    string `json:"id"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 )
+
+func mapUserToLoginAndVerifyResponse(user entity.User, accessToken, refreshToken string) loginAndVerifyResponse {
+	return loginAndVerifyResponse{
+		User: userResponse{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		},
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+}
 
 // @Summary		Log user in
 // @Description	log user in
@@ -166,7 +176,7 @@ type (
 // @Accept			json
 // @Param			request	body	v1.loginRequest	true	"login request parameters"
 // @Produce		json
-// @Success		200	{object}	v1.loginResponse	"OK. User was logged in"
+// @Success		200	{object}	v1.loginAndVerifyResponse	"OK. User was logged in"
 // @Failure		400	{object}	apperr.AppError		"Bad Request"
 // @Failure		401	{object}	apperr.AppError		"Unauthorized. Email or password is incorrect"
 // @Failure		500	{object}	apperr.AppError		"Internal Server Error"
@@ -191,17 +201,12 @@ func (h *authHandler) loginUser(w http.ResponseWriter, r *http.Request, p httpro
 		return apperr.ErrNotAllFieldsProvided
 	}
 
-	accessToken, refreshToken, err := h.a.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
+	user, accessToken, refreshToken, err := h.a.LoginUser(r.Context(), req.Email, req.Password, req.Fingerprint)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	resp := &loginResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}
-
-	respData, err := json.Marshal(resp)
+	respData, err := json.Marshal(mapUserToLoginAndVerifyResponse(user, accessToken, refreshToken))
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}

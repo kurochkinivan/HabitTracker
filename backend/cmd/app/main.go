@@ -16,7 +16,7 @@ import (
 const (
 	envLocal               = "local"
 	envProd                = "prod"
-	envDocker             = "docker"
+	envDocker              = "docker"
 	pathToConfirmLocal     = "../../static/html/confirmation_email.html"
 	pathToEmailExistsLocal = "../../static/html/email_already_exists.html"
 	pathToConfirmProd      = "confirmation_email.html"
@@ -86,7 +86,7 @@ func getTemplatesPaths(env string) (confirm string, emailExists string) {
 	case envLocal:
 		return pathToConfirmLocal, pathToEmailExistsLocal
 	case envProd, envDocker:
-		return pathToEmailExistsProd, pathToEmailExistsProd
+		return pathToConfirmProd, pathToEmailExistsProd
 	default:
 		logrus.Fatal("unknown environment")
 		return "", ""

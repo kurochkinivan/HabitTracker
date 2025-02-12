@@ -99,64 +99,69 @@ func (a *AuthUseCase) RegisterUser(ctx context.Context, name, email, password st
 	return nil
 }
 
-func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprint string) (string, string, error) {
+func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprint string) (entity.User, string, string, error) {
 	logrus.WithField("email", email).Debug("logging user in")
 	const op string = "AuthUseCase.LoginUser"
 
 	userID, err := a.userRepo.AuthenticateUser(ctx, email, a.hashPassword(password))
 	if err != nil {
-		return "", "", apperr.SystemError(err, op, "failed to authenticate user")
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to authenticate user")
 	}
 	if userID == "" {
-		return "", "", apperr.ErrAuthorizing
+		return entity.User{}, "", "", apperr.ErrAuthorizing
 	}
 
 	accessToken, refreshToken, err := a.GenerateTokenPair(ctx, userID, fingerprint)
 	if err != nil {
-		return "", "", fmt.Errorf("%s: %w", op, err)
+		return entity.User{}, "", "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return accessToken, refreshToken, nil
+	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to get user by email")
+	}
+	
+	return user, accessToken, refreshToken, nil
 }
 
-func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code, fingerprint string) (accessToken, refreshToken string, err error) {
+func (a *AuthUseCase) VerifyEmail(ctx context.Context, email, code, fingerprint string) (user entity.User, accessToken, refreshToken string, err error) {
 	logrus.WithFields(logrus.Fields{"email": email, "code": code}).Debug("verifying user's email")
 	const op string = "AuthUseCase.VerifyEmail"
 
 	verifData, err := a.verifRepo.GetVerificationData(ctx, email)
 	if err != nil {
-		return "", "", apperr.SystemError(err, op, "failed to get verification data")
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to get verification data")
 	}
 
 	if code != verifData.Code {
-		return "", "", apperr.ErrInvalidVerifCode
+		return entity.User{}, "", "", apperr.ErrInvalidVerifCode
 	}
 
 	if time.Now().After(verifData.ExpiresAt) {
-		return "", "", apperr.ErrVerifCodeExpired
+		return entity.User{}, "", "", apperr.ErrVerifCodeExpired
 	}
 
 	err = a.userRepo.VerifyEmail(ctx, email)
 	if err != nil {
-		return "", "", apperr.SystemError(err, op, "failed to verify email")
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to verify email")
 	}
 
 	err = a.verifRepo.DeleteVerificationData(ctx, email)
 	if err != nil {
-		return "", "", apperr.SystemError(err, op, "failed to delete verification data")
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to delete verification data")
 	}
 
-	user, err := a.userRepo.GetUserByEmail(ctx, email)
+	user, err = a.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", "", apperr.SystemError(err, op, "failed to get user by email")
+		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to get user by email")
 	}
 
 	accessToken, refreshToken, err = a.GenerateTokenPair(ctx, user.ID, fingerprint)
 	if err != nil {
-		return "", "", err
+		return entity.User{}, "", "", err
 	}
 
-	return accessToken, refreshToken, nil
+	return user, accessToken, refreshToken, nil
 }
 
 func (a *AuthUseCase) SendConfirmationCode(ctx context.Context, email string) error {

@@ -12,9 +12,9 @@ import (
 
 type (
 	Auth interface {
-		LoginUser(ctx context.Context, email, password, fingerprint string) (string, string, error)
+		LoginUser(ctx context.Context, email, password, fingerprint string) (entity.User, string, string, error)
 		RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error)
-		VerifyEmail(ctx context.Context, email, code, fingerprint string) (string, string, error)
+		VerifyEmail(ctx context.Context, email, code, fingerprint string) (entity.User, string, string, error)
 		RegisterUser(ctx context.Context, name, email, password string) error
 		SendConfirmationCode(ctx context.Context, email string) error
 		LogoutUser(ctx context.Context, refreshToken string) error
@@ -58,9 +58,6 @@ type (
 	}
 
 	HabitRepository interface {
-		// CreateHabit(ctx context.Context, habit entity.Habit) error
-		// CreateNotifications(ctx context.Context, habitID int, notificationTimes []time.Time) error
-		// CreateSchedules(ctx context.Context, habitID int, scheduleDays []int) error
 		CreateHabitTx(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
 		GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
 		GetCategories(ctx context.Context) ([]entity.Category, error)
