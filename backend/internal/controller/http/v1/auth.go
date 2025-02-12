@@ -98,7 +98,7 @@ type (
 // @Accept			json
 // @Param			request	body	v1.verifyCodeRequest	true	"verify code request parameters"
 // @Produce		json
-// @Success		200	{object}	v1.verifyCodeResponse	"OK. User was verified"
+// @Success		200	{object}	v1.loginAndVerifyResponse	"OK. User was verified"
 // @Failure		400	{object}	apperr.AppError			"Bad Request"
 // @Failure		401	{object}	apperr.AppError			"Unauthorized. User provided invalid verification code"
 // @Failure		500	{object}	apperr.AppError			"Internal Server Error"

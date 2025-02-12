@@ -79,6 +79,15 @@ definitions:
       email:
         type: string
     type: object
+  v1.loginAndVerifyResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/v1.userResponse'
+    type: object
   v1.loginRequest:
     properties:
       email:
@@ -86,13 +95,6 @@ definitions:
       fingerprint:
         type: string
       password:
-        type: string
-    type: object
-  v1.loginResponse:
-    properties:
-      access_token:
-        type: string
-      refresh_token:
         type: string
     type: object
   v1.logoutRequest:
@@ -132,6 +134,15 @@ definitions:
       password:
         type: string
     type: object
+  v1.userResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   v1.verifyCodeRequest:
     properties:
       code:
@@ -139,13 +150,6 @@ definitions:
       email:
         type: string
       fingerprint:
-        type: string
-    type: object
-  v1.verifyCodeResponse:
-    properties:
-      access_token:
-        type: string
-      refresh_token:
         type: string
     type: object
 host: localhost:8080
@@ -231,7 +235,7 @@ paths:
         "200":
           description: OK. User was logged in
           schema:
-            $ref: '#/definitions/v1.loginResponse'
+            $ref: '#/definitions/v1.loginAndVerifyResponse'
         "400":
           description: Bad Request
           schema:
@@ -361,7 +365,7 @@ paths:
         "200":
           description: OK. User was verified
           schema:
-            $ref: '#/definitions/v1.verifyCodeResponse'
+            $ref: '#/definitions/v1.loginAndVerifyResponse'
         "400":
           description: Bad Request
           schema:

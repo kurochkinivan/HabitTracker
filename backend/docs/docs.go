@@ -130,7 +130,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK. User was logged in",
                         "schema": {
-                            "$ref": "#/definitions/v1.loginResponse"
+                            "$ref": "#/definitions/v1.loginAndVerifyResponse"
                         }
                     },
                     "400": {
@@ -329,7 +329,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK. User was verified",
                         "schema": {
-                            "$ref": "#/definitions/v1.verifyCodeResponse"
+                            "$ref": "#/definitions/v1.loginAndVerifyResponse"
                         }
                     },
                     "400": {
@@ -679,6 +679,20 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.loginAndVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/v1.userResponse"
+                }
+            }
+        },
         "v1.loginRequest": {
             "type": "object",
             "properties": {
@@ -689,17 +703,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.loginResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 }
             }
@@ -762,6 +765,20 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.userResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.verifyCodeRequest": {
             "type": "object",
             "properties": {
@@ -772,17 +789,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "fingerprint": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.verifyCodeResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 }
             }
