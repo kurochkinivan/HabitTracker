@@ -16,7 +16,8 @@ import (
 type HabitUseCase interface {
 	CreateHabit(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
 	GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
-	GetCategories(ctx context.Context) ([]entity.Category, error)
+	CreateCategory(ctx context.Context, userID string, category *entity.Category) error
+	GetUserCategories(ctx context.Context, userID string) ([]*entity.Category, error)
 	GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
 }
 
@@ -36,9 +37,10 @@ func NewHabitHandler(habit HabitUseCase, bytesLimit int64, signingKey string) Ha
 
 func (h *habitHandler) Register(r *httprouter.Router) {
 	r.GET("/v1/users/:id/habits", errMdw(authMdw(logMdw(h.getHabits), h.signingKey)))
-	r.GET("/v1/habits/categories", errMdw(logMdw(h.getCategories)))
 	r.GET("/v1/habits/days", errMdw(logMdw(h.getDaysOfWeek)))
+	r.GET("/v1/users/:id/categories", errMdw(authMdw(logMdw(h.getCategories), h.signingKey)))
 	r.POST("/v1/users/:id/habits", errMdw(authMdw(logMdw(h.createHabit), h.signingKey)))
+	r.POST("/v1/users/:id/categories", errMdw(authMdw(logMdw(h.createCategory), h.signingKey)))
 }
 
 type (
@@ -96,9 +98,7 @@ func (h *habitHandler) mapHabitsToGetHabitsResponse(habits []entity.Habit) []get
 // @Summary		Get list of user's habits
 // @Description	Get list of user's habits
 // @Tags			habits
-//
 // @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
-//
 // @Param			id				path	string	true	"User ID"
 // @Produce		json
 // @Success		200	{array}		v1.getHabitsResponse	"OK."
@@ -179,14 +179,14 @@ func (h *habitHandler) createHabit(w http.ResponseWriter, r *http.Request, p htt
 		return apperr.ErrUnauthorized
 	}
 
-	reqData, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
+	data, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
 	if err != nil {
 		return apperr.ErrReadRequestBody.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
 	defer r.Body.Close()
 
 	var req createRequest
-	err = json.Unmarshal(reqData, &req)
+	err = json.Unmarshal(data, &req)
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
 	}
@@ -208,7 +208,7 @@ type (
 	}
 )
 
-func mapCategoriesToGetCategoriesResponse(categories []entity.Category) []getCategoriesResponse {
+func mapCategoriesToGetCategoriesResponse(categories []*entity.Category) []getCategoriesResponse {
 	respData := make([]getCategoriesResponse, len(categories))
 	for i, category := range categories {
 		respData[i] = getCategoriesResponse{
@@ -232,7 +232,14 @@ func (h *habitHandler) getCategories(w http.ResponseWriter, r *http.Request, p h
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.getCategories"
 
-	categories, err := h.GetCategories(r.Context())
+	paramsID := p.ByName("id")
+	userID := r.Header.Get("user_id")
+
+	if paramsID != userID {
+		return apperr.ErrUnauthorized
+	}
+
+	categories, err := h.GetUserCategories(r.Context(), userID)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -289,6 +296,49 @@ func (h *habitHandler) getDaysOfWeek(w http.ResponseWriter, r *http.Request, p h
 	}
 
 	w.Write(resp)
+
+	return nil
+}
+
+type (
+	createCategoryRequest struct {
+		Name string `json:"name"`
+	}
+)
+
+func mapCreateCategoryReqToCategory(req createCategoryRequest) *entity.Category {
+	return &entity.Category{
+		Name: req.Name,
+	}
+}
+
+func (h *habitHandler) createCategory(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
+	w.Header().Set("Content-Type", "application/json")
+	const op string = "habitHandler.createCategory"
+
+	paramsID := p.ByName("id")
+	userID := r.Header.Get("user_id")
+
+	if paramsID != userID {
+		return apperr.ErrUnauthorized
+	}
+
+	data, err := io.ReadAll(io.LimitReader(r.Body, h.bytesLimit))
+	if err != nil {
+		return apperr.ErrReadRequestBody.WithErr(fmt.Errorf("%s: %w", op, err))
+	}
+	defer r.Body.Close()
+
+	var req createCategoryRequest
+	err = json.Unmarshal(data, &req)
+	if err != nil {
+		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
+	}
+
+	err = h.CreateCategory(r.Context(), userID, mapCreateCategoryReqToCategory(req))
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
 
 	return nil
 }

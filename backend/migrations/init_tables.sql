@@ -48,7 +48,10 @@ CREATE TABLE IF NOT EXISTS refresh_sessions (
 CREATE TABLE IF NOT EXISTS categories (
     id INT GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
-    PRIMARY KEY(id)
+    user_id UUID,
+    PRIMARY KEY(id),
+    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS habits (

@@ -21,6 +21,6 @@ type UseCasesDependencies struct {
 func NewUseCases(d *UseCasesDependencies) *UseCases {
 	return &UseCases{
 		AuthUseCase:  NewAuthUseCase(d.Repos.User, d.Repos.VerificationData, d.Repos.RefreshSessions, d.TMPLS, d.Config.Auth),
-		HabitUseCase: NewHabitUseCase(d.Repos.Habit),
+		HabitUseCase: NewHabitUseCase(d.Repos.Habit, d.Repos.Category),
 	}
 }

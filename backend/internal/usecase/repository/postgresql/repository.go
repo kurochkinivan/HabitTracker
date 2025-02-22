@@ -7,6 +7,7 @@ type Repositories struct {
 	VerificationData *VerificationDataRepository
 	RefreshSessions  *RefreshSessionsRepository
 	Habit            *HabitRepository
+	Category         *CategoryRepository
 }
 
 func NewRepositories(client *pgxpool.Pool) *Repositories {
@@ -15,5 +16,6 @@ func NewRepositories(client *pgxpool.Pool) *Repositories {
 		VerificationData: NewVerificationData(client),
 		RefreshSessions:  NewRefreshSessionsRepository(client),
 		Habit:            NewHabitRepository(client),
+		Category:         NewCategoryRepository(client),
 	}
 }

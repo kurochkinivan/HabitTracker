@@ -12,17 +12,23 @@ import (
 type HabitRepository interface {
 	CreateHabitTx(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
 	GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
-	GetCategories(ctx context.Context) ([]entity.Category, error)
 	GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
 }
 
-type HabitUseCase struct {
-	habitRepo HabitRepository
+type CategoryRepository interface {
+	CreateCategory(ctx context.Context, userID string, category *entity.Category) error
+	GetCategories(ctx context.Context, userID string) ([]*entity.Category, error)
 }
 
-func NewHabitUseCase(habitRepo HabitRepository) *HabitUseCase {
+type HabitUseCase struct {
+	habitRepo    HabitRepository
+	categoryRepo CategoryRepository
+}
+
+func NewHabitUseCase(habitRepo HabitRepository, categoryRepo CategoryRepository) *HabitUseCase {
 	return &HabitUseCase{
-		habitRepo: habitRepo,
+		habitRepo:    habitRepo,
+		categoryRepo: categoryRepo,
 	}
 }
 
@@ -50,11 +56,13 @@ func (h *HabitUseCase) GetUserHabits(ctx context.Context, userID string) ([]enti
 	return habits, nil
 }
 
-func (h *HabitUseCase) GetCategories(ctx context.Context) ([]entity.Category, error) {
-	logrus.Debug("getting categories")
+
+
+func (h *HabitUseCase) GetUserCategories(ctx context.Context, userID string) ([]*entity.Category, error) {
+	logrus.WithField("user_id", userID).Debug("getting categories")
 	const op string = "HabitUseCase.GetCategories"
 
-	categories, err := h.habitRepo.GetCategories(ctx)
+	categories, err := h.categoryRepo.GetCategories(ctx, userID)
 	if err != nil {
 		return nil, apperr.SystemError(err, op, "failed to get habits")
 	}
@@ -72,4 +80,16 @@ func (h *HabitUseCase) GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, e
 	}
 
 	return days, nil
+}
+
+func (h *HabitUseCase) CreateCategory(ctx context.Context, userID string, category *entity.Category) error {
+	logrus.WithField("user_id", userID).Debug("creating category")
+	const op string = "HabitUseCase.CreateCategory"
+
+	err := h.categoryRepo.CreateCategory(ctx, userID, category)
+	if err != nil {
+		return apperr.SystemError(err, op, "failed to create category")
+	}
+
+	return nil
 }

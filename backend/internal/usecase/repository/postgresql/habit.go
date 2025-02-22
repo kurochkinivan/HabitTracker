@@ -125,7 +125,7 @@ func (r *HabitRepository) GetUserHabits(ctx context.Context, userID string) ([]e
 		).
 		From(TableHabitsSc).
 		LeftJoin(fmt.Sprintf("%s ON %s = %s", TableCategoriesSc, habitsField("category_id"), categoriesField("id"))).
-		Where(sq.Eq{"user_id": userID}).
+		Where(sq.Eq{habitsField("user_id"): userID}).
 		ToSql()
 	if err != nil {
 		return nil, psql.ErrCreateQuery(op, err)
@@ -245,46 +245,6 @@ func (r *HabitRepository) CreateHabitTx(ctx context.Context, habit entity.Habit,
 	}
 
 	return nil
-}
-
-func (r *HabitRepository) GetCategories(ctx context.Context) ([]entity.Category, error) {
-	logrus.Trace("getting categories")
-	const op string = "HabitRepository.GetCategories"
-
-	sql, args, err := r.qb.
-		Select(
-			"id",
-			"name",
-		).
-		From(TableCategoriesSc).
-		ToSql()
-	if err != nil {
-		return nil, psql.ErrCreateQuery(op, err)
-	}
-
-	rows, err := r.client.Query(ctx, sql, args...)
-	if err != nil {
-		return nil, psql.ErrDoQuery(op, err)
-	}
-
-	categories := []entity.Category{}
-	for rows.Next() {
-		var category entity.Category
-		err := rows.Scan(
-			&category.ID,
-			&category.Name,
-		)
-		if err != nil {
-			return nil, psql.ErrScan(op, err)
-		}
-
-		categories = append(categories, category)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, psql.ErrScan(op, err)
-	}
-
-	return categories, nil
 }
 
 func (r *HabitRepository) GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error) {
