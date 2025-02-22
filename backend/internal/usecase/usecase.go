@@ -4,25 +4,23 @@ import (
 	"html/template"
 
 	"github.com/kurochkinivan/HabitTracker/config"
+	"github.com/kurochkinivan/HabitTracker/internal/usecase/repository/postgresql"
 )
 
 type UseCases struct {
-	Auth
-	Habit
+	*AuthUseCase
+	*HabitUseCase
 }
 
 type UseCasesDependencies struct {
-	UserRepo    UserRepository
-	VerifRepo   VerificationDataRepository
-	RefreshRepo RefreshSessionsRepository
-	HabitRepo   HabitRepository
-	TMPLS       map[string]*template.Template
-	Config      *config.Config
+	Repos  *postgresql.Repositories
+	TMPLS  map[string]*template.Template
+	Config *config.Config
 }
 
-func NewUseCases(d UseCasesDependencies) *UseCases {
+func NewUseCases(d *UseCasesDependencies) *UseCases {
 	return &UseCases{
-		Auth:  NewAuthUseCase(d.UserRepo, d.VerifRepo, d.RefreshRepo, d.TMPLS, d.Config.Auth),
-		Habit: NewHabitUseCase(d.HabitRepo),
+		AuthUseCase:  NewAuthUseCase(d.Repos.User, d.Repos.VerificationData, d.Repos.RefreshSessions, d.TMPLS, d.Config.Auth),
+		HabitUseCase: NewHabitUseCase(d.Repos.Habit),
 	}
 }

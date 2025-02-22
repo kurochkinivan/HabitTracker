@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,16 +11,22 @@ import (
 	"github.com/julienschmidt/httprouter"
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
-	"github.com/kurochkinivan/HabitTracker/internal/usecase"
 )
 
+type HabitUseCase interface {
+	CreateHabit(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
+	GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
+	GetCategories(ctx context.Context) ([]entity.Category, error)
+	GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
+}
+
 type habitHandler struct {
-	usecase.Habit
+	HabitUseCase
 	bytesLimit int64
 	signingKey string
 }
 
-func NewHabitHandler(habit usecase.Habit, bytesLimit int64, signingKey string) Handler {
+func NewHabitHandler(habit HabitUseCase, bytesLimit int64, signingKey string) Handler {
 	return &habitHandler{
 		habit,
 		bytesLimit,

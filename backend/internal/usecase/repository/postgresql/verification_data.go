@@ -11,21 +11,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type verificationDataRepository struct {
+type VerificationDataRepository struct {
 	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
-func NewVerificationData(client *pgxpool.Pool) *verificationDataRepository {
-	return &verificationDataRepository{
+func NewVerificationData(client *pgxpool.Pool) *VerificationDataRepository {
+	return &VerificationDataRepository{
 		client: client,
 		qb:     sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }
 
-func (r *verificationDataRepository) GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error) {
+func (r *VerificationDataRepository) GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error) {
 	logrus.WithField("email", email).Trace("getting verification data")
-	const op string = "verificationDataRepository.GetVerificationData"
+	const op string = "VerificationDataRepository.GetVerificationData"
 
 	sql, args, err := r.qb.
 		Select(
@@ -57,9 +57,9 @@ func (r *verificationDataRepository) GetVerificationData(ctx context.Context, em
 	return verificationData, nil
 }
 
-func (r *verificationDataRepository) CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error {
+func (r *VerificationDataRepository) CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("creating verification data")
-	const op string = "verificationDataRepository.CreateVerificationData"
+	const op string = "VerificationDataRepository.CreateVerificationData"
 
 	sql, args, err := r.qb.
 		Insert(TableVerificationDataSc).
@@ -92,9 +92,9 @@ func (r *verificationDataRepository) CreateVerificationData(ctx context.Context,
 	return nil
 }
 
-func (r *verificationDataRepository) VerificationDataExists(ctx context.Context, email string) (bool, error) {
+func (r *VerificationDataRepository) VerificationDataExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithField("email", email).Trace("checking if verification data exists")
-	const op string = "verificationDataRepository.VerificationDataExists"
+	const op string = "VerificationDataRepository.VerificationDataExists"
 
 	sql, args, err := r.qb.
 		Select("1").
@@ -119,9 +119,9 @@ func (r *verificationDataRepository) VerificationDataExists(ctx context.Context,
 	return exists, nil
 }
 
-func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
+func (r *VerificationDataRepository) DeleteVerificationData(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting verification data")
-	const op string = "verificationDataRepository.DeleteVerificationData"
+	const op string = "VerificationDataRepository.DeleteVerificationData"
 
 	sql, args, err := r.qb.
 		Delete(TableVerificationDataSc).
@@ -143,9 +143,9 @@ func (r *verificationDataRepository) DeleteVerificationData(ctx context.Context,
 	return nil
 }
 
-func (r *verificationDataRepository) UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error {
+func (r *VerificationDataRepository) UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error {
 	logrus.WithFields(logrus.Fields{"email": verifData.Email, "code": verifData.Code}).Trace("updating verification data code")
-	const op string = "verificationDataRepository.UpdateVerificationDataCode"
+	const op string = "VerificationDataRepository.UpdateVerificationDataCode"
 
 	sql, args, err := r.qb.
 		Update(TableVerificationDataSc).

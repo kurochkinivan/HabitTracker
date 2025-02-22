@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"net"
+	"net/http"
 
 	"github.com/kurochkinivan/HabitTracker/config"
 	v1 "github.com/kurochkinivan/HabitTracker/internal/controller/http/v1"
@@ -23,22 +25,22 @@ func Run(cfg *config.Config, tmpls map[string]*template.Template) error {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	logrus.Info("creating repositories and usecases...")
-	authRepo := postgresql.NewUserRepository(client)
-	verifRepo := postgresql.NewVerificationData(client)
-	refreshRepo := postgresql.NewRefreshSessionsRepository(client)
-	habitRepo := postgresql.NewHabitRepository(client)
+	logrus.Info("creating repositories...")
+	repos := postgresql.NewRepositories(client)
 
-	dependencies := usecase.UseCasesDependencies{
-		UserRepo:    authRepo,
-		VerifRepo:   verifRepo,
-		RefreshRepo: refreshRepo,
-		HabitRepo:   habitRepo,
-		TMPLS:       tmpls,
-		Config:      cfg,
-	}
-	useCases := usecase.NewUseCases(dependencies)
+	logrus.Info("creating usecases...")
+	useCases := usecase.NewUseCases(&usecase.UseCasesDependencies{
+		Repos:  repos,
+		TMPLS:  tmpls,
+		Config: cfg,
+	})
+
+	logrus.Info("creating router...")
+	r := v1.NewRouter(cfg.HTTP.BytesLimit, cfg.JWT.JWTSignKey, useCases)
 
 	logrus.Info("starting server...")
-	return v1.NewRouter(cfg.HTTP.Host, cfg.HTTP.Port, cfg.HTTP.BytesLimit, cfg.JWT.JWTSignKey, useCases.Auth, useCases.Habit)
+	hostport := net.JoinHostPort(cfg.HTTP.Host, cfg.HTTP.Port)
+	err = http.ListenAndServe(hostport, r)
+
+	return err
 }

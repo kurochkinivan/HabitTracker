@@ -9,6 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type HabitRepository interface {
+	CreateHabitTx(ctx context.Context, habit entity.Habit, notificationTimes []time.Time, scheduleDays []int) error
+	GetUserHabits(ctx context.Context, userID string) ([]entity.Habit, error)
+	GetCategories(ctx context.Context) ([]entity.Category, error)
+	GetDaysOfWeek(ctx context.Context) ([]entity.DayOfWeek, error)
+}
+
 type HabitUseCase struct {
 	habitRepo HabitRepository
 }

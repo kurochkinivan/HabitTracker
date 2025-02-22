@@ -12,22 +12,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type userRepository struct {
+type UserRepository struct {
 	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
 
-func NewUserRepository(client *pgxpool.Pool) *userRepository {
-	return &userRepository{
+func NewUserRepository(client *pgxpool.Pool) *UserRepository {
+	return &UserRepository{
 		client: client,
 		qb:     sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }
 
-func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error {
+func (r *UserRepository) CreateUser(ctx context.Context, user entity.User) error {
 	logrus.WithFields(logrus.Fields{"name": user.Name, "email": user.Email}).Trace("creating user")
-	const op string = "userRepository.CreateUser"
+	const op string = "UserRepository.CreateUser"
 
 	sql, args, err := r.qb.
 		Insert(TableUsersSc).
@@ -58,9 +58,9 @@ func (r *userRepository) CreateUser(ctx context.Context, user entity.User) error
 	return nil
 }
 
-func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
 	logrus.WithField("email", email).Trace("getting user by email")
-	const op string = "userRepository.GetUserByEmail"
+	const op string = "UserRepository.GetUserByEmail"
 
 	sql, args, err := r.qb.
 		Select(
@@ -95,9 +95,9 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (enti
 	return user, nil
 }
 
-func (r *userRepository) UserExists(ctx context.Context, email string) (bool, error) {
+func (r *UserRepository) UserExists(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user exists")
-	const op string = "userRepository.UserExists"
+	const op string = "UserRepository.UserExists"
 
 	sql, args, err := r.qb.
 		Select("1").
@@ -122,9 +122,9 @@ func (r *userRepository) UserExists(ctx context.Context, email string) (bool, er
 	return exists, nil
 }
 
-func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, error) {
+func (r *UserRepository) UserVerified(ctx context.Context, email string) (bool, error) {
 	logrus.WithFields(logrus.Fields{"email": email}).Trace("checking if user is verified")
-	const op string = "userRepository.UserVerified"
+	const op string = "UserRepository.UserVerified"
 
 	sql, args, err := r.qb.
 		Select("is_verified").
@@ -147,9 +147,9 @@ func (r *userRepository) UserVerified(ctx context.Context, email string) (bool, 
 	return verified, nil
 }
 
-func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
+func (r *UserRepository) DeleteUser(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("deleting user")
-	const op string = "userRepository.DeleteUser"
+	const op string = "UserRepository.DeleteUser"
 
 	sql, args, err := r.qb.
 		Delete(TableUsersSc).
@@ -171,9 +171,9 @@ func (r *userRepository) DeleteUser(ctx context.Context, email string) error {
 	return nil
 }
 
-func (r *userRepository) AuthenticateUser(ctx context.Context, email, password string) (string, error) {
+func (r *UserRepository) AuthenticateUser(ctx context.Context, email, password string) (string, error) {
 	logrus.WithField("email", email).Trace("authenticating user")
-	const op string = "userRepository.AuthenticateUser"
+	const op string = "UserRepository.AuthenticateUser"
 
 	sql, args, err := r.qb.
 		Select("id").
@@ -200,9 +200,9 @@ func (r *userRepository) AuthenticateUser(ctx context.Context, email, password s
 	return userID, nil
 }
 
-func (r *userRepository) VerifyEmail(ctx context.Context, email string) error {
+func (r *UserRepository) VerifyEmail(ctx context.Context, email string) error {
 	logrus.WithField("email", email).Trace("verifying user")
-	const op string = "userRepository.VerifyEmail"
+	const op string = "UserRepository.VerifyEmail"
 
 	sql, args, err := r.qb.
 		Update(TableUsersSc).

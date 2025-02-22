@@ -22,6 +22,36 @@ const (
 	EmailExistsMessage
 )
 
+type (
+	VerificationDataRepository interface {
+		UpdateVerificationDataCode(ctx context.Context, verifData entity.VerificationData) error
+		GetVerificationData(ctx context.Context, email string) (entity.VerificationData, error)
+		CreateVerificationData(ctx context.Context, verifData entity.VerificationData) error
+		VerificationDataExists(ctx context.Context, email string) (bool, error)
+		DeleteVerificationData(ctx context.Context, email string) error
+	}
+
+	UserRepository interface {
+		AuthenticateUser(ctx context.Context, email, password string) (string, error)
+		GetUserByEmail(ctx context.Context, email string) (entity.User, error)
+		UserVerified(ctx context.Context, email string) (bool, error)
+		UserExists(ctx context.Context, email string) (bool, error)
+		CreateUser(ctx context.Context, user entity.User) error
+		VerifyEmail(ctx context.Context, email string) error
+		DeleteUser(ctx context.Context, email string) error
+	}
+
+	RefreshSessionsRepository interface {
+		CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error)
+		GetRefreshSession(ctx context.Context, refreshToken string) (entity.RefreshSession, error)
+		CountRefreshSessions(ctx context.Context, userID string) (int, error)
+		DeleteRefreshSessionsByUserID(ctx context.Context, userID string) error
+		DeleteRefreshSessionByToken(ctx context.Context, refreshToken string) error
+		DeleteRefreshSessionByFingerprint(ctx context.Context, fingerprint string) error
+		RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error)
+	}
+)
+
 type AuthUseCase struct {
 	userRepo                     UserRepository
 	verifRepo                    VerificationDataRepository
@@ -120,7 +150,7 @@ func (a *AuthUseCase) LoginUser(ctx context.Context, email, password, fingerprin
 	if err != nil {
 		return entity.User{}, "", "", apperr.SystemError(err, op, "failed to get user by email")
 	}
-	
+
 	return user, accessToken, refreshToken, nil
 }
 

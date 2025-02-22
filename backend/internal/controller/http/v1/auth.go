@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,16 +11,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 	apperr "github.com/kurochkinivan/HabitTracker/internal/appError"
 	"github.com/kurochkinivan/HabitTracker/internal/entity"
-	"github.com/kurochkinivan/HabitTracker/internal/usecase"
 )
 
+type AuthUseCase interface {
+	LoginUser(ctx context.Context, email, password, fingerprint string) (entity.User, string, string, error)
+	RefreshTokens(ctx context.Context, userID, refreshTkn, fingerprint string) (accessToken string, refreshToken string, err error)
+	VerifyEmail(ctx context.Context, email, code, fingerprint string) (entity.User, string, string, error)
+	RegisterUser(ctx context.Context, name, email, password string) error
+	SendConfirmationCode(ctx context.Context, email string) error
+	LogoutUser(ctx context.Context, refreshToken string) error
+}
+
 type authHandler struct {
-	a          usecase.Auth
+	a          AuthUseCase
 	bytesLimit int64
 	signingKey string
 }
 
-func NewAuthHandler(a usecase.Auth, bytesLimit int64, signingKey string) Handler {
+func NewAuthHandler(a AuthUseCase, bytesLimit int64, signingKey string) Handler {
 	return &authHandler{
 		a:          a,
 		bytesLimit: bytesLimit,

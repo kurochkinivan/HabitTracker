@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -30,16 +29,16 @@ func NewHandlers(auth authHandler, habit habitHandler) *Handlers {
 // @version		1.0
 // @host			localhost:8080
 // @BasePath		/v1
-func NewRouter(host, port string, bytesLimit int64, sigingKey string, a usecase.Auth, h usecase.Habit) error {
+func NewRouter(bytesLimit int64, sigingKey string, usecases *usecase.UseCases) http.Handler {
 	r := httprouter.New()
 
-	authHandler := NewAuthHandler(a, bytesLimit, sigingKey)
+	authHandler := NewAuthHandler(usecases.AuthUseCase, bytesLimit, sigingKey)
 	authHandler.Register(r)
 
-	habitHandler := NewHabitHandler(h, bytesLimit, sigingKey)
+	habitHandler := NewHabitHandler(usecases.HabitUseCase, bytesLimit, sigingKey)
 	habitHandler.Register(r)
 
 	r.Handler(http.MethodGet, "/swagger/*filepath", httpSwagger.WrapHandler)
 
-	return http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), r)
+	return r
 }

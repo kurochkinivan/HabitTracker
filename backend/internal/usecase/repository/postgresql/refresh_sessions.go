@@ -12,13 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type refreshSessionsRepository struct {
+type RefreshSessionsRepository struct {
 	client *pgxpool.Pool
 	qb     sq.StatementBuilderType
 }
 
-func NewRefreshSessionsRepository(client *pgxpool.Pool) *refreshSessionsRepository {
-	return &refreshSessionsRepository{
+func NewRefreshSessionsRepository(client *pgxpool.Pool) *RefreshSessionsRepository {
+	return &RefreshSessionsRepository{
 		client: client,
 		qb:     sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
@@ -26,9 +26,9 @@ func NewRefreshSessionsRepository(client *pgxpool.Pool) *refreshSessionsReposito
 
 // TODO: think about no rows affected error
 
-func (r *refreshSessionsRepository) CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error) {
+func (r *RefreshSessionsRepository) CreateRefreshSession(ctx context.Context, refreshSession entity.RefreshSession) (string, error) {
 	logrus.WithField("user_id", refreshSession.UserID).Trace("creating refresh session")
-	const op string = "refreshSessionsRepository.CreateRefreshSession"
+	const op string = "RefreshSessionsRepository.CreateRefreshSession"
 
 	sql, args, err := r.qb.
 		Insert(TableRefreshSessionsSc).
@@ -57,9 +57,9 @@ func (r *refreshSessionsRepository) CreateRefreshSession(ctx context.Context, re
 	return refresh, nil
 }
 
-func (r *refreshSessionsRepository) CountRefreshSessions(ctx context.Context, userID string) (int, error) {
+func (r *RefreshSessionsRepository) CountRefreshSessions(ctx context.Context, userID string) (int, error) {
 	logrus.WithField("user_id", userID).Trace("counting refresh sessions")
-	const op string = "refreshSessionsRepository.CountRefreshSessions"
+	const op string = "RefreshSessionsRepository.CountRefreshSessions"
 
 	sql, args, err := r.qb.Select("COUNT (*)").
 		FromSelect(r.qb.Select("user_id").From(TableRefreshSessionsSc).Where(sq.Eq{"user_id": userID}), "session_by_user_id").
@@ -77,9 +77,9 @@ func (r *refreshSessionsRepository) CountRefreshSessions(ctx context.Context, us
 	return count, nil
 }
 
-func (r *refreshSessionsRepository) DeleteRefreshSessionsByUserID(ctx context.Context, userID string) error {
+func (r *RefreshSessionsRepository) DeleteRefreshSessionsByUserID(ctx context.Context, userID string) error {
 	logrus.WithField("user_id", userID).Trace("deleting refresh sessions")
-	const op string = "refreshSessionsRepository.DeleteRefreshSessions"
+	const op string = "RefreshSessionsRepository.DeleteRefreshSessions"
 
 	sql, args, err := r.qb.
 		Delete(TableRefreshSessionsSc).
@@ -101,9 +101,9 @@ func (r *refreshSessionsRepository) DeleteRefreshSessionsByUserID(ctx context.Co
 	return nil
 }
 
-func (r *refreshSessionsRepository) DeleteRefreshSessionByToken(ctx context.Context, refreshToken string) error {
+func (r *RefreshSessionsRepository) DeleteRefreshSessionByToken(ctx context.Context, refreshToken string) error {
 	logrus.WithField("refresh_token", refreshToken).Trace("deleting refresh session")
-	const op string = "refreshSessionsRepository.DeleteRefreshSession"
+	const op string = "RefreshSessionsRepository.DeleteRefreshSession"
 
 	sql, args, err := r.qb.
 		Delete(TableRefreshSessionsSc).
@@ -125,9 +125,9 @@ func (r *refreshSessionsRepository) DeleteRefreshSessionByToken(ctx context.Cont
 	return nil
 }
 
-func (r *refreshSessionsRepository) GetRefreshSession(ctx context.Context, refreshToken string) (entity.RefreshSession, error) {
+func (r *RefreshSessionsRepository) GetRefreshSession(ctx context.Context, refreshToken string) (entity.RefreshSession, error) {
 	logrus.WithField("refreshToken", refreshToken).Trace("getting refresh session")
-	const op string = "refreshSessionsRepository.GetRefreshSession"
+	const op string = "RefreshSessionsRepository.GetRefreshSession"
 
 	sql, args, err := r.qb.Select(
 		"id",
@@ -163,9 +163,9 @@ func (r *refreshSessionsRepository) GetRefreshSession(ctx context.Context, refre
 	return refreshSession, nil
 }
 
-func (r *refreshSessionsRepository) RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error) {
+func (r *RefreshSessionsRepository) RefreshSessionExists(ctx context.Context, fingerprint string) (bool, error) {
 	logrus.WithField("fingerprint", fingerprint).Trace("checking if refresh session exists")
-	const op string = "refreshSessionsRepository.RefreshSessionExists"
+	const op string = "RefreshSessionsRepository.RefreshSessionExists"
 
 	sql, args, err := r.qb.
 		Select("1").
@@ -190,9 +190,9 @@ func (r *refreshSessionsRepository) RefreshSessionExists(ctx context.Context, fi
 	return exists, nil
 }
 
-func (r *refreshSessionsRepository) DeleteRefreshSessionByFingerprint(ctx context.Context, fingerprint string) error {
+func (r *RefreshSessionsRepository) DeleteRefreshSessionByFingerprint(ctx context.Context, fingerprint string) error {
 	logrus.WithField("fingerprint", fingerprint).Trace("deleting refresh session")
-	const op string = "refreshSessionsRepository.DeleteRefreshSessionByFingerprint"
+	const op string = "RefreshSessionsRepository.DeleteRefreshSessionByFingerprint"
 
 	sql, args, err := r.qb.
 		Delete(TableRefreshSessionsSc).
