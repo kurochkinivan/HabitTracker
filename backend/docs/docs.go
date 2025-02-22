@@ -353,16 +353,57 @@ const docTemplate = `{
                 }
             }
         },
-        "/habits/categories": {
+        "/habits/days": {
             "get": {
-                "description": "Get habits categories",
+                "description": "Get week days",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "habits"
                 ],
-                "summary": "Get habits categories",
+                "summary": "Get week days",
+                "responses": {
+                    "200": {
+                        "description": "OK.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.getDaysResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized. User does not have access to the habits",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperr.AppError"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}/categories": {
+            "get": {
+                "description": "Get user's categories",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get user's categories",
                 "responses": {
                     "200": {
                         "description": "OK.",
@@ -392,27 +433,37 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/habits/days": {
-            "get": {
-                "description": "Get week days",
-                "produces": [
+            },
+            "post": {
+                "description": "Create category for user",
+                "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "habits"
+                    "categories"
                 ],
-                "summary": "Get week days",
-                "responses": {
-                    "200": {
-                        "description": "OK.",
+                "summary": "Create category for user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization header must be set for valid response. It should be in format: Bearer {access_token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "create category request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/v1.getDaysResponse"
-                            }
+                            "$ref": "#/definitions/v1.createCategoryRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -421,7 +472,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized. User does not have access to the habits",
+                        "description": "Unauthorized. User does not have access to the categories",
                         "schema": {
                             "$ref": "#/definitions/apperr.AppError"
                         }
@@ -514,7 +565,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.createRequest"
+                            "$ref": "#/definitions/v1.createHabitReq"
                         }
                     },
                     {
@@ -576,7 +627,15 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.createRequest": {
+        "v1.createCategoryRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.createHabitReq": {
             "type": "object",
             "properties": {
                 "category_id": {

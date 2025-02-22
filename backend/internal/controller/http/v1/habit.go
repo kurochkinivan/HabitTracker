@@ -133,7 +133,7 @@ func (h *habitHandler) getHabits(w http.ResponseWriter, r *http.Request, p httpr
 }
 
 type (
-	createRequest struct {
+	createHabitReq struct {
 		Name              string      `json:"name"`
 		Desc              string      `json:"description"`
 		Interval          string      `json:"interval" enums:"daily,weekly,custom"` // daily, weekly, custom
@@ -143,7 +143,7 @@ type (
 	}
 )
 
-func mapCreateHabitRequestToHabit(userID string, req createRequest) entity.Habit {
+func mapCreateHabitRequestToHabit(userID string, req createHabitReq) entity.Habit {
 	return entity.Habit{
 		UserID:   userID,
 		Name:     req.Name,
@@ -160,7 +160,7 @@ func mapCreateHabitRequestToHabit(userID string, req createRequest) entity.Habit
 // @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
 // @Accept			json
 //
-// @Param			request		body	v1.createRequest	true	"create habit request parameters"
+// @Param			request		body	v1.createHabitReq	true	"create habit request parameters"
 // @Param			interval	body	string				true	"Interval type"	Enums(daily, weekly, custom)
 //
 // @Success		201			"Created"
@@ -185,7 +185,7 @@ func (h *habitHandler) createHabit(w http.ResponseWriter, r *http.Request, p htt
 	}
 	defer r.Body.Close()
 
-	var req createRequest
+	var req createHabitReq
 	err = json.Unmarshal(data, &req)
 	if err != nil {
 		return apperr.ErrSerializeData.WithErr(fmt.Errorf("%s: %w", op, err))
@@ -219,15 +219,15 @@ func mapCategoriesToGetCategoriesResponse(categories []*entity.Category) []getCa
 	return respData
 }
 
-// @Summary		Get habits categories
-// @Description	Get habits categories
-// @Tags			habits
+// @Summary		Get user's categories
+// @Description	Get user's categories
+// @Tags			categories
 // @Produce		json
 // @Success		200	{array}		v1.getCategoriesResponse	"OK."
 // @Failure		400	{object}	apperr.AppError				"Bad Request"
 // @Failure		401	{object}	apperr.AppError				"Unauthorized. User does not have access to the habits"
 // @Failure		500	{object}	apperr.AppError				"Internal Server Error"
-// @Router			/habits/categories [get]
+// @Router			/users/{id}/categories [get]
 func (h *habitHandler) getCategories(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.getCategories"
@@ -312,6 +312,19 @@ func mapCreateCategoryReqToCategory(req createCategoryRequest) *entity.Category 
 	}
 }
 
+// @Summary		Create category for user
+// @Description	Create category for user
+// @Tags			categories
+// @Param			Authorization	header	string	true	"Authorization header must be set for valid response. It should be in format: Bearer {access_token}"
+// @Accept			json
+//
+// @Param			request		body	v1.createCategoryRequest	true	"create category request parameters"
+//
+// @Success		201			"Created"
+// @Failure		400			{object}	apperr.AppError	"Bad Request"
+// @Failure		401			{object}	apperr.AppError	"Unauthorized. User does not have access to the categories"
+// @Failure		500			{object}	apperr.AppError	"Internal Server Error"
+// @Router			/users/{id}/categories [post]
 func (h *habitHandler) createCategory(w http.ResponseWriter, r *http.Request, p httprouter.Params) error {
 	w.Header().Set("Content-Type", "application/json")
 	const op string = "habitHandler.createCategory"
@@ -339,6 +352,8 @@ func (h *habitHandler) createCategory(w http.ResponseWriter, r *http.Request, p 
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+
+	w.WriteHeader(http.StatusCreated)
 
 	return nil
 }
