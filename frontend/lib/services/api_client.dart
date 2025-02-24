@@ -1,13 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:habit_tracker/models/logout_request.dart';
 import 'package:habit_tracker/models/refresh_tokens_request.dart';
 import 'package:habit_tracker/models/verify_email_request.dart';
+import 'package:habit_tracker/services/token_interceptor.dart';
 import 'package:retrofit/retrofit.dart';
 import '../models/check_auth_response.dart';
+import '../models/create_category_request.dart';
+import '../models/create_habit_request.dart';
+import '../models/get_categories_response.dart';
+import '../models/get_days_response.dart';
+import '../models/get_habits_response.dart';
 import '../models/get_jwt_response.dart';
 import '../models/get_verification_code_request.dart';
 import '../models/login_request.dart';
+import '../models/login_response.dart';
 import '../models/register_request.dart';
 import 'app_error_interceptor.dart';
 import 'app_logger_interceptor.dart';
@@ -30,10 +38,13 @@ abstract class ApiClient {
     );
 
     dio.interceptors.addAll([
+      TokenInterceptor(
+        secureStorage: FlutterSecureStorage(),
+        apiClient: _ApiClient(dio, baseUrl: baseUrl),
+      ),
       if (kDebugMode) AppLoggerInterceptor(),
       AppErrorInterceptor(),
     ]);
-
     return _ApiClient(dio, baseUrl: baseUrl);
   }
 
@@ -41,13 +52,13 @@ abstract class ApiClient {
   Future<void> registerUser(@Body() RegisterRequest request);
 
   @POST("/auth/login")
-  Future<GetJwtResponse> loginUser(@Body() LoginRequest request);
+  Future<LoginResponse> loginUser(@Body() LoginRequest request);
 
   @POST("/auth/get-verification-code")
   Future<void> getVerificationCode(@Body() GetVerificationCodeRequest request);
 
   @POST("/auth/verify-email")
-  Future<GetJwtResponse> verifyEmail(@Body() VerifyEmailRequest request);
+  Future<LoginResponse> verifyEmail(@Body() VerifyEmailRequest request);
 
   @POST("/auth/refresh-tokens")
   Future<GetJwtResponse> refreshTokens(@Body() RefreshTokensRequest request);
@@ -58,4 +69,21 @@ abstract class ApiClient {
 
   @POST("/auth/logout")
   Future<GetJwtResponse> logout(@Body() LogoutRequest request);
+
+  @GET("/habits/days")
+  Future<List<GetDaysResponse>> getWeekDays();
+
+  @GET("/users/{id}/categories")
+  Future<List<GetCategoriesResponse>> getUserCategories(@Path("id") String id);
+
+  @POST("/users/{id}/categories")
+  Future<void> createCategory(
+      @Path("id") String id, @Body() CreateCategoryRequest request);
+
+  @GET("/users/{id}/habits")
+  Future<List<GetHabitsResponse>> getUserHabits(@Path("id") String id);
+
+  @POST("/users/{id}/habits")
+  Future<void> createHabit(
+      @Path("id") String id, @Body() CreateHabitRequest request);
 }

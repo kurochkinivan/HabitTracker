@@ -26,14 +26,14 @@ class AppRouter extends RootStackRouter {
 
   @override
   List<AutoRoute> get routes => [
-        AutoRoute(page: StartRoute.page, path: '/1', ),
+        AutoRoute(page: StartRoute.page, path: '/', initial: true),
         AutoRoute(page: SignInRoute.page, path: '/sign-in'),
         AutoRoute(page: SignUpRoute.page, path: '/sign-up'),
         AutoRoute(page: VerifyEmailRoute.page, path: '/verify-email'),
         AutoRoute(page: VerifyPasswordRecoveryRoute.page, path: '/verify-password-recovery'),
         AutoRoute(page: PasswordRecoveryRoute.page, path: '/password-recovery'),
         AutoRoute(page: NewPasswordRoute.page, path: '/new-password'),
-        AutoRoute(page: AddHabitRoute.page, path: '/add-habit', initial: true),
+        AutoRoute(page: AddHabitRoute.page, path: '/add-habit', ),
         AutoRoute(page: HabitSettingsRoute.page, path: '/habit-settings'),
         AutoRoute(page: IconChoiceRoute.page, path: '/icon-choice'),
         AutoRoute(page: ColorChoiceRoute.page, path: '/color-choice'),

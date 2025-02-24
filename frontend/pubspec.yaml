@@ -81,7 +81,3 @@ flutter_native_splash:
     icon_background_color_dark: "#FCFCFF"
   android: true
   ios: true
-
-
-
-

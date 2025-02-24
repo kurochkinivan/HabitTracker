@@ -1,429 +1,152 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fuzzy/fuzzy.dart';
 import 'package:habit_tracker/app_colors.dart';
 import 'package:habit_tracker/widgets/custom_search_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../bloc/habits/habits_bloc.dart';
+import '../bloc/habits/habits_event.dart';
+import '../bloc/habits/habits_state.dart';
+import '../models/habit_action_type.dart';
 import '../models/habits.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
+import '../services/api_client.dart';
 import '../widgets/category_section.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_elevated_button.dart';
 import '../widgets/habit_item.dart';
 
 @RoutePage()
-class AddHabitPage extends StatefulWidget {
+class AddHabitPage extends StatelessWidget {
   const AddHabitPage({super.key});
 
   @override
-  State<AddHabitPage> createState() => _AddHabitPageState();
+  Widget build(BuildContext context) {
+    final apiClient = RepositoryProvider.of<ApiClient>(context);
+
+    return BlocProvider(
+      create: (_) => HabitsBloc(apiClient: apiClient),
+      child: const AddHabitPageContent(),
+    );
+  }
 }
 
-class _AddHabitPageState extends State<AddHabitPage> {
+class AddHabitPageContent extends StatefulWidget {
+  const AddHabitPageContent({super.key});
+
+  @override
+  State<AddHabitPageContent> createState() => _AddHabitPageContentState();
+}
+
+class _AddHabitPageContentState extends State<AddHabitPageContent> {
   final TextEditingController _searchController = TextEditingController();
-  Map<String, List<Habit>> habitsByCategory = {
-    'Fitness': [
-      Habit(
-          name: 'Running',
-          color: Colors.blue,
-          icon: 'assets/icons/running.png',
-          popularityIndex: 0),
-      Habit(
-          name: 'Yoga',
-          color: Colors.green,
-          icon: 'assets/icons/yoga.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Cycling',
-          color: Colors.cyan,
-          icon: 'assets/icons/cycling.png',
-          popularityIndex: 5),
-      Habit(
-          name: 'Swimming',
-          color: Colors.blueAccent,
-          icon: 'assets/icons/swimming.png',
-          popularityIndex: 4),
-    ],
-    'Productivity': [
-      Habit(
-          name: 'Reading',
-          color: Colors.purple,
-          icon: 'assets/icons/reading.png',
-          popularityIndex: 1),
-      Habit(
-          name: 'Meditation',
-          color: Colors.orange,
-          icon: 'assets/icons/meditation.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Writing',
-          color: Colors.deepOrange,
-          icon: 'assets/icons/writing.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Learning a language',
-          color: Colors.yellow,
-          icon: 'assets/icons/language.png',
-          popularityIndex: 4),
-      Habit(
-          name: 'Time management',
-          color: Colors.red,
-          icon: 'assets/icons/time_management.png',
-          popularityIndex: 5),
-      Habit(
-          name: 'Goal setting',
-          color: Colors.blueGrey,
-          icon: 'assets/icons/goal_setting.png',
-          popularityIndex: 6),
-    ],
-    'Health': [
-      Habit(
-          name: 'Drinking water',
-          color: Colors.lightBlue,
-          icon: 'assets/icons/drinking_water.png',
-          popularityIndex: 0),
-      Habit(
-          name: 'Eating healthy',
-          color: Colors.green,
-          icon: 'assets/icons/eating_healthy.png',
-          popularityIndex: 1),
-      Habit(
-          name: 'Sleeping early',
-          color: Colors.blueAccent,
-          icon: 'assets/icons/sleeping_early.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Taking vitamins',
-          color: Colors.yellow,
-          icon: 'assets/icons/taking_vitamins.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Avoiding junk food',
-          color: Colors.orange,
-          icon: 'assets/icons/avoiding_junk_food.png',
-          popularityIndex: 4),
-    ],
-    'Finance': [
-      Habit(
-          name: 'Saving money',
-          color: Colors.green,
-          icon: 'assets/icons/saving_money.png',
-          popularityIndex: 0),
-      Habit(
-          name: 'Investing',
-          color: Colors.blue,
-          icon: 'assets/icons/investing.png',
-          popularityIndex: 1),
-      Habit(
-          name: 'Budgeting',
-          color: Colors.purple,
-          icon: 'assets/icons/budgeting.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Tracking expenses',
-          color: Colors.teal,
-          icon: 'assets/icons/tracking_expenses.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Building credit',
-          color: Colors.indigo,
-          icon: 'assets/icons/building_credit.png',
-          popularityIndex: 4),
-    ],
-    'Lifestyle': [
-      Habit(
-          name: 'Traveling',
-          color: Colors.orange,
-          icon: 'assets/icons/traveling.png',
-          popularityIndex: 0),
-      Habit(
-          name: 'Photography',
-          color: Colors.amber,
-          icon: 'assets/icons/photography.png',
-          popularityIndex: 1),
-      Habit(
-          name: 'Cooking',
-          color: Colors.red,
-          icon: 'assets/icons/cooking.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Gardening',
-          color: Colors.green,
-          icon: 'assets/icons/gardening.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Painting',
-          color: Colors.blueGrey,
-          icon: 'assets/icons/painting.png',
-          popularityIndex: 4),
-    ],
-    'Social': [
-      Habit(
-          name: 'Socializing',
-          color: Colors.pink,
-          icon: 'assets/icons/socializing.png',
-          popularityIndex: 0),
-      Habit(
-          name: 'Volunteering',
-          color: Colors.deepPurple,
-          icon: 'assets/icons/volunteering.png',
-          popularityIndex: 1),
-      Habit(
-          name: 'Attending events',
-          color: Colors.lightBlue,
-          icon: 'assets/icons/attending_events.png',
-          popularityIndex: 2),
-      Habit(
-          name: 'Networking',
-          color: Colors.yellow,
-          icon: 'assets/icons/networking.png',
-          popularityIndex: 3),
-      Habit(
-          name: 'Hosting gatherings',
-          color: Colors.greenAccent,
-          icon: 'assets/icons/hosting_gatherings.png',
-          popularityIndex: 4),
-    ],
-  };
-
-  final List<String> _sortOptions = [
-    'по популярности',
-    'по категориям',
-    'по поиску',
-  ];
-  String _selectedSort = 'по категориям';
-
-  late List<Habit> sortedHabits;
-  List<Habit> filteredHabits = [];
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  String _serverErrorText = '';
+  bool _isRequestCorrect = true;
 
   @override
   void initState() {
     super.initState();
-    sortedHabits = habitsByCategory.values.expand((list) => list).toList()
-      ..sort((a, b) => a.popularityIndex.compareTo(b.popularityIndex));
-    filteredHabits = List.from(sortedHabits);
-    _searchController.addListener(_filterHabits);
+    _fetchUserHabits();
+  }
+
+  Future<void> _fetchUserHabits() async {
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final userId = sharedPrefs.getString('user_id'); // Replace with actual user ID
+    context.read<HabitsBloc>().add(HabitsEvent.getUserHabits(userId: userId!));
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _searchController.removeListener(_filterHabits);
-    _listKey.currentState?.dispose();
     super.dispose();
-  }
-
-  void _filterHabits() {
-    final query = _searchController.text.toLowerCase();
-
-    if (query.isEmpty) {
-      for (var i = filteredHabits.length - 1; i >= 0; i--) {
-        final removedHabit = filteredHabits.removeAt(i);
-        _listKey.currentState?.removeItem(
-          i,
-          (context, animation) => _buildHabitItem(removedHabit, animation),
-        );
-      }
-    } else {
-      final fuse = Fuzzy<Habit>(
-        sortedHabits,
-        options: FuzzyOptions(
-          keys: [
-            WeightedKey<Habit>(
-              name: 'name',
-              getter: (habit) => habit.name,
-              weight: 1.0,
-            ),
-          ],
-          threshold: 0.1,
-        ),
-      );
-
-      final results = fuse.search(query);
-      final newFilteredHabits = results.map((result) => result.item).toList();
-
-      for (var i = filteredHabits.length - 1; i >= 0; i--) {
-        if (!newFilteredHabits.contains(filteredHabits[i])) {
-          final removedHabit = filteredHabits.removeAt(i);
-          _listKey.currentState?.removeItem(
-            i,
-            (context, animation) => _buildHabitItem(removedHabit, animation),
-          );
-        }
-      }
-
-      for (var i = 0; i < newFilteredHabits.length; i++) {
-        if (!filteredHabits.contains(newFilteredHabits[i])) {
-          filteredHabits.insert(i, newFilteredHabits[i]);
-          _listKey.currentState?.insertItem(i);
-        }
-      }
-    }
-  }
-
-  Widget _buildHabitItem(Habit? habit, Animation<double> animation) {
-    if (habit == null) {
-      return SizedBox.shrink();
-    }
-
-    return SlideTransition(
-      position: animation.drive(
-        Tween<Offset>(begin: Offset(1, 0), end: Offset(0, 0))
-            .chain(CurveTween(curve: Curves.easeOut)),
-      ),
-      child: Column(
-        children: [
-          HabitItem(
-            icon: habit.icon,
-            title: habit.name,
-            color: habit.color,
-            query: _searchController.text.toLowerCase(),
-          ),
-          SizedBox(height: 10),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_searchController.text.isNotEmpty && _selectedSort != 'по поиску') {
-      _selectedSort = 'по поиску';
-    }
     return Scaffold(
       appBar: CustomAppBar(
           onPressed: () => context.router.navigate(StartRoute()),
           label: "Добавить привычку"),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomSearchBar(
-                    controller: _searchController,
-                    onChanged: () {
-                      setState(() {});
-                    }),
-                SizedBox(height: 16.h),
-                Row(
+      body: BlocConsumer<HabitsBloc, HabitsState>(
+        listenWhen: (previous, current) {
+          return current.when(
+            initial: () => false,
+            loading: (action) => action == HabitActionType.getUserHabits,
+            success: (action, message, days, categories, habits) =>
+            action == HabitActionType.getUserHabits,
+            failure: (action, errorMessage) =>
+            action == HabitActionType.getUserHabits,
+          );
+        },
+        buildWhen: (previous, current) {
+          return current.when(
+            initial: () => true,
+            loading: (action) => action == HabitActionType.getUserHabits,
+            success: (action, message, days, categories, habits) =>
+            action == HabitActionType.getUserHabits,
+            failure: (action, errorMessage) =>
+            action == HabitActionType.getUserHabits,
+          );
+        },
+        listener: (context, state) {
+          state.whenOrNull(
+            loading: (action) {},
+            success: (action, message, days, categories, habits) {
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) {
+                return;
+              }
+              // Handle success state
+            },
+            failure: (action, errorMessage) {
+              setState(() {
+                _serverErrorText = errorMessage;
+                _isRequestCorrect = false;
+              });
+            },
+          );
+        },
+        builder: (context, state) {
+          bool isLoading = false;
+          state.maybeWhen(
+            loading: (action) {
+              isLoading = true;
+            },
+            orElse: () {},
+          );
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Сортировка: ',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(color: AppColors.black02),
-                    ),
-                    DropdownButton<String>(
-                      value: _selectedSort,
-                      icon: SizedBox.shrink(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          if (newValue != 'по поиску') {
-                            _selectedSort = newValue!;
-                            _searchController.clear();
-                          }
-                        });
-                      },
-                      items: _sortOptions
-                          .where((option) =>
-                              option != 'по поиску' ||
-                              _selectedSort == 'по поиску')
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style:
-                                Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      color: AppColors.purple,
-                                    ),
-                          ),
-                        );
-                      }).toList(),
-                      borderRadius: BorderRadius.circular(8),
-                      underline: SizedBox.shrink(),
-                      dropdownColor: AppColors.white,
-                    ),
+                    CustomSearchBar(
+                        controller: _searchController,
+                        onChanged: () {
+                          setState(() {});
+                        }),
+                    SizedBox(height: 16.h),
+                    // Add other UI elements here
                   ],
                 ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-          if (_searchController.text.isNotEmpty)
-            Expanded(
-              child: filteredHabits.isEmpty
-                  ? Center(
-                      child: Text('Ничего не найдено',
-                          style: TextStyle(
-                              fontSize: 20.sp, color: AppColors.gray01)),
-                    )
-                  : AnimatedList(
-                      key: _listKey,
-                      initialItemCount: filteredHabits.length,
-                      padding: EdgeInsets.symmetric(horizontal: 32.w),
-                      itemBuilder: (context, index, animation) {
-                        final habit = filteredHabits[index];
-                        return _buildHabitItem(habit, animation);
-                      },
-                    ),
-            ),
-          if (_selectedSort == 'по категориям' &&
-              _searchController.text.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32.w),
-              child: Column(children: [
-                Divider(
-                  color: AppColors.gray04,
-                  thickness: 1.h,
-                  height: 0,
-                ),
-                SizedBox(height: 16.h),
-              ]),
-            ),
-          if (_selectedSort == 'по категориям' &&
-              _searchController.text.isEmpty)
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 32.w),
-                itemCount: habitsByCategory.length,
-                itemBuilder: (context, index) {
-                  final entry = habitsByCategory.entries.elementAt(index);
-                  return CategorySection(title: entry.key, habits: entry.value);
-                },
               ),
-            ),
-          if (_selectedSort == 'по популярности' &&
-              _searchController.text.isEmpty)
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 32.w),
-                itemCount: sortedHabits.length,
-                itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      HabitItem(
-                        icon: sortedHabits[index].icon,
-                        title: sortedHabits[index].name,
-                        color: sortedHabits[index].color,
-                      ),
-                      if (index < sortedHabits.length - 1)
-                        SizedBox(height: 10.h),
-                    ],
-                  );
-                },
-              ),
-            ),
-          SizedBox(height: 16),
-        ],
+              // Add other UI elements here
+              if (isLoading)
+                Center(child: CircularProgressIndicator())
+              else
+              // Display habits or error message
+                _isRequestCorrect
+                    ? Text('Habits loaded successfully')
+                    : Text(_serverErrorText),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: _buildActionButtons(context),
     );

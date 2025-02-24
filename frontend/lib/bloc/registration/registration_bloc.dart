@@ -10,6 +10,7 @@ import '../../models/register_request.dart';
 import '../../models/registration_action_type.dart';
 import '../../models/verify_email_request.dart';
 import '../../services/api_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final ApiClient apiClient;
@@ -101,6 +102,9 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     try {
       final request = VerifyEmailRequest(
           code: event.code, email: event.email, fingerprint: event.fingerprint);
+
+      SharedPreferences storage = await SharedPreferences.getInstance();
+
       final response = await apiClient
           .verifyEmail(request)
           .timeout(const Duration(seconds: 15));
@@ -109,6 +113,9 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
           key: 'access_token', value: response.accessToken);
       await secureStorage.write(
           key: 'refresh_token', value: response.refreshToken);
+      await storage.setString('user_email', response.user.email);
+      await storage.setString('user_name', response.user.name);
+      await storage.setString('user_id', response.user.id);
 
       emit(RegistrationState.success(
           message: 'Email verified successfully.',

@@ -9,6 +9,7 @@ import '../../models/refresh_tokens_request.dart';
 import '../../services/api_client.dart';
 import 'authentication_event.dart';
 import 'authentication_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
@@ -33,13 +34,22 @@ class AuthenticationBloc
         fingerprint: event.fingerprint,
         password: event.password,
       );
+
+      SharedPreferences storage = await SharedPreferences.getInstance();
+
       final response = await apiClient
           .loginUser(request)
           .timeout(const Duration(seconds: 15));
+
       await secureStorage.write(
           key: 'access_token', value: response.accessToken);
       await secureStorage.write(
           key: 'refresh_token', value: response.refreshToken);
+
+      await storage.setString('user_email', response.user.email);
+      await storage.setString('user_name', response.user.name);
+      await storage.setString('user_id', response.user.id);
+
       emit(AuthenticationState.authenticated('Login successful.'));
     } on TimeoutException {
       emit(const AuthenticationState.failure(
